@@ -32,8 +32,9 @@ module.exports = {
 			CNRELAndroid3.5.0 | 26aeefb488ada624
 
 			OSRELWin3.6.0 | 5a7f44b6a1aba0e2
-			CNRELWin3.6.0 | 6afecbf1786dc983&
+			CNRELWin3.6.0 | 6afecbf1786dc983
 			OSRELAndroid3.6.0 | b89009325796c5cf
+			CNRELAndroid3.6.0 | f6bd35789bd586da
 			*/
 
 			var platform = 1
