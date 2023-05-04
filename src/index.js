@@ -306,7 +306,7 @@ if (config.startup.bot) {
 // Ratelimit
 const limit_cmd = rateLimit({
 	windowMs: 60 * 1000,
-	max: 5,
+	max: 10,
 	statusCode: 200,
 	message: {
 		msg: "Too many requests, please try again later.",
@@ -329,6 +329,7 @@ eta.configure({
 web.engine("eta", eta.renderFile)
 web.set("view engine", "eta")
 web.set("views", __dirname + "/web/views")
+web.set("trust proxy", 2)
 
 web.all("/", (req, res) => {
 	res.render("home", {
@@ -438,6 +439,11 @@ web.all("/api/server/:id/ping", async (req, res) => {
 web.all("/api/server/:id/command", limit_cmd, async (req, res) => {
 	let d = await api_control.GM(req.params.id, req.query.uid, req.query.cmd, req.query.code)
 	return res.json(d)
+})
+
+web.get("/ip", async (request, response) => {
+	//console.log(request);
+	response.send(request.ip)
 })
 
 if (config.startup.webserver) {
