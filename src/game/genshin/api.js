@@ -26,15 +26,16 @@ module.exports = {
 			Language: 1-EN, 2-JP, 13-ID
 			Platform: 3-PC, 2-Android
 
-			OSRELWin3.5.0 | 39f0ecc6d4a1046d
-			CNRELWin3.5.0 | d64c50db414535a2
+			OSRELWin3.5.0     | 39f0ecc6d4a1046d
+			CNRELWin3.5.0     | d64c50db414535a2
 			OSRELAndroid3.5.0 | 3f8038a6406a3b89
 			CNRELAndroid3.5.0 | 26aeefb488ada624
 
-			OSRELWin3.6.0 | 5a7f44b6a1aba0e2
-			CNRELWin3.6.0 | 6afecbf1786dc983
+			OSRELWin3.6.0     | 5a7f44b6a1aba0e2
+			CNRELWin3.6.0     | 6afecbf1786dc983
 			OSRELAndroid3.6.0 | b89009325796c5cf
 			CNRELAndroid3.6.0 | f6bd35789bd586da
+			CNRELiOS3.6.0     | 24e8cbb8af855e68
 			*/
 
 			var platform = 1
