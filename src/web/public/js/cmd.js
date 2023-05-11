@@ -53,7 +53,6 @@ async function setup() {
 				list_ms.appendChild(option)
 			})
 		}
-
 	} catch (error) {
 		Swal.fire({
 			icon: "error",
@@ -109,7 +108,7 @@ cmd_raw.addEventListener("submit", async function (e) {
 
 		const rr = await axios.get("/api/server/" + data_login.server.name + "/command", {
 			params: tmp,
-			timeout: 1000 * 60
+			timeout: 1000 * 120
 		})
 		console.log(rr)
 
@@ -265,7 +264,7 @@ toadd_item.addEventListener("click", function handleClick() {
 	var final_input = ""
 	if (data_login.server.version == 1) {
 		// GIO stuff
-		// item add 
+		// item add
 		final_input = `item add ${id} ${set_num}`
 	} else {
 		// GC stuff

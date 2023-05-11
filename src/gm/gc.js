@@ -7,7 +7,7 @@ const log = require("../util/logger")
 const axios = require("axios")
 
 module.exports = {
-	GM: async function (url, uid, cmd, code, set_timeout = 15) {
+	GM: async function (url, uid, cmd, code, set_timeout = 60) {
 		try {
 			const response = await axios.get(url + "api/command", {
 				params: {
@@ -31,10 +31,10 @@ module.exports = {
 			}
 		}
 	},
-	Server: async function (server_url) {
+	Server: async function (server_url, set_timeout = 60) {
 		try {
 			const response = await axios.get(server_url + "status/server", {
-				timeout: 1000 * 10
+				timeout: 1000 * set_timeout
 			})
 			const d = response.data
 			return {

@@ -67,7 +67,7 @@ module.exports = {
 			let params = this.CMD(1005, null, null, mail_json)
 			const response = await axios.get(url, {
 				params: params,
-				timeout: 5000
+				timeout: 1000 * 60
 			})
 			const result = response.data
 			log.info(result)
@@ -89,7 +89,7 @@ module.exports = {
 			}
 		}
 	},
-	GM: async function (url, uid, set_command, set_timeout = 30) {
+	GM: async function (url, uid, set_command, set_timeout = 60) {
 		try {
 			// 1116 = GM
 			let params = this.CMD(1116, uid, set_command, null)
@@ -139,13 +139,13 @@ module.exports = {
 			}
 		}
 	},
-	Server: async function (server_url) {
+	Server: async function (server_url, set_timeout = 60) {
 		try {
 			// 1101 = Server Status
 			let params = this.CMD(1101)
 			const response = await axios.get(server_url, {
 				params: params,
-				timeout: 5000
+				timeout: 1000 * set_timeout
 			})
 			const result = response.data
 			return {

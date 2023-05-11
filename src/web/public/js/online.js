@@ -4,7 +4,7 @@ async function online() {
 	try {
 		// list server
 		const r = await axios.get("/api/server", {
-			timeout: 1000 * 10
+			timeout: 1000 * 30
 		})
 		if (r.data) {
 			var count = 0
