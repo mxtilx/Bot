@@ -4,6 +4,14 @@
  * @format
  */
 
+const log = require("./util/logger")
+
+log.info("YuukiPS startup....")
+process.on("unhandledRejection", (error) => {
+	log.info(error)
+	//process.exit(1);
+})
+
 const express = require("express")
 const rateLimit = require("express-rate-limit")
 
@@ -12,14 +20,15 @@ const eta = require("eta")
 const { Worker } = require("worker_threads")
 
 const argv = require("minimist")(process.argv.slice(2))
-console.log(argv)
+log.info(argv) // for debug
 
 const port_http = argv.port || 3000
 
-const log = require("./util/logger")
-
 const api_control = require("./gm/control")
-const api_genshin = require("./game/genshin/api") // TODO: use control version game by game type
+
+// TODO: use control version game by game type
+const api_genshin = require("./game/genshin/api")
+const api_starrails = require("./game/starrails/api")
 
 const mylib = require("./lib")
 const config = require("./config.json")
@@ -28,14 +37,7 @@ var eta_plugin_random = require("./web/plugin/random")
 const fs = require("node:fs")
 const path = require("node:path")
 
-log.info("Yuuki Web Server 2 Up")
-
 const { Client, Collection, GatewayIntentBits, Partials, Events, WebhookClient, EmbedBuilder } = require("discord.js")
-
-process.on("unhandledRejection", (error) => {
-	console.log(error)
-	//process.exit(1);
-})
 
 // debug, remove some later
 const bot = new Client({
@@ -69,7 +71,7 @@ const bot = new Client({
 })
 
 bot.on(Events.Error, (error) => {
-	console.log(error)
+	log.error(error)
 	//process.exit(1);
 })
 
@@ -131,7 +133,7 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 	const member = guild.members.cache.get(id_user_to_reaction)
 
 	if (!member.roles) {
-		console.log(member)
+		log.error(member)
 		return
 	}
 
@@ -141,7 +143,7 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 	const users = guild.members.cache.get(id_user)
 
 	if (!users.roles) {
-		console.log(users)
+		log.error(users)
 		return
 	}
 
@@ -305,8 +307,8 @@ if (config.startup.bot) {
 
 // Ratelimit
 const limit_cmd = rateLimit({
-	windowMs: 60 * 1000,
-	max: 10,
+	windowMs: 120 * 1000,
+	max: 100,
 	statusCode: 200,
 	message: {
 		msg: "Too many requests, please try again later.",
@@ -332,6 +334,17 @@ web.set("views", __dirname + "/web/views")
 web.set("trust proxy", 2)
 
 web.all("/", (req, res) => {
+	const userAgent = req.headers["user-agent"]
+
+	// login browser? (query: 'type=sdk'), sometimes it is cached by browser if login is official, so it breaks it. Maybe the Yuukips launcher has to clear cache every time you log in?
+	if (userAgent.includes("Genshin Impact")) {
+		log.warn(req)
+		return res.send("Hello YuukiPS GS")
+	} else if (userAgent.includes("Star Rail")) {
+		log.warn(req)
+		return res.send("Hello YuukiPS SR")
+	}
+
 	res.render("home", {
 		title: "Welcome to YuukiPS",
 		description: "Im lazy to write"
@@ -442,8 +455,317 @@ web.all("/api/server/:id/command", limit_cmd, async (req, res) => {
 })
 
 web.get("/ip", async (request, response) => {
-	//console.log(request);
 	response.send(request.ip)
+})
+
+// Hoyo Love Log Stuff
+
+web.all("/common/h5log/log/batch", async (req, res) => {
+	return res.json({ code: 0 })
+})
+web.all("/sdk/dataUpload", async (req, res) => {
+	return res.json({ code: 0 })
+})
+web.all("/crashdump/dataUpload", async (req, res) => {
+	return res.json({ code: 0 })
+})
+web.all("/apm/dataUpload", async (req, res) => {
+	return res.json({ code: 0 })
+})
+web.all("/log", async (req, res) => {
+	return res.json({ code: 0 })
+})
+web.all("/crash/dataUpload", async (req, res) => {
+	return res.json({ code: 0 })
+})
+web.all("/sw.html", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({ code: 0 })
+})
+
+// Hoyo Acc Stuff
+
+web.all("/account/risky/api/check", async (req, res) => {
+	return res.json({ retcode: 0, message: "OK", data: { id: "", action: "ACTION_NONE", geetest: null } })
+})
+
+web.all("/account/device/api/listNewerDevices", async (req, res) => {
+	return res.json({ code: 0 })
+})
+
+// Config
+web.all("/:cn/combo/granter/api/getConfig", async (req, res) => {
+	// Fake Config SR
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({
+		retcode: 0,
+		message: "OK",
+		data: {
+			protocol: false,
+			qr_enabled: false,
+			log_level: "DEBUG",
+			announce_url: "https://ps.yuuki.me/news",
+			push_alias_type: 0,
+			disable_ysdk_guard: true,
+			enable_announce_pic_popup: true,
+			app_name: "YuukiPS",
+			qr_enabled_apps: { bbs: false, cloud: false },
+			qr_app_icons: { app: "", bbs: "", cloud: "" },
+			qr_cloud_display_name: "HoyoShit",
+			enable_user_center: true
+		}
+	})
+})
+web.all("/:cn/mdk/shield/api/loadConfig", async (req, res) => {
+	// Fake Config SR
+	log.warn(req.params)
+	log.warn(req.query)
+	/*
+	GS Config
+	return res.json({
+		retcode: 0,
+		message: "OK",
+		data: {
+			id: 6,
+			game_key: "hk4e_global",
+			client: "PC",
+			identity: "I_IDENTITY",
+			guest: false,
+			ignore_versions: "",
+			scene: "S_NORMAL",
+			name: "原神海外",
+			disable_regist: false,
+			enable_email_captcha: false,
+			thirdparty: ["fb", "tw"],
+			disable_mmt: false,
+			server_guest: false,
+			thirdparty_ignore: { tw: "", fb: "" },
+			enable_ps_bind_account: false,
+			thirdparty_login_configs: {
+				tw: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 604800 },
+				fb: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 604800 }
+			}
+		}
+	})
+	*/
+	return res.json({
+		retcode: 0,
+		message: "OK",
+		data: {
+			id: 24,
+			game_key: "hkrpg_global",
+			client: "PC",
+			identity: "I_IDENTITY",
+			guest: true,
+			ignore_versions: "",
+			scene: "S_NORMAL",
+			name: "YuukiPS",
+			disable_regist: false,
+			enable_email_captcha: false,
+			thirdparty: ["fb", "tw", "gl", "ap"],
+			disable_mmt: false,
+			server_guest: false,
+			thirdparty_ignore: {},
+			enable_ps_bind_account: true,
+			thirdparty_login_configs: {
+				fb: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 2592000 },
+				gl: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 604800 },
+				tw: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 2592000 },
+				ap: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 604800 }
+			},
+			initialize_firebase: false,
+			bbs_auth_login: true,
+			bbs_auth_login_ignore: []
+		}
+	})
+})
+
+// Combo
+web.all("/combo/box/api/config/sw/precache", async (req, res) => {
+	return res.json({ code: 0 })
+})
+web.all("/combo/box/api/config/sdk/combo", async (req, res) => {
+	return res.json({
+		retcode: 0,
+		message: "OK",
+		data: {
+			vals: { disable_email_bind_skip: "false", email_bind_remind_interval: "7", email_bind_remind: "false" }
+		}
+	})
+})
+web.all("/:cn/combo/granter/api/compareProtocolVersion", async (req, res) => {
+	return res.json({
+		retcode: 0,
+		message: "OK",
+		data: {
+			modified: true,
+			protocol: {
+				id: 0,
+				app_id: 4,
+				language: "en",
+				user_proto: "",
+				priv_proto: "",
+				major: 7,
+				minimum: 0,
+				create_time: "0",
+				teenager_proto: "",
+				third_proto: ""
+			}
+		}
+	})
+})
+
+web.all("/device-fp/api/getExtList", async (req, res) => {
+	return res.json({
+		retcode: 200,
+		message: "OK",
+		data: {
+			code: "200",
+			ext_list: [],
+			pkg_list: false
+		}
+	})
+})
+web.all("/admin/mi18n/plat_os/:id1/:id2-version.json", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({ code: 0 })
+})
+web.all("/admin/mi18n/plat_oversea/:id1/:id2-version.json", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({ code: 0 })
+})
+
+web.all("/data_abtest_api/config/experiment/list", async (req, res) => {
+	return res.json({ retcode: 0, success: true, message: "", data: [] })
+})
+
+web.all("/:cn/mdk/agreement/api/getAgreementInfos", async (req, res) => {
+	return res.json({ retcode: 0, success: true, message: "", data: [] })
+})
+
+// Login
+// Login Facebook
+web.all("/sdkFacebookLogin.html", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({ code: 0 })
+})
+// Login Twitter
+web.all("/sdkTwitterLogin.html", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({ code: 0 })
+})
+// Login Twitter (API?)
+web.all("/Api/twitter_login", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({
+		code: 200,
+		data: {
+			auth_url: "https://ps.yuuki.me",
+			info: "",
+			msg: "Success",
+			status: 1
+		}
+	})
+})
+// Login Facebook (API?)
+web.all("/Api/facebook_login", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({
+		code: 200,
+		data: {
+			auth_url: "https://ps.yuuki.me",
+			info: "",
+			msg: "Success",
+			status: 1
+		}
+	})
+})
+// login guest (from client).
+web.all("/:cn/mdk/guest/guest/v2/login", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({ code: 0 })
+})
+// Cached token login (from registry).
+web.all("/:cn/mdk/shield/api/verify", async (req, res) => {
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({ code: 0 })
+})
+// Cached token login (from registry), unfortunately this cannot be deleted or given a zero response
+web.all("/:cn/combo/granter/login/v2/login", async (req, res) => {
+	// TODO ACC
+	log.warn(req.params)
+	log.warn(req.query)
+	//return res.json({ code: 0 })
+	return res.json({
+		retcode: 0,
+		message: "OK",
+		data: {
+			combo_id: 1,
+			open_id: "3451",
+			combo_token:
+				"vha83b0ceyccmgwkmj3uc9a81aomo8xic7wyhwg16qjdkoj0ddmf7tfwsq4pdxq4eveap43z1s4pl05zkr4xyeozmutbw4iyrj8e83u3ymjtb2paue81xbdu45k11vn9tptns6cmmd7awhe1rgnmhl0w8w5horvbun4pk5tkrdeebeb",
+			data: { guest: false },
+			heartbeat: false,
+			account_type: 1,
+			fatigue_remind: null
+		}
+	})
+})
+// Username & Password login (from client).
+web.all("/:cn/mdk/shield/api/login", async (req, res) => {
+	// TODO ACC
+	log.warn(req.params)
+	log.warn(req.query)
+	return res.json({
+		retcode: 0,
+		message: "OK",
+		data: {
+			account: {
+				_id: "645b98a1e969a24811210acc",
+				uid: 3451,
+				name: "noadmin",
+				token: "vha83b0ceyccmgwkmj3uc9a81aomo8xic7wyhwg16qjdkoj0ddmf7tfwsq4pdxq4eveap43z1s4pl05zkr4xyeozmutbw4iyrj8e83u3ymjtb2paue81xbdu45k11vn9tptns6cmmd7awhe1rgnmhl0w8w5horvbun4pk5tkrdeebeb",
+				__v: 0
+			}
+		}
+	})
+})
+
+// SR Stuff
+
+// for list server sr
+web.all("/query_dispatch", async (req, res) => {
+	try {
+		log.warn(req.params)
+		log.warn(req.query)
+
+		var d = req.query
+
+		var data = await api_starrails.GET_LIST_SERVER()
+
+		return res.send(data)
+	} catch (error) {
+		log.error(error)
+	}
+})
+
+// GS Stuff
+
+// catch all if not found
+
+web.use((req, res, next) => {
+	res.status(404).send("Sorry my cat is lost...")
+	log.warn(req.url)
 })
 
 if (config.startup.webserver) {
@@ -459,28 +781,31 @@ let ping_job = get_job()
 ping_job.on("message", (d) => {
 	try {
 		if (d.type == "msg") {
-			ping_notif.send(d.data)
-			log.info(`Send Ping: ${d.data.content}`)
+			if (config.startup.bot) {
+				ping_notif.send(d.data)
+			}
+			log.info(`Send Ping:`, d.data.content)
 		} else if (d.type == "bot_stats") {
-			bot.user.setPresence({
-				activities: [
-					{
-						name: d.data
-					}
-				],
-				status: "online"
-			})
+			if (config.startup.bot) {
+				bot.user.setPresence({
+					activities: [
+						{
+							name: d.data
+						}
+					],
+					status: "online"
+				})
+			}
 		}
 	} catch (ex) {
-		log.error("Error Message Ping: ", ex)
+		log.error(ex)
 		// Stop the Worker and restart it
 		//ping_job.terminate();
 		//ping_job = get_job();
 	}
 })
 ping_job.on("error", (ex) => {
-	console.log("ping error")
-	console.log(ex)
+	log.error(ex)
 
 	// Stop the Worker and restart it
 	try {

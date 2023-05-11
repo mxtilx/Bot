@@ -47,3 +47,14 @@ message ServerDispatchData {
   string _IFixPatchVersionUpdateUrl = 1471;
   bool enableDesignDataBundleVersionUpdate = 5;
 }
+
+message RegionSimpleInfo {
+    string dispatch_url = 3;
+    string env_type = 4;
+    string name = 1;
+    string title = 5;
+}
+
+message QueryRegionListHttpRsp {
+    repeated RegionSimpleInfo region_list = 4;
+}

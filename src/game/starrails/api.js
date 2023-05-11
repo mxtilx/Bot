@@ -80,5 +80,47 @@ module.exports = {
 				code: 302
 			}
 		}
+	},
+	GET_LIST_SERVER: async function (raw = false) {
+		try {
+			const root = await loadProto("./src/game/starrails/proto/schema.proto")
+
+			const i = root.lookupType("RegionSimpleInfo")
+
+			const c = root.lookupType("QueryRegionListHttpRsp")
+
+			const region_list = []
+
+			const regionSimpleInfo1 = i.create({
+				dispatchUrl: "http://localhost:10010/query_gateway",
+				envType: "2",
+				name: "sr-gc1",
+				title: "YuukiPS SR"
+			},)
+			region_list.push(regionSimpleInfo1)
+
+			const regionSimpleInfo2 = i.create({
+				dispatchUrl: "http://localhost:10010/query_gateway",
+				envType: "2",
+				name: "sr-gc2",
+				title: "MelonPS SR"
+			})
+			region_list.push(regionSimpleInfo2)
+
+			const toaddquery = c.create({
+				regionList: region_list
+			})
+
+			const buffer = c.encode(toaddquery).finish()
+			
+			return Buffer.from(buffer).toString("base64")
+		} catch (error) {
+			console.log(error)
+			// TODO: check if error
+			return {
+				msg: "Error Get",
+				code: 302
+			}
+		}
 	}
 }
