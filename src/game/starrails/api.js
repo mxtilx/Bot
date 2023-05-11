@@ -96,7 +96,7 @@ module.exports = {
 				envType: "2",
 				name: "sr-gc1",
 				title: "YuukiPS SR"
-			},)
+			})
 			region_list.push(regionSimpleInfo1)
 
 			const regionSimpleInfo2 = i.create({
@@ -112,7 +112,7 @@ module.exports = {
 			})
 
 			const buffer = c.encode(toaddquery).finish()
-			
+
 			return Buffer.from(buffer).toString("base64")
 		} catch (error) {
 			console.log(error)
