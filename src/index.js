@@ -335,14 +335,17 @@ web.set("trust proxy", 2)
 
 web.all("/", (req, res) => {
 	const userAgent = req.headers["user-agent"]
+	const type = req.query.type
 
 	// login browser? (query: 'type=sdk'), sometimes it is cached by browser if login is official, so it breaks it. Maybe the Yuukips launcher has to clear cache every time you log in?
-	if (userAgent.includes("Genshin Impact")) {
-		log.warn(req)
-		return res.send("Hello YuukiPS GS")
-	} else if (userAgent.includes("Star Rail")) {
-		log.warn(req)
-		return res.send("Hello YuukiPS SR")
+	if (type == "sdk") {
+		if (userAgent.includes("Genshin Impact")) {
+			log.warn(req)
+			return res.send("Hello YuukiPS GS")
+		} else if (userAgent.includes("Star Rail")) {
+			log.warn(req)
+			return res.send("Hello YuukiPS SR")
+		}
 	}
 
 	res.render("home", {
