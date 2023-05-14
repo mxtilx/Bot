@@ -249,6 +249,6 @@ setIntervalAsync(async () => {
 	// send stats online
 	parentPort.postMessage({
 		type: "bot_stats",
-		data: `Currently ${total_online} people playing.`
+		data: `${total_online} people`
 	})
 }, 1000 * 10)
