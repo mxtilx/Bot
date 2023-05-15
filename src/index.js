@@ -14,6 +14,7 @@ process.on("unhandledRejection", (error) => {
 
 const express = require("express")
 const rateLimit = require("express-rate-limit")
+const bodyParser = require("body-parser")
 
 const cors = require("cors")
 const eta = require("eta")
@@ -29,6 +30,7 @@ const api_control = require("./gm/control")
 // TODO: use control version game by game type
 const api_genshin = require("./game/genshin/api")
 const api_starrails = require("./game/starrails/api")
+const api_account = require("./account/api")
 
 const mylib = require("./lib")
 const config = require("./config.json")
@@ -288,6 +290,10 @@ const limit_cmd = rateLimit({
 })
 
 const web = express()
+
+// body-parser middleware
+web.use(bodyParser.json())
+web.use(bodyParser.urlencoded({ extended: true }))
 
 // Core
 web.use(cors())
@@ -696,23 +702,30 @@ web.all("/:cn/combo/granter/login/v2/login", async (req, res) => {
 	})
 })
 // Username & Password login (from client).
-web.all("/:cn/mdk/shield/api/login", async (req, res) => {
+web.post("/:cn/mdk/shield/api/login", async (req, res) => {
 	// TODO ACC
-	log.warn(req.params)
-	log.warn(req.query)
-	return res.json({
-		retcode: 0,
-		message: "OK",
-		data: {
-			account: {
-				_id: "645b98a1e969a24811210acc",
-				uid: 3451,
-				name: "noadmin",
-				token: "vha83b0ceyccmgwkmj3uc9a81aomo8xic7wyhwg16qjdkoj0ddmf7tfwsq4pdxq4eveap43z1s4pl05zkr4xyeozmutbw4iyrj8e83u3ymjtb2paue81xbdu45k11vn9tptns6cmmd7awhe1rgnmhl0w8w5horvbun4pk5tkrdeebeb",
-				__v: 0
-			}
-		}
-	})
+	log.warn(res)
+	log.warn(req)
+	log.warn(req.body)
+	//log.warn(req.query)
+	//console.log(req)
+
+	var username = req.body.account
+	var password = req.body.password // temporarily useless
+	var cn = req.params.cn
+	var ip = req.ip
+
+	var c = await api_account.GET_ACCOUNT_GC(username)
+
+	log.debug(c)
+
+	if (c.retcode == 0) {
+		log.info(`${username} have logged in from ${cn} using ip ${ip}`)
+	} else {
+		log.info(`${username} login failed because "${c.message}" in from ${cn} using ip ${ip}`)
+	}
+
+	return res.json(c)
 })
 
 // SR Stuff
