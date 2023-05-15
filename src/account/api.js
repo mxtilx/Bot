@@ -31,7 +31,8 @@ module.exports = {
 		}
 	},
 	// This is a database created by GC and cannot be modified, so maybe it's better to create a separate datebase?
-	GET_ACCOUNT_GC: async function (username = "", password = "") {
+	GET_ACCOUNT_GC: async function (username = "", password = "", game = "hk4e", type = 1) {
+		// type = 1 for login username and 2 for login sessionKey for gs and token for sr?
 		var data = {}
 		try {
 			// TODO: use mode pooling?
@@ -44,25 +45,72 @@ module.exports = {
 				const database = client.db(config.accountDBOld.database)
 				const collection = database.collection("accounts")
 
-				const query = { username: username }
+				var query = { username: username }
+				if (type == 2) {
+					query = { _id: username, token: password } // btw uid n token lol
+				}
 
 				const d = await collection.findOne(query)
 
 				// debug
-				log.debug(d)
+				log.info(d)
+
+				// about sessionKey is temporary, so when logging in it will generate a new key (save) then use this key to login via the reg token and verify if the token is correct.
+
+				// about token is temporary/perm?, so when logging in it will generate a new key (save) and then verify it from the game server side using account datebase via socket (supposedly) in PacketGetPlayerTokenRsp?
 
 				if (d) {
-					data = {
-						retcode: 0,
-						message: "OK",
-						data: {
-							account: {
-								_id: d._id,
-								uid: d._id, // uid in game?
-								name: d.username,
-								token: d.token,
-								__v: 0
+					if (game == "hk4e") {
+						data = {
+							message: "OK",
+							retcode: 0,
+							data: {
+								account: {
+									uid: d._id,
+									name: d.username, // add sensor?
+									email: "",
+									mobile: "",
+									is_email_verify: "0",
+									realname: "",
+									identity_card: "",
+									token: d.token,
+									safe_mobile: "",
+									facebook_name: "",
+									twitter_name: "",
+									game_center_name: "",
+									google_name: "",
+									apple_name: "",
+									sony_name: "",
+									tap_name: "",
+									country: "US",
+									reactivate_ticket: "",
+									area_code: "**",
+									device_grant_ticket: ""
+								},
+								device_grant_required: false,
+								realname_operation: "NONE",
+								realperson_required: false,
+								safe_mobile_required: false
 							}
+						}
+					} else if (game == "hkrpg") {
+						data = {
+							retcode: 0,
+							message: "OK",
+							data: {
+								account: {
+									_id: d._id,
+									uid: d._id, // uid acc
+									name: d.username,
+									token: d.token,
+									__v: 0
+								}
+							}
+						}
+					} else {
+						data = {
+							retcode: 1,
+							message: "Where are you stuck?"
 						}
 					}
 				} else {

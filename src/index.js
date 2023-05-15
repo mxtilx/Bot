@@ -676,25 +676,49 @@ web.all("/:cn/mdk/guest/guest/v2/login", async (req, res) => {
 })
 // Cached token login (from registry).
 web.all("/:cn/mdk/shield/api/verify", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
-	return res.json({ code: 0 })
+	log.warn(res)
+	log.warn(req)
+	log.warn(req.body)
+
+	var uid = req.body.uid // uid acc?
+	var key = req.body.token // token aka key
+	var cn = req.params.cn
+	var ip = req.ip
+
+	if (!mylib.isEmpty(cn)) {
+		cn = cn.split("_")["0"]
+	}
+
+	var c = await api_account.GET_ACCOUNT_GC(uid, key, cn, 2)
+
+	log.debug(c)
+
+	if (c.retcode == 0) {
+		log.info(`${uid} have logged (login registry) in from ${cn} using ip ${ip}`)
+	} else {
+		log.info(`${uid} login failed (login registry) because "${c.message}" in from ${cn} using ip ${ip}`)
+	}
+
+	return res.json(c)
 })
 // Cached token login (from registry), unfortunately this cannot be deleted or given a zero response
 web.all("/:cn/combo/granter/login/v2/login", async (req, res) => {
 	// TODO ACC
-	log.warn(req.params)
-	log.warn(req.query)
+	log.warn(res)
+	log.warn(req)
+	log.warn(req.body)
 	//return res.json({ code: 0 })
+
+	const d = JSON.parse(req.body.data) // tmp just send back
+
 	return res.json({
 		retcode: 0,
 		message: "OK",
 		data: {
 			combo_id: 1,
-			open_id: "3451",
-			combo_token:
-				"vha83b0ceyccmgwkmj3uc9a81aomo8xic7wyhwg16qjdkoj0ddmf7tfwsq4pdxq4eveap43z1s4pl05zkr4xyeozmutbw4iyrj8e83u3ymjtb2paue81xbdu45k11vn9tptns6cmmd7awhe1rgnmhl0w8w5horvbun4pk5tkrdeebeb",
-			data: { guest: false },
+			open_id: d.uid,
+			combo_token: d.token, // I still don't understand what this function is?
+			data: { guest: d.guest },
 			heartbeat: false,
 			account_type: 1,
 			fatigue_remind: null
@@ -709,20 +733,25 @@ web.post("/:cn/mdk/shield/api/login", async (req, res) => {
 	log.warn(req.body)
 	//log.warn(req.query)
 	//console.log(req)
+	// hk4e_global = gs and hkrpg_global = sr
 
 	var username = req.body.account
 	var password = req.body.password // temporarily useless
 	var cn = req.params.cn
 	var ip = req.ip
 
-	var c = await api_account.GET_ACCOUNT_GC(username)
+	if (!mylib.isEmpty(cn)) {
+		cn = cn.split("_")["0"]
+	}
+
+	var c = await api_account.GET_ACCOUNT_GC(username, "", cn)
 
 	log.debug(c)
 
 	if (c.retcode == 0) {
-		log.info(`${username} have logged in from ${cn} using ip ${ip}`)
+		log.info(`${username} have logged (normal login) in from ${cn} using ip ${ip}`)
 	} else {
-		log.info(`${username} login failed because "${c.message}" in from ${cn} using ip ${ip}`)
+		log.info(`${username} login failed (normal login) because "${c.message}" in from ${cn} using ip ${ip}`)
 	}
 
 	return res.json(c)
