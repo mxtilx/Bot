@@ -44,6 +44,14 @@ module.exports = {
 	},
 	GM: async function (server_id, uid, cmd, code) {
 		try {
+			if (mylib.isEmpty(cmd)) {
+				log.info(`LOG GM: ID ${server_id} | UID ${uid} | SPAM....`)
+				return {
+					msg: "SPAM!!!!",
+					code: 302
+				}
+			}
+
 			log.info(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`)
 
 			// stop spam
