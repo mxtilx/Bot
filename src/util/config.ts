@@ -147,7 +147,7 @@ export default class Config {
         stats: {
             id: string
             token: string
-        }[]
+        }
     } = Config.config.webhook;
 
 

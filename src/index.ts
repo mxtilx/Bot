@@ -1,10 +1,11 @@
 /**
- * Yuuki
- *
- * @format
+ * @package YuukiPS
+ * @author Yuuki
+ * @license GPL-3.0
  */
 
 // Important
+import { sleep, isEmpty, contains } from "./lib";
 import Config from './util/config';
 import Logger from "./util/logger";
 
@@ -17,6 +18,10 @@ import eta from "eta";
 
 // Node
 import { Worker } from 'worker_threads';
+
+// API Discord
+import { Client, GatewayIntentBits, Partials, Events, WebhookClient, WebhookClientData, TextChannel, DMChannel, NewsChannel } from 'discord.js';
+import getEvents, { findEvent } from './events/eventHandler';
 
 // API
 import Account from "./account/api";
@@ -31,31 +36,18 @@ process.on("unhandledRejection", (error) => {
 	//process.exit(1);
 })
 
+// Temporary Config
 const argv = require("minimist")(process.argv.slice(2))
 log.debug(argv)
-
 const port_http = argv.port || 3000
 
-
-
-// TODO: use control version game by game type
-
-
-const mylib = require("./lib")
-//const config = require("./config.json")
 var eta_plugin_random = require("./web/plugin/random")
-
-import * as fs from 'fs';
-import * as path from 'path';
-
-const { Client, Collection, GatewayIntentBits, Partials, Events, WebhookClient, EmbedBuilder } = require("discord.js")
 
 // debug, remove some later
 const bot = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMembers,
-		GatewayIntentBits.GuildBans,
 		GatewayIntentBits.GuildEmojisAndStickers,
 		GatewayIntentBits.GuildIntegrations,
 		GatewayIntentBits.GuildWebhooks,
@@ -86,208 +78,64 @@ bot.on(Events.Error, (error: any) => {
 	//process.exit(1);
 })
 
-// Commands
-bot.commands = new Collection();
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
-for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file);
-	const m = require(filePath);
-	let name = file.replace(".ts", "")
-	bot.commands.set(name, m);
+async function registerEvent(event: string, ...args: any) {
+	const events = await getEvents();
+	const eventFunc = findEvent(events, event);
+	//log.debug(`${event} was called`)
+	if (eventFunc) await eventFunc(...args);
 }
 
-// Modal
-bot.modals = new Collection()
-const modalsPath = path.join(__dirname, "modals")
-const modalsFiles = fs.readdirSync(modalsPath).filter((file: string) => file.endsWith(".ts"))
-for (const file of modalsFiles) {
-	const filePath = path.join(modalsPath, file)
-	const m = require(filePath)
-	let name = file.replace(".ts", "")
-	bot.modals.set(name, m)
-}
+// Interaction Bot
+bot.on('interactionCreate', async (interaction) => {
 
-bot.on(Events.MessageReactionAdd, async (reaction: { partial: any; fetch: () => any; message: { channel: { id: any }; author: { id: any; username: any }; content: any; guild: any }; emoji: { name: any } }, user: { bot: any; id: any; username: any }) => {
-	// TODO: Move to Folder Event Reaction
+	let username = interaction.user.username
+	let username_id = interaction.user.id;
 
-	// Ignore reactions from other bots
-	if (user.bot) return
+	const channel_name =
+		interaction.channel instanceof TextChannel
+			? interaction.channel.name
+			: interaction.channel instanceof DMChannel
+				? interaction.channel.recipient?.username // or any other property/method you want to use for DMChannel
+				: interaction.channel instanceof NewsChannel
+					? interaction.channel.name
+					: 'Unknown Channel';
 
-	// You are correct that the MessageReaction object that is passed to messageReactionAdd event handler is a partial object, and it does not contain the full message object. In order to get the full message object, you will need to fetch the message using the fetch() method.
-	if (reaction.partial) {
-		try {
-			await reaction.fetch()
-		} catch (error) {
-			log.error(error as Error)
-			return
-		}
+	log.info(`Event Interaction ${username}#${username_id} in Channel${channel_name} with Type ${interaction.type}`)
+
+	if (interaction.isCommand()) {
+
+		log.debug(`/${interaction.commandName} was called by ${username}`);
+		import(`./commands/${interaction.commandName}`).then(async (cmd) => {
+			await cmd.default.process(interaction);
+		}).catch(async (error) => {
+			log.error(error as unknown as Error);
+		});
+	} else if (interaction.isModalSubmit()) {
+		// TODO
+	} else if (interaction.isButton()) {
+		// TODO
 	}
+});
 
-	var channelId = reaction.message.channel.id
-	var is = reaction.emoji.name
-	var id_user = user.id // whos reaction
-	var name_user = user.username
-
-	var id_user_to_reaction = reaction.message.author.id // whos message
-	var name_user_get_reaction = reaction.message.author.username // whos message
-	var msg = reaction.message.content
-
-	const id_role_member = "1039554857746583573" // id member
-	const id_role_mute = "1040051266912534598" // id mute member
-
-	// Get role object for role id
-	const guild = reaction.message.guild
-	const muteRole = guild.roles.cache.get(id_role_mute)
-	const MemberRole = guild.roles.cache.get(id_role_member)
-
-	// Get user id from message that get reaction
-	const member_get_reaction = guild.members.cache.get(id_user_to_reaction)
-	const member_get_reaction_have = member_get_reaction.roles.cache
-
-	// Get user id from person doing reaction
-	const member_give_reaction = guild.members.cache.get(id_user)
-	const member_give_reaction_have = member_give_reaction.roles.cache
-
-	log.debug(`LOG Reaction: ${name_user} ${is} -> ${channelId}`)
-
-	// Mod Control
-	if (member_give_reaction_have.some((role: { id: any }) => Config.id_mod.includes(role.id))) {
-		if (!member_get_reaction_have.some((role: { id: any }) => Config.id_mod.includes(role.id))) {
-			if (is === "🔒") {
-				log.warn(`lock ${name_user_get_reaction}`)
-				// Check if user already has the mute role
-				if (member_get_reaction_have.has(muteRole.id)) {
-					log.warn(`${name_user_get_reaction} already has mute role, so do nothing`)
-				} else {
-					log.info(`${name_user_get_reaction} set mute role`)
-					member_get_reaction.roles.add(muteRole)
-
-					if (member_get_reaction_have.has(id_role_member)) {
-						log.info(`${name_user_get_reaction} remove member`)
-						member_get_reaction.roles.remove(MemberRole)
-					} else {
-						log.warn(`${name_user_get_reaction} no member, so do nothing`)
-					}
-				}
-			} else if (is === "🔓") {
-				log.warn(`unlock ${name_user_get_reaction}`)
-
-				if (member_get_reaction_have.has(muteRole.id)) {
-					log.info(`${name_user_get_reaction} set unlock...`)
-					member_get_reaction.roles.remove(muteRole)
-				} else {
-					log.warn(`${name_user_get_reaction} does not have mute role, so do nothing`)
-				}
-			}
-		} else {
-			log.warn(`${name_user_get_reaction} mod, so skip`)
-		}
-	}
-
-	// Get Member
-	if (channelId == "1039554337438961714") {
-		// Check if user already has mute role
-		if (member_give_reaction_have.has(muteRole.id)) {
-			log.warn(`${name_user} Unable to verify, because it has a mute role`)
-		} else {
-			// User does not have mute role, so add it
-			if (!member_give_reaction_have.has(MemberRole.id)) {
-				member_give_reaction.roles.add(MemberRole)
-				log.info(`${name_user} Has been added as a member`)
-			} else {
-				log.warn(`${name_user} Already added as a member`)
-			}
-		}
-	}
-})
-
-bot.on(Events.InteractionCreate, async (interaction: { channel: { id: any; name: any }; user: { id: any }; commandName: any; isModalSubmit: () => any; customId: any; isChatInputCommand: () => any; reply: (arg0: { content: string; ephemeral: boolean }) => any }) => {
-	var cn_id = interaction.channel.id
-	var user_id = interaction.user.id
-
-	// if found cmd
-	var use_cmd = interaction.commandName
-	if (use_cmd) {
-		// Skip LOG
-		if (!mylib.contains(use_cmd, ["cmd"])) {
-			log.info(`Event Interaction: ${use_cmd} - ${user_id} (Channel: ${interaction.channel.name} - ${cn_id}`)
-		}
-	} else {
-		// Log Normal
-		log.info(`Event Interaction:  ${user_id} (Channel: ${interaction.channel.name} - ${cn_id})`)
-	}
-
-	// If modal with input command
-	if (interaction.isModalSubmit()) {
-		const m = bot.modals.get(interaction.customId)
-		if (!m) return
-		try {
-			await m.default.process(interaction)
-		} catch (error) {
-			log.error(error as Error)
-		}
-		return
-	}
-
-	// If interaction with inpu command
-	if (!interaction.isChatInputCommand()) return
-	const c = bot.commands.get(interaction.commandName)
-	console.log(interaction.commandName)
-	console.log(c)
-	if (!c) return
-	try {
-		if (c.default) {
-			console.log("newaaaaa")
-			await c.default.process(interaction) // new
-		} else {
-			console.log("aaaaold")
-			await c.execute(interaction) // old
-		}
-	} catch (e) {
-		log.error(e as Error)
-		try {
-			await interaction.reply({
-				content: `Command ${interaction.commandName} is not recognized.`,
-				ephemeral: false
-			})
-		} catch (error_skip) {
-			// skip
-		}
-	}
-})
-
-// https://discordjs.guide/creating-your-bot/creating-commands.html#server-info-command
-// https://discordjs.guide/popular-topics/intents.html#error-disallowed-intents
-// https://stackoverflow.com/questions/64006888/discord-js-bot-disallowed-intents-privileged-intent-provided-is-not-enabled-o
-// https://stackoverflow.com/a/69110976/3095372
-
-bot.on("messageCreate", (message: { author: { bot: any; username: any; id: any }; channel: { id: any; name: any }; content: string; interaction: { commandName: any }; react: (arg0: string) => void }) => {
-	// ignore messages from bots
-	if (message.author.bot) return
-
-	// 969145030537281536,988248508429647922 = log public (join/out/levelup) | 987073348418809928 = log private
-	if (!mylib.contains(message.channel.id, ["969145030537281536", "987073348418809928", "988248508429647922"])) {
-		if (message.content) {
-			log.info(
-				`Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
-			)
-		}
-	}
-
-	// Log User Interaction
-	if (message.interaction) {
-		var use_cmd = message.interaction.commandName
-		if (!mylib.contains(use_cmd, ["cmd"])) {
-			log.info("Message Create with Interaction Message: " + use_cmd)
-		}
-	}
-
-	// Add Melon
-	if (message.content.toLowerCase() === "melon") {
-		message.react("🍈")
-	}
-})
+// Event
+bot.on('messageCreate', async (message) => {
+	await registerEvent('messageCreate', message);
+});
+bot.on('messageReactionAdd', async (reaction, user) => {
+	await registerEvent('messageReactionAdd', reaction, user, bot);
+});
+bot.on('guildMemberAdd', async (member) => {
+	await registerEvent('guildMemberAdd', member);
+});
+bot.on('messageUpdate', async (oldMessage, newMessage) => {
+	await registerEvent('messageUpdate', oldMessage, newMessage);
+});
+bot.on('messageDelete', async (message) => {
+	await registerEvent('messageDelete', message);
+});
+bot.on('messageDeleteBulk', async (messages) => {
+	await registerEvent('messageDeleteBulk', messages);
+});
 
 if (Config.Startup.bot) {
 	log.info("bot run....")
@@ -713,7 +561,7 @@ web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
 	var cn = req.params.cn
 	var ip = req.ip
 
-	if (!mylib.isEmpty(cn)) {
+	if (!isEmpty(cn)) {
 		cn = cn.split("_")["0"]
 	}
 
@@ -768,7 +616,7 @@ web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
 	var cn = req.params.cn
 	var ip = req.ip
 
-	if (!mylib.isEmpty(cn)) {
+	if (!isEmpty(cn)) {
 		cn = cn.split("_")["0"]
 	}
 
@@ -810,7 +658,7 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 
 web.use((req: Request, res: Response) => {
 	log.warn(`${req.url} not found`);
-	res.status(404).send("Sorry, my cat is lost...")	
+	res.status(404).send("Sorry, my cat is lost...")
 });
 
 if (Config.Startup.webserver) {
@@ -821,9 +669,10 @@ if (Config.Startup.webserver) {
 	log.info("skip run webserver...")
 }
 
-const ping_notif = new WebhookClient(Config.webhook.stats)
+const webhookData: WebhookClientData = Config.webhook.stats;
+const ping_notif = new WebhookClient(webhookData)
 let ping_job = get_job()
-ping_job.on("message", (d: { type: string; data: { content: any } }) => {
+ping_job.on("message", (d: { type: string; data: any }) => {
 	try {
 		if (d.type == "msg") {
 			if (Config.Startup.bot) {
@@ -832,6 +681,9 @@ ping_job.on("message", (d: { type: string; data: { content: any } }) => {
 			log.info(`Send Ping:`, d.data.content)
 		} else if (d.type == "bot_stats") {
 			if (Config.Startup.bot) {
+				if (bot == undefined || bot.user == undefined) {
+					return;
+				}
 				bot.user.setPresence({
 					activities: [
 						{
@@ -849,7 +701,7 @@ ping_job.on("message", (d: { type: string; data: { content: any } }) => {
 		//ping_job = get_job();
 	}
 })
-ping_job.on("error", (ex: any) => {
+ping_job.on("error", (ex: Error) => {
 	log.error(ex)
 
 	// Stop the Worker and restart it
@@ -859,7 +711,7 @@ ping_job.on("error", (ex: any) => {
 			ping_job = get_job()
 		}, 3000)
 	} catch (error) {
-		log.error("error restart....")
+		log.error(error as Error)
 	}
 })
 function get_job() {
