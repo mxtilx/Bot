@@ -110,7 +110,7 @@ module.exports = {
 			}
 
 			// LOG RESPON
-			log.info(result)
+			console.log(result)
 
 			if (result.msg == "succ" && result.retcode == 0) {
 				return {
@@ -132,7 +132,7 @@ module.exports = {
 				}
 			}
 		} catch (x) {
-			log.error(x)
+			//log.error(x)
 			return {
 				msg: "Error get server",
 				code: 401

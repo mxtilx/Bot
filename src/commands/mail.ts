@@ -1,6 +1,6 @@
 /** @format */
 
-const { SlashCommandBuilder, CommandInteraction } = require("discord.js")
+import { CommandInteraction,SlashCommandBuilder } from 'discord.js';
 
 const log = require("../util/logger")
 
@@ -24,7 +24,7 @@ module.exports = {
 	 * @param {CommandInteraction} interaction
 	 * @returns {void}
 	 */
-	async execute(interaction) {
+	async execute(interaction: { options: { getString: (arg0: string) => any; }; user: { username: any; }; reply: (arg0: { content: string; ephemeral: boolean; }) => any; }) {
 		try {
 			let server_id = interaction.options.getString("id")
 			let uid = interaction.options.getString("uid")
@@ -41,8 +41,13 @@ module.exports = {
 			} else if (set_command.includes("gitem")) {
 				// send multi item
 				var more_item = set_command.split(",")
-				var itemtoadd = []
-				more_item.forEach(function (data_msg) {
+				var itemtoadd: {
+					item_id: any; // item id
+					amount: any; // quantity
+					level: number; // level
+					promote_level: number; // cts
+				}[] = []
+				more_item.forEach(function (data_msg: string) {
 					log.info(data_msg)
 					let ks = data_msg.replace("gitem-", "")
 					var valb2 = ks.split("-")

@@ -33,3 +33,16 @@ fi
 if [ "$metode" = "push" ];then
  docker push siakbary/yuukibot:latest
 fi
+
+if [ "$metode" = "gen_ts" ];then
+ echo "Gen TS proto for GS"
+ protoc --plugin=protoc-gen-ts_proto=$(PWD)/node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=. --ts_proto_opt=useOptionals=all src/game/genshin/proto/schema.proto
+ echo "Gen TS proto for SR"
+ protoc --plugin=protoc-gen-ts_proto=$(PWD)/node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=. --ts_proto_opt=useOptionals=all src/game/starrails/proto/schema.proto
+
+fi
+
+if [ "$metode" = "clean" ];then
+ echo "Clean node_module"
+ rm -rf node_modules && npm install
+fi

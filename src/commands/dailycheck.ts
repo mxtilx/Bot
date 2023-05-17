@@ -1,6 +1,6 @@
 /** @format */
 
-const { SlashCommandBuilder, CommandInteraction } = require("discord.js")
+import { CommandInteraction, SlashCommandBuilder } from "discord.js"
 
 const log = require("../util/logger")
 
@@ -27,7 +27,7 @@ module.exports = {
 	 * @param {CommandInteraction} interaction
 	 * @returns {void}
 	 */
-	async execute(interaction) {
+	async execute(interaction: { options: { getString: (arg0: string) => any }; reply: (arg0: { content: string }) => void; editReply: (arg0: { content: string }) => void }) {
 		try {
 			var uid_acc = interaction.options.getString("uid_acc")
 			var token = interaction.options.getString("token")

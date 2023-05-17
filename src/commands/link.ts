@@ -1,6 +1,6 @@
 /** @format */
 
-const { SlashCommandBuilder, CommandInteraction } = require("discord.js")
+import { CommandInteraction,SlashCommandBuilder } from 'discord.js';
 
 const log = require("../util/logger")
 
@@ -20,7 +20,7 @@ module.exports = {
 	 * @param {CommandInteraction} interaction
 	 * @returns {void}
 	 */
-	async execute(interaction) {
+	async execute(interaction: { options: { getString: (arg0: string) => any; }; user: { id: any; }; reply: (arg0: { content: string; ephemeral: boolean; }) => void; editReply: (arg0: { content: string; ephemeral: boolean; }) => any; }) {
 		try {
 			let game_id = interaction.options.getString("game")
 			let set_version = interaction.options.getString("version")
@@ -34,7 +34,7 @@ module.exports = {
 
 			var info = `Currently Available ` + d.data.length + " Version\n\n"
 
-			d.data.forEach(function (i) {
+			d.data.forEach(function (i: { data: { game: { latest: { version: any; entry: any; path: any; }; }; }; }) {
 				// TODO: check pre-download
 				var version = i.data.game.latest.version
 				var cn_game = i.data.game.latest.entry

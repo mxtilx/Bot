@@ -4,40 +4,49 @@
  * @format
  */
 
-const log = require("./util/logger")
+// Important
+import Config from './util/config';
+import Logger from "./util/logger";
 
+// WEB
+import express, { Request, Response, NextFunction } from 'express';
+import rateLimit from "express-rate-limit";
+import bodyParser from "body-parser";
+import cors from 'cors';
+import eta from "eta";
+
+// Node
+import { Worker } from 'worker_threads';
+
+// API
+import Account from "./account/api";
+import { Server as Server_Control, GM as API_GM } from "./gm/control";
+import { INFO as INFO_GS } from "./game/genshin/api";
+import { GET_LIST_SERVER as GET_LIST_SERVER_SR } from "./game/starrails/api";
+
+const log = new Logger("YuukiPS");
 log.info("YuukiPS startup....")
 process.on("unhandledRejection", (error) => {
-	log.info(error)
+	log.info(error as Error)
 	//process.exit(1);
 })
 
-const express = require("express")
-const rateLimit = require("express-rate-limit")
-const bodyParser = require("body-parser")
-
-const cors = require("cors")
-const eta = require("eta")
-const { Worker } = require("worker_threads")
-
 const argv = require("minimist")(process.argv.slice(2))
-log.info(argv) // for debug
+log.debug(argv)
 
 const port_http = argv.port || 3000
 
-const api_control = require("./gm/control")
+
 
 // TODO: use control version game by game type
-const api_genshin = require("./game/genshin/api")
-const api_starrails = require("./game/starrails/api")
-const api_account = require("./account/api")
+
 
 const mylib = require("./lib")
-const config = require("./config.json")
+//const config = require("./config.json")
 var eta_plugin_random = require("./web/plugin/random")
 
-const fs = require("node:fs")
-const path = require("node:path")
+import * as fs from 'fs';
+import * as path from 'path';
 
 const { Client, Collection, GatewayIntentBits, Partials, Events, WebhookClient, EmbedBuilder } = require("discord.js")
 
@@ -72,34 +81,34 @@ const bot = new Client({
 	]
 })
 
-bot.on(Events.Error, (error) => {
+bot.on(Events.Error, (error: any) => {
 	log.error(error)
 	//process.exit(1);
 })
 
 // Commands
-bot.commands = new Collection()
-const commandsPath = path.join(__dirname, "commands")
-const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"))
+bot.commands = new Collection();
+const commandsPath = path.join(__dirname, "commands");
+const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
 for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file)
-	const command = require(filePath)
-	bot.commands.set(command.data.name, command)
+	const filePath = path.join(commandsPath, file);
+	const m = require(filePath);
+	let name = file.replace(".ts", "")
+	bot.commands.set(name, m);
 }
 
 // Modal
 bot.modals = new Collection()
 const modalsPath = path.join(__dirname, "modals")
-const modalsFiles = fs.readdirSync(modalsPath).filter((file) => file.endsWith(".js"))
+const modalsFiles = fs.readdirSync(modalsPath).filter((file: string) => file.endsWith(".ts"))
 for (const file of modalsFiles) {
 	const filePath = path.join(modalsPath, file)
 	const m = require(filePath)
-	var name = file.replace(".js", "")
-	//log.info(name);
+	let name = file.replace(".ts", "")
 	bot.modals.set(name, m)
 }
 
-bot.on(Events.MessageReactionAdd, async (reaction, user) => {
+bot.on(Events.MessageReactionAdd, async (reaction: { partial: any; fetch: () => any; message: { channel: { id: any }; author: { id: any; username: any }; content: any; guild: any }; emoji: { name: any } }, user: { bot: any; id: any; username: any }) => {
 	// TODO: Move to Folder Event Reaction
 
 	// Ignore reactions from other bots
@@ -110,7 +119,7 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 		try {
 			await reaction.fetch()
 		} catch (error) {
-			log.error("Something went wrong when fetching the message:", error)
+			log.error(error as Error)
 			return
 		}
 	}
@@ -143,8 +152,8 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 	log.debug(`LOG Reaction: ${name_user} ${is} -> ${channelId}`)
 
 	// Mod Control
-	if (member_give_reaction_have.some((role) => config.id_mod.includes(role.id))) {
-		if (!member_get_reaction_have.some((role) => config.id_mod.includes(role.id))) {
+	if (member_give_reaction_have.some((role: { id: any }) => Config.id_mod.includes(role.id))) {
+		if (!member_get_reaction_have.some((role: { id: any }) => Config.id_mod.includes(role.id))) {
 			if (is === "🔒") {
 				log.warn(`lock ${name_user_get_reaction}`)
 				// Check if user already has the mute role
@@ -193,7 +202,7 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 	}
 })
 
-bot.on(Events.InteractionCreate, async (interaction) => {
+bot.on(Events.InteractionCreate, async (interaction: { channel: { id: any; name: any }; user: { id: any }; commandName: any; isModalSubmit: () => any; customId: any; isChatInputCommand: () => any; reply: (arg0: { content: string; ephemeral: boolean }) => any }) => {
 	var cn_id = interaction.channel.id
 	var user_id = interaction.user.id
 
@@ -214,9 +223,9 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 		const m = bot.modals.get(interaction.customId)
 		if (!m) return
 		try {
-			await m.execute(interaction)
+			await m.default.process(interaction)
 		} catch (error) {
-			log.error("Modal Error", error)
+			log.error(error as Error)
 		}
 		return
 	}
@@ -224,17 +233,26 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 	// If interaction with inpu command
 	if (!interaction.isChatInputCommand()) return
 	const c = bot.commands.get(interaction.commandName)
+	console.log(interaction.commandName)
+	console.log(c)
 	if (!c) return
 	try {
-		await c.execute(interaction)
-	} catch (error_real) {
+		if (c.default) {
+			console.log("newaaaaa")
+			await c.default.process(interaction) // new
+		} else {
+			console.log("aaaaold")
+			await c.execute(interaction) // old
+		}
+	} catch (e) {
+		log.error(e as Error)
 		try {
 			await interaction.reply({
-				content: "Command is not recognized :(",
-				ephemeral: true
+				content: `Command ${interaction.commandName} is not recognized.`,
+				ephemeral: false
 			})
 		} catch (error_skip) {
-			log.error(error_real)
+			// skip
 		}
 	}
 })
@@ -244,7 +262,7 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 // https://stackoverflow.com/questions/64006888/discord-js-bot-disallowed-intents-privileged-intent-provided-is-not-enabled-o
 // https://stackoverflow.com/a/69110976/3095372
 
-bot.on("messageCreate", (message) => {
+bot.on("messageCreate", (message: { author: { bot: any; username: any; id: any }; channel: { id: any; name: any }; content: string; interaction: { commandName: any }; react: (arg0: string) => void }) => {
 	// ignore messages from bots
 	if (message.author.bot) return
 
@@ -271,21 +289,29 @@ bot.on("messageCreate", (message) => {
 	}
 })
 
-if (config.startup.bot) {
+if (Config.Startup.bot) {
 	log.info("bot run....")
-	bot.login(config.token)
+	bot.login(Config.token)
 } else {
 	log.info("bot skip run....")
 }
 
 // Ratelimit
 const limit_cmd = rateLimit({
-	windowMs: 120 * 1000,
-	max: 100,
+	windowMs: 2 * 1000,
+	max: 1,
 	statusCode: 200,
-	message: {
-		msg: "Too many requests, please try again later.",
-		code: 403
+	message: async (request: Request, response: Response) => {
+		log.info(`limit ${request.ip}`)
+		return {
+			windowMs: 1 * 1000,
+			max: 1,
+			statusCode: 200,
+			message: {
+				msg: "Too many requests, please try again later.",
+				code: 403
+			}
+		}
 	}
 })
 
@@ -296,7 +322,7 @@ web.use(bodyParser.json())
 web.use(bodyParser.urlencoded({ extended: true }))
 
 // Core
-web.use(cors())
+web.use(cors());
 
 // Static
 web.use(express.static(__dirname + "/web/public"))
@@ -310,18 +336,20 @@ web.set("view engine", "eta")
 web.set("views", __dirname + "/web/views")
 web.set("trust proxy", 2)
 
-web.all("/", (req, res) => {
+web.all("/", (req: Request, res: Response) => {
 	const userAgent = req.headers["user-agent"]
 	const type = req.query.type
 
 	// login browser? (query: 'type=sdk'), sometimes it is cached by browser if login is official, so it breaks it. Maybe the Yuukips launcher has to clear cache every time you log in?
 	if (type == "sdk") {
-		if (userAgent.includes("Genshin Impact")) {
-			log.warn(req)
-			return res.send("Hello YuukiPS GS")
-		} else if (userAgent.includes("Star Rail")) {
-			log.warn(req)
-			return res.send("Hello YuukiPS SR")
+		if (userAgent !== undefined) {
+			if (userAgent.includes("Genshin Impact")) {
+				log.warn(req as any)
+				return res.send("Hello YuukiPS GS")
+			} else if (userAgent.includes("Star Rail")) {
+				log.warn(req as any)
+				return res.send("Hello YuukiPS SR")
+			}
 		}
 	}
 
@@ -331,7 +359,7 @@ web.all("/", (req, res) => {
 	})
 })
 
-web.all("/command", (req, res) => {
+web.all("/command", (req: Request, res: Response) => {
 	res.render("command", {
 		title: "Command Tool",
 		description: "Im lazy to write"
@@ -339,31 +367,31 @@ web.all("/command", (req, res) => {
 })
 
 // Web
-web.all("/game/genshin", (req, res) => {
+web.all("/game/genshin", (req: Request, res: Response) => {
 	res.render("genshin_list", {
 		title: "Download Genshin",
 		description: "Im lazy to write"
 	})
 })
 // Web Download
-web.all("/game/genshin/:id", (req, res) => {
+web.all("/game/genshin/:id", (req: Request, res: Response) => {
 	res.render("genshin_dl", {
 		title: "Download Genshin",
 		description: "Im lazy to write"
 	})
 })
 
-web.all("/api", (req, res) => {
+web.all("/api", (req: Request, res: Response) => {
 	res.send("API YuukiPS")
 })
 
 // Testing
-web.all("/api/game/genshin", async (req, res) => {
+web.all("/api/game/genshin", async (req: Request, res: Response) => {
 	try {
-		let d = await api_genshin.INFO()
+		let d = await INFO_GS()
 		return res.json(d)
-	} catch (error) {
-		log.error(error)
+	} catch (e) {
+		log.error(e as Error)
 		return res.json({
 			msg: "Error",
 			code: 302
@@ -371,24 +399,24 @@ web.all("/api/game/genshin", async (req, res) => {
 	}
 })
 
-web.all("/api/server", async (req, res) => {
+web.all("/api/server", async (req: Request, res: Response) => {
 	try {
-		let d = await api_control.Server()
+		let d = await Server_Control()
 		return res.json(d)
-	} catch (error) {
-		log.error(error)
+	} catch (e) {
+		log.error(e as Error)
 		return res.json({
 			msg: "Error",
 			code: 302
 		})
 	}
 })
-web.all("/api/server/:id", async (req, res) => {
+web.all("/api/server/:id", async (req: Request, res: Response) => {
 	try {
-		let d = await api_control.Server(req.params.id)
+		let d = await Server_Control(req.params.id)
 		return res.json(d)
-	} catch (error) {
-		log.error(error)
+	} catch (e) {
+		log.error(e as Error)
 		return res.json({
 			msg: "Error",
 			code: 302
@@ -396,20 +424,20 @@ web.all("/api/server/:id", async (req, res) => {
 	}
 })
 
-web.all("/api/server/:id/ping", async (req, res) => {
+web.all("/api/server/:id/ping", async (req: Request, res: Response) => {
 	var s = "gio"
 
 	if (req.params.id) {
-		s = req.params.id
-		var g_config = config.server[s]
-		if (g_config) {
-			// TODO: add check login
-		} else {
-			return res.json({
-				msg: "Config server not found",
-				code: 404
-			})
-		}
+		s = req.params.id;
+		var g_config = Config.server.find((server) => server.name === s);
+	}
+
+	if (g_config == undefined) {
+		// TODO: add check login
+		return res.json({
+			msg: "Config server not found",
+			code: 404
+		})
 	}
 
 	try {
@@ -420,8 +448,8 @@ web.all("/api/server/:id/ping", async (req, res) => {
 			msg: "Hello",
 			code: 200
 		})
-	} catch (error) {
-		log.error(error)
+	} catch (e) {
+		log.error(e as Error)
 		return res.json({
 			msg: "Error",
 			code: 302
@@ -429,56 +457,56 @@ web.all("/api/server/:id/ping", async (req, res) => {
 	}
 })
 
-web.all("/api/server/:id/command", limit_cmd, async (req, res) => {
-	let d = await api_control.GM(req.params.id, req.query.uid, req.query.cmd, req.query.code)
+web.all("/api/server/:id/command", limit_cmd, async (req: Request, res: Response) => {
+	let d = await API_GM(req.params.id, req.query.uid, req.query.cmd, req.query.code)
 	return res.json(d)
 })
 
-web.get("/ip", async (request, response) => {
-	response.send(request.ip)
+web.get("/ip", async (req: Request, res: Response) => {
+	res.send(req.ip)
 })
 
 // Hoyo Love Log Stuff
 
-web.all("/common/h5log/log/batch", async (req, res) => {
+web.all("/common/h5log/log/batch", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
-web.all("/sdk/dataUpload", async (req, res) => {
+web.all("/sdk/dataUpload", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
-web.all("/crashdump/dataUpload", async (req, res) => {
+web.all("/crashdump/dataUpload", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
-web.all("/apm/dataUpload", async (req, res) => {
+web.all("/apm/dataUpload", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
-web.all("/log", async (req, res) => {
+web.all("/log", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
-web.all("/crash/dataUpload", async (req, res) => {
+web.all("/crash/dataUpload", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
-web.all("/sw.html", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/sw.html", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({ code: 0 })
 })
 
 // Hoyo Acc Stuff
 
-web.all("/account/risky/api/check", async (req, res) => {
+web.all("/account/risky/api/check", async (req: Request, res: Response) => {
 	return res.json({ retcode: 0, message: "OK", data: { id: "", action: "ACTION_NONE", geetest: null } })
 })
 
-web.all("/account/device/api/listNewerDevices", async (req, res) => {
+web.all("/account/device/api/listNewerDevices", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
 
 // Config
-web.all("/:cn/combo/granter/api/getConfig", async (req, res) => {
+web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) => {
 	// Fake Config SR
-	log.warn(req.params)
-	log.warn(req.query)
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({
 		retcode: 0,
 		message: "OK",
@@ -498,10 +526,10 @@ web.all("/:cn/combo/granter/api/getConfig", async (req, res) => {
 		}
 	})
 })
-web.all("/:cn/mdk/shield/api/loadConfig", async (req, res) => {
+web.all("/:cn/mdk/shield/api/loadConfig", async (req: Request, res: Response) => {
 	// Fake Config SR
-	log.warn(req.params)
-	log.warn(req.query)
+	log.debug(req.params)
+	log.debug(req.query)
 	/*
 	GS Config
 	return res.json({
@@ -563,10 +591,10 @@ web.all("/:cn/mdk/shield/api/loadConfig", async (req, res) => {
 })
 
 // Combo
-web.all("/combo/box/api/config/sw/precache", async (req, res) => {
+web.all("/combo/box/api/config/sw/precache", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
-web.all("/combo/box/api/config/sdk/combo", async (req, res) => {
+web.all("/combo/box/api/config/sdk/combo", async (req: Request, res: Response) => {
 	return res.json({
 		retcode: 0,
 		message: "OK",
@@ -575,7 +603,7 @@ web.all("/combo/box/api/config/sdk/combo", async (req, res) => {
 		}
 	})
 })
-web.all("/:cn/combo/granter/api/compareProtocolVersion", async (req, res) => {
+web.all("/:cn/combo/granter/api/compareProtocolVersion", async (req: Request, res: Response) => {
 	return res.json({
 		retcode: 0,
 		message: "OK",
@@ -597,7 +625,7 @@ web.all("/:cn/combo/granter/api/compareProtocolVersion", async (req, res) => {
 	})
 })
 
-web.all("/device-fp/api/getExtList", async (req, res) => {
+web.all("/device-fp/api/getExtList", async (req: Request, res: Response) => {
 	return res.json({
 		retcode: 200,
 		message: "OK",
@@ -608,42 +636,42 @@ web.all("/device-fp/api/getExtList", async (req, res) => {
 		}
 	})
 })
-web.all("/admin/mi18n/plat_os/:id1/:id2-version.json", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/admin/mi18n/plat_os/:id1/:id2-version.json", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({ code: 0 })
 })
-web.all("/admin/mi18n/plat_oversea/:id1/:id2-version.json", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/admin/mi18n/plat_oversea/:id1/:id2-version.json", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({ code: 0 })
 })
 
-web.all("/data_abtest_api/config/experiment/list", async (req, res) => {
+web.all("/data_abtest_api/config/experiment/list", async (req: Request, res: Response) => {
 	return res.json({ retcode: 0, success: true, message: "", data: [] })
 })
 
-web.all("/:cn/mdk/agreement/api/getAgreementInfos", async (req, res) => {
+web.all("/:cn/mdk/agreement/api/getAgreementInfos", async (req: Request, res: Response) => {
 	return res.json({ retcode: 0, success: true, message: "", data: [] })
 })
 
 // Login
 // Login Facebook
-web.all("/sdkFacebookLogin.html", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/sdkFacebookLogin.html", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({ code: 0 })
 })
 // Login Twitter
-web.all("/sdkTwitterLogin.html", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({ code: 0 })
 })
 // Login Twitter (API?)
-web.all("/Api/twitter_login", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/Api/twitter_login", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({
 		code: 200,
 		data: {
@@ -655,9 +683,9 @@ web.all("/Api/twitter_login", async (req, res) => {
 	})
 })
 // Login Facebook (API?)
-web.all("/Api/facebook_login", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/Api/facebook_login", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({
 		code: 200,
 		data: {
@@ -669,16 +697,16 @@ web.all("/Api/facebook_login", async (req, res) => {
 	})
 })
 // login guest (from client).
-web.all("/:cn/mdk/guest/guest/v2/login", async (req, res) => {
-	log.warn(req.params)
-	log.warn(req.query)
+web.all("/:cn/mdk/guest/guest/v2/login", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
 	return res.json({ code: 0 })
 })
 // Cached token login (from registry).
-web.all("/:cn/mdk/shield/api/verify", async (req, res) => {
-	log.warn(res)
-	log.warn(req)
-	log.warn(req.body)
+web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
+	//log.debug(res)
+	//log.debug(req)
+	log.debug(req.body)
 
 	var uid = req.body.uid // uid acc?
 	var key = req.body.token // token aka key
@@ -689,7 +717,7 @@ web.all("/:cn/mdk/shield/api/verify", async (req, res) => {
 		cn = cn.split("_")["0"]
 	}
 
-	var c = await api_account.GET_ACCOUNT_GC(uid, key, cn, 2)
+	var c = await Account.GET_ACCOUNT_GC(uid, key, cn, 2)
 
 	log.debug(c)
 
@@ -702,11 +730,11 @@ web.all("/:cn/mdk/shield/api/verify", async (req, res) => {
 	return res.json(c)
 })
 // Cached token login (from registry), unfortunately this cannot be deleted or given a zero response
-web.all("/:cn/combo/granter/login/v2/login", async (req, res) => {
+web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response) => {
 	// TODO ACC
-	log.warn(res)
-	log.warn(req)
-	log.warn(req.body)
+	log.debug(res)
+	log.debug(req)
+	log.debug(req.body)
 	//return res.json({ code: 0 })
 
 	const d = JSON.parse(req.body.data) // tmp just send back
@@ -726,11 +754,11 @@ web.all("/:cn/combo/granter/login/v2/login", async (req, res) => {
 	})
 })
 // Username & Password login (from client).
-web.post("/:cn/mdk/shield/api/login", async (req, res) => {
+web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
 	// TODO ACC
-	log.warn(res)
-	log.warn(req)
-	log.warn(req.body)
+	log.debug(res)
+	log.debug(req)
+	log.debug(req.body)
 	//log.warn(req.query)
 	//console.log(req)
 	// hk4e_global = gs and hkrpg_global = sr
@@ -744,7 +772,7 @@ web.post("/:cn/mdk/shield/api/login", async (req, res) => {
 		cn = cn.split("_")["0"]
 	}
 
-	var c = await api_account.GET_ACCOUNT_GC(username, "", cn)
+	var c = await Account.GET_ACCOUNT_GC(username, "", cn)
 
 	log.debug(c)
 
@@ -760,18 +788,19 @@ web.post("/:cn/mdk/shield/api/login", async (req, res) => {
 // SR Stuff
 
 // for list server sr
-web.all("/query_dispatch", async (req, res) => {
+web.all("/query_dispatch", async (req: Request, res: Response) => {
 	try {
-		log.warn(req.params)
-		log.warn(req.query)
+		log.debug(req.params)
+		log.debug(req.query)
+		log.debug(req.body)
 
 		var d = req.query
 
-		var data = await api_starrails.GET_LIST_SERVER()
+		var data = await GET_LIST_SERVER_SR()
 
 		return res.send(data)
-	} catch (error) {
-		log.error(error)
+	} catch (e) {
+		log.error(e as Error)
 	}
 })
 
@@ -779,30 +808,30 @@ web.all("/query_dispatch", async (req, res) => {
 
 // catch all if not found
 
-web.use((req, res, next) => {
-	res.status(404).send("Sorry my cat is lost...")
-	log.warn(req.url)
-})
+web.use((req: Request, res: Response) => {
+	log.warn(`${req.url} not found`);
+	res.status(404).send("Sorry, my cat is lost...")	
+});
 
-if (config.startup.webserver) {
+if (Config.Startup.webserver) {
 	var listener = web.listen(port_http, function () {
-		log.info("Server started on port %d", listener.address().port)
+		log.info(`Server started on port`)
 	})
 } else {
 	log.info("skip run webserver...")
 }
 
-const ping_notif = new WebhookClient(config.webhook.stats)
+const ping_notif = new WebhookClient(Config.webhook.stats)
 let ping_job = get_job()
-ping_job.on("message", (d) => {
+ping_job.on("message", (d: { type: string; data: { content: any } }) => {
 	try {
 		if (d.type == "msg") {
-			if (config.startup.bot) {
+			if (Config.Startup.bot) {
 				ping_notif.send(d.data)
 			}
 			log.info(`Send Ping:`, d.data.content)
 		} else if (d.type == "bot_stats") {
-			if (config.startup.bot) {
+			if (Config.Startup.bot) {
 				bot.user.setPresence({
 					activities: [
 						{
@@ -813,21 +842,20 @@ ping_job.on("message", (d) => {
 				})
 			}
 		}
-	} catch (ex) {
-		log.error(ex)
+	} catch (e) {
+		log.error(e as Error)
 		// Stop the Worker and restart it
 		//ping_job.terminate();
 		//ping_job = get_job();
 	}
 })
-ping_job.on("error", (ex) => {
+ping_job.on("error", (ex: any) => {
 	log.error(ex)
 
 	// Stop the Worker and restart it
 	try {
 		ping_job.terminate()
 		setTimeout(function () {
-			ping_job = undefined
 			ping_job = get_job()
 		}, 3000)
 	} catch (error) {
