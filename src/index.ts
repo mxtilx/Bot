@@ -20,8 +20,9 @@ import eta from "eta";
 import { Worker } from 'worker_threads';
 
 // API Discord
-import { Client, GatewayIntentBits, Partials, Events, WebhookClient, WebhookClientData, TextChannel, DMChannel, NewsChannel } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Events, WebhookClient, WebhookClientData, TextChannel, DMChannel, NewsChannel, Routes, REST } from 'discord.js';
 import getEvents, { findEvent } from './events/eventHandler';
+import register from './util/registercommands';
 
 // API
 import Account from "./account/api";
@@ -40,6 +41,7 @@ process.on("unhandledRejection", (error) => {
 const argv = require("minimist")(process.argv.slice(2))
 log.debug(argv)
 const port_http = argv.port || 3000
+const regcmd = argv.reg || false
 
 var eta_plugin_random = require("./web/plugin/random")
 
@@ -137,12 +139,27 @@ bot.on('messageDeleteBulk', async (messages) => {
 	await registerEvent('messageDeleteBulk', messages);
 });
 
-if (Config.Startup.bot) {
-	log.info("bot run....")
-	bot.login(Config.token)
-} else {
-	log.info("bot skip run....")
-}
+// Bot Startup
+(async () => {
+	if (Config.Startup.bot) {
+		if (regcmd) {
+			const rest = new REST({ version: '9' }).setToken(Config.token);
+			await register().then(async (commands: any) => {
+				await rest.put(Routes.applicationGuildCommands(Config.clientId, Config.guildId), {
+					body: commands
+				});
+			});
+		} else {
+			log.warn(`skip register`)
+		}
+		bot.on('ready', () => {
+			log.info(`Ready to serve in ${bot.guilds.cache.size} guilds as ${bot.user?.tag}.`);
+		});
+		bot.login(Config.token);
+	} else {
+		log.info("bot skip run....")
+	}
+})();
 
 // Ratelimit
 const limit_cmd = rateLimit({
@@ -163,6 +180,7 @@ const limit_cmd = rateLimit({
 	}
 })
 
+// TODO move route web
 const web = express()
 
 // body-parser middleware
@@ -663,7 +681,7 @@ web.use((req: Request, res: Response) => {
 
 if (Config.Startup.webserver) {
 	var listener = web.listen(port_http, function () {
-		log.info(`Server started on port`)
+		log.info(`Server started on port ${port_http}`)
 	})
 } else {
 	log.info("skip run webserver...")

@@ -13,7 +13,7 @@ import Logger from "../util/logger";
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
 
 // API Yuuki
-import { SH } from "../gm/control";
+import Control from "../gm/control";
 import { SearchRedeemCode } from "../game/hoyolab/api"; // TODO: use control version game by game type
 
 const log = new Logger("SEARCH-CMD");

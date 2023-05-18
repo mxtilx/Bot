@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import { VerboseLevel } from './logger';
 
 const DEFAULT_CONFIG = {
+    token_OpenAi: "",
     token: "",
     clientId: "",
     guildId: "",
@@ -119,6 +120,7 @@ function updateConfig(config: any) {
 export default class Config {
     public static config = readConfig();
 
+    public static token_OpenAi: string = Config.config.token_OpenAi;
     public static token: string = Config.config.token;
     public static clientId: string = Config.config.clientId;
     public static guildId: string = Config.config.guildId;

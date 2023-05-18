@@ -13,7 +13,7 @@ import Logger from "../util/logger";
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
 
 // API Yuuki
-import { SH } from "../gm/control";
+import Control from "../gm/control";
 
 const log = new Logger("SH-CMD");
 
@@ -42,7 +42,7 @@ async function run(interaction: CommandInteraction) {
 		await interaction.deferReply(baseReply)
 		await sleep(2)
 
-		let d = await SH(set_command, server_id)
+		let d = await Control.SH(set_command, server_id)
 
 		console.log(d);
 

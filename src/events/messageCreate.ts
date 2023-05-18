@@ -10,9 +10,11 @@ import Config from '../util/config';
 import Logger from "../util/logger";
 
 // API Discord
-import { DMChannel, Message, NewsChannel, TextChannel, ThreadChannel } from "discord.js";
+import { DMChannel, Message, NewsChannel, TextChannel } from "discord.js";
 
 const log = new Logger('Discord-Event-messageCreate');
+
+let count_melon = 0
 
 export default async function run(message: Message) {
     try {
@@ -54,9 +56,13 @@ export default async function run(message: Message) {
             }
         }
 
-        // Add Melon
+        // Melon
         if (message.content.toLowerCase() === "melon") {
             message.react("🍈")
+        }
+        if (message.content.toLowerCase() === "count melon") {
+            count_melon++;
+            message.reply(`Right now I'm getting ${count_melon} melons, thanks that's delicious`)
         }
 
 

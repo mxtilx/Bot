@@ -4,8 +4,7 @@
 	"description": "This is an app to control all yuuki server",
 	"main": "./src/",
 	"scripts": {
-		"start": "ts-node-dev src/index.ts --respawn --transpile-only",
-		"reg": "node ./src/deploy-commands.js"
+		"start": "ts-node-dev src/index.ts --respawn --transpile-only"
 	},
 	"repository": {
 		"type": "git",
@@ -22,6 +21,9 @@
 	"homepage": "https://github.com/akbaryahya/YukiBot#readme",
 	"dependencies": {
 		"@discordjs/rest": "^1.0.1",
+		"@types/body-parser": "^1.19.2",
+		"@types/cors": "^2.8.13",
+		"@types/express": "^4.17.17",
 		"axios": "^1.2.0",
 		"body-parser": "^1.20.2",
 		"colorts": "^0.1.63",
@@ -33,14 +35,11 @@
 		"minimist": "^1.2.8",
 		"mongodb": "^5.5.0",
 		"node-ssh": "^13.0.0",
-		"pino": "^8.8.0",
-		"pino-pretty": "^9.1.1",
+		"openai": "^3.2.1",
+		"openai-ext": "^1.2.6",
 		"protobufjs": "^7.2.3",
 		"set-interval-async": "^3.0.2",
-		"ts-proto": "^1.147.3",
-		"@types/express": "^4.17.17",
-		"@types/body-parser": "^1.19.2",
-		"@types/cors": "^2.8.13"
+		"ts-proto": "^1.147.3"
 	},
 	"devDependencies": {
 		"ts-node-dev": "^2.0.0",
