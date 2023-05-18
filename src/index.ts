@@ -25,7 +25,7 @@ import getEvents, { findEvent } from './events/eventHandler';
 
 // API
 import Account from "./account/api";
-import { Server as Server_Control, GM as API_GM } from "./gm/control";
+import Control from "./gm/control";
 import { INFO as INFO_GS } from "./game/genshin/api";
 import { GET_LIST_SERVER as GET_LIST_SERVER_SR } from "./game/starrails/api";
 
@@ -249,7 +249,7 @@ web.all("/api/game/genshin", async (req: Request, res: Response) => {
 
 web.all("/api/server", async (req: Request, res: Response) => {
 	try {
-		let d = await Server_Control()
+		let d = await Control.Server()
 		return res.json(d)
 	} catch (e) {
 		log.error(e as Error)
@@ -261,7 +261,7 @@ web.all("/api/server", async (req: Request, res: Response) => {
 })
 web.all("/api/server/:id", async (req: Request, res: Response) => {
 	try {
-		let d = await Server_Control(req.params.id)
+		let d = await Control.Server(req.params.id)
 		return res.json(d)
 	} catch (e) {
 		log.error(e as Error)
@@ -306,7 +306,7 @@ web.all("/api/server/:id/ping", async (req: Request, res: Response) => {
 })
 
 web.all("/api/server/:id/command", limit_cmd, async (req: Request, res: Response) => {
-	let d = await API_GM(req.params.id, req.query.uid, req.query.cmd, req.query.code)
+	let d = await Control.GM(req.params.id, req.query.uid, req.query.cmd, req.query.code)
 	return res.json(d)
 })
 
@@ -715,5 +715,5 @@ ping_job.on("error", (ex: Error) => {
 	}
 })
 function get_job() {
-	return new Worker("./src/job/ping.js")
+	return new Worker("./src/job/ping")
 }

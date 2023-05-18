@@ -5,9 +5,9 @@ export function sleep(ms: number) {
 		setTimeout(resolve, 1000 * ms)
 	})
 }
-export function timestr(time: string) {
+export function timestr(time: number) {
 	const currentTimeInSeconds = Math.floor(Date.now() / 1000)
-	const timeDifferenceInSeconds = currentTimeInSeconds - parseInt(time)
+	const timeDifferenceInSeconds = currentTimeInSeconds - time
 	return timeDifferenceInSeconds < 60
 		? `${timeDifferenceInSeconds} seconds ago`
 		: timeDifferenceInSeconds < 3600

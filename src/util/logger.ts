@@ -36,7 +36,7 @@ export default class Logger {
         console.log(`\t↳ ${args.join(' ').gray}`);
     }
 
-    public info(e: Error | string, stack: boolean = true) {
+    public info(e: any, stack: boolean = true) {
         //console.log(typeof e);
         if (typeof e === 'string') return console.log(`[${this.getDate().white.bold}] ${`INFO<${this.name}>`.green.bold}`,e);
         if (typeof e === 'object') return console.log(`[${this.getDate().white.bold}] ${`INFO<${this.name}>`.green.bold}`,e);
@@ -44,7 +44,7 @@ export default class Logger {
         //if (e.stack && stack) this.trail(e.stack);
     }
 
-    public error(e: Error | string, stack: boolean = true) {
+    public error(e: any, stack: boolean = true) {
         if (typeof e === 'string') e = new Error(e);
         console.log(`[${this.getDate().white.bold}] ${`ERROR<${this.name}>`.bgRed.bold}`, e.message);
         if (e.stack && stack) this.trail(e.stack);

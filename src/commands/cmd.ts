@@ -13,10 +13,11 @@ import Logger from "../util/logger";
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
 
 // API Yuuki
-import { GM } from "../gm/control";
+import Control from "../gm/control";
 import { SearchRedeemCode } from "../game/hoyolab/api";
 import { RES as RES_GS } from "../game/genshin/api";
 import { RES as RES_SR } from "../game/starrails/api";
+
 const log = new Logger("GM-CMD");
 
 const cmd = new SlashCommandBuilder()
@@ -49,7 +50,7 @@ async function run(interaction: CommandInteraction) {
 		await sleep(2)
 
 		log.info(`${id_user} - ${name_user} use '${set_command}' `)
-		let d = await GM(server_id, uid, set_command, set_code)
+		let d = await Control.GM(server_id, uid, set_command, set_code)
 
 		return await interaction.editReply({ content: `${d.msg} | ${d.code}`, ...baseReply })
 	} catch (err) {

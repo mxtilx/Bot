@@ -1,20 +1,28 @@
-/** @format */
+/**
+ * @package YuukiPS
+ * @author Yuuki
+ * @license GPL-3.0
+ */
 
-const { setIntervalAsync, clearIntervalAsync } = require("set-interval-async")
+// This is important
+import { contains, isEmpty, timestr } from "../lib";
+import ConfigR from '../util/config';
+import Logger from "../util/logger";
+import { NodeSSH } from 'node-ssh';
+import { setIntervalAsync, clearIntervalAsync } from "set-interval-async"
 
-const log = require("../util/logger")
+import Control from "../gm/control";
 
-const api_control = require("../gm/control")
-const lib = require("../lib")
+import { parentPort } from "worker_threads"
 
-const { parentPort } = require("worker_threads")
+const log = new Logger("PING");
 
 const regex_ram = /\((\d+\.\d+)%\)/
 
 // send msg
-var tmp_cek = []
-var last_msg = []
-function send(raw, id) {
+var tmp_cek: any[] = []
+var last_msg: any[] = []
+function send(raw: { content: any; embeds?: { type: string; title: string; description: string; color: number; fields: { name: string; value: string }[]; footer: { text: string } }[] }, id: any) {
 	var found = last_msg.findIndex((el) => el.id === id)
 	var toadd = false
 	var tosend = false
@@ -30,9 +38,9 @@ function send(raw, id) {
 
 			var msgadd = ""
 
-			var old_time = parseInt(old_msg.date.getTime() / 1000)
+			var old_time = old_msg.date.getTime() / 1000
 
-			msgadd = `${msg_now} (${lib.timestr(old_time)})`
+			msgadd = `${msg_now} (${timestr(old_time)})`
 
 			msg_now = msgadd
 
@@ -62,24 +70,26 @@ function send(raw, id) {
 		})
 	}
 	if (tosend) {
-		//log.info("SEND: " + raw)
-		parentPort.postMessage({
-			type: "msg",
-			data: raw
-		})
+		log.info("SEND: " + raw)
+		if (parentPort !== null) {
+			parentPort.postMessage({
+				type: "msg",
+				data: raw
+			})
+		}
 	}
 }
 
 // type restart
-async function restart(mnt_type, mnt_name, id_server, mnt_service) {
+async function restart(mnt_type: string | number, mnt_name: any, id_server: any, mnt_service: any) {
 	if (mnt_type == 1) {
 		// Restart Container
-		let d = await api_control.SH(`docker restart ${mnt_name}`, id_server)
-		log.info("restart1: ", d)
+		let d = await Control.SH(`docker restart ${mnt_name}`, id_server)
+		log.info(d)
 	} else if (mnt_type == 2) {
 		// Restart Process in Container
-		let d = await api_control.SH(`docker container exec ${mnt_name} pkill -9 ${mnt_service}`, id_server)
-		log.info("restart2: ", d)
+		let d = await Control.SH(`docker container exec ${mnt_name} pkill -9 ${mnt_service}`, id_server)
+		log.info(d)
 	} else {
 		log.error("unknown restart: " + mnt_type)
 	}
@@ -87,9 +97,9 @@ async function restart(mnt_type, mnt_name, id_server, mnt_service) {
 
 // check server every 10 seconds
 setIntervalAsync(async () => {
-	let d = await api_control.Server()
+	let d = await Control.Server()
 	var total_online = 0
-	d.data.forEach(async function (i) {
+	d.data.forEach(async function (i: { id: any; name: any; server: { player: any; ram: any; cpu: any; online: any; startup: any; monitor: any } }) {
 		//log.info(i);
 		var id_server = i.id
 		var server_name = i.name
@@ -112,7 +122,7 @@ setIntervalAsync(async () => {
 				var old_msg = last_msg[found_msg]
 				if (old_msg) {
 					// get time by msg
-					var old_time = parseInt(old_msg.date.getTime() / 1000)
+					var old_time = old_msg.date.getTime() / 1000
 					timeupinsec = Math.floor(Date.now() / 1000) - old_time
 
 					//console.log(`${timeupinsec} - ${id_server}`);
@@ -136,7 +146,7 @@ setIntervalAsync(async () => {
 						},
 						{
 							name: `Up Time`,
-							value: `${lib.timestr(is_startup)}`
+							value: `${timestr(is_startup)}`
 						},
 						{
 							name: `Player Online`,
@@ -247,8 +257,10 @@ setIntervalAsync(async () => {
 	})
 
 	// send stats online
-	parentPort.postMessage({
-		type: "bot_stats",
-		data: `${total_online} people`
-	})
+	if (parentPort !== null) {
+		parentPort.postMessage({
+			type: "bot_stats",
+			data: `${total_online} people`
+		})
+	}
 }, 1000 * 10)

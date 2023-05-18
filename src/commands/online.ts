@@ -13,7 +13,7 @@ import Logger from "../util/logger";
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
 
 // API Yuuki
-import { Server } from "../gm/control";
+import Control from "../gm/control";
 import { SearchRedeemCode } from "../game/hoyolab/api";
 import { RES as RES_GS } from "../game/genshin/api";
 import { RES as RES_SR } from "../game/starrails/api";
@@ -32,7 +32,7 @@ async function run(interaction: CommandInteraction) {
 
 		var tes = ""
 		var total = 0
-		let d = await Server()
+		let d = await Control.Server()
 		d.data.forEach(function (i: { name: any; id: any; server: { player: number; cpu: any; ram: any } }) {
 			tes += `${i.name} (${i.id}) > Player ${i.server.player} | CPU: ${i.server.cpu} / RAM ${i.server.ram} \n`
 			total = total + i.server.player
