@@ -12,7 +12,12 @@ import Logger from "../util/logger";
 // API Discord
 import { DMChannel, Message, NewsChannel, TextChannel } from "discord.js";
 
+const CharacterAI = require('node_characterai');
+const characterAI = new CharacterAI();
+
 const log = new Logger('Discord-Event-messageCreate');
+
+const characterId = "BELYJ-unxtO41wk4IYdmMnLfVVmyP8IxMZVrIWQQEk0";
 
 let count_melon = 0
 
@@ -43,9 +48,31 @@ export default async function run(message: Message) {
 
         // If have message
         if (message.content) {
+            var msg = message.content;
             log.info(
-                `Message ${username}#${username_id} from ${channel_name}#${channel_id}):\n-> ${message.content}`
+                `Message ${username}#${username_id} from ${channel_name}#${channel_id}):\n-> ${msg}`
             )
+
+            // Chat with Ayaka
+            if (channel_id == "1078345891557158987") {
+                // Login
+                if (!characterAI.isAuthenticated()) {
+                    await characterAI.authenticateWithToken(Config.token_CharacterAI);
+
+                }
+                const chat = await characterAI.createOrContinueChat(characterId,message.id);
+                const response = await chat.sendAndAwaitResponse(msg, true)
+                if (!isEmpty(response.text)) {
+                    message.reply({
+                        content: response.text
+                    })
+                } else {
+                    log.info(response);
+                    message.reply({
+                        content: "Don't know"
+                    })
+                }
+            }
         }
 
         // If message has Interaction
