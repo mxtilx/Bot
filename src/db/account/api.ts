@@ -5,9 +5,9 @@
  */
 
 // This is important
-import { sleep, isEmpty } from "../lib";
-import Config from '../util/config';
-import Logger from "../util/logger";
+import { sleep, isEmpty } from "../../util/library";
+import Config from '../../util/config';
+import Logger from "../../util/logger";
 
 // API Yuuki
 const log = new Logger("ACCOUNT");

@@ -5,15 +5,15 @@
  */
 
 // This is important
-import { contains, isEmpty } from "../lib";
-import ConfigR from '../util/config';
-import Logger from "../util/logger";
+import { contains, isEmpty } from "../../util/library";
+import ConfigR from '../../util/config';
+import Logger from "../../util/logger";
 import axios from "axios"
 import crypto from "crypto"
 
 const log = new Logger("GM-GIO");
 
-export const GIO = {
+export const _ = {
 	Sign: function (raw: any = null) {
 		let sha256_salt = "1d8z98SAKF98bdf878skswa8kdjfy1m9dses"
 		let query_string = Object.keys(raw)
@@ -181,4 +181,4 @@ export const GIO = {
 	}
 }
 
-export default GIO;
+export default _;

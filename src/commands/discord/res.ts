@@ -5,18 +5,19 @@
  */
 
 // This is important
-import { sleep, isEmpty } from "../lib";
-import Config from '../util/config';
-import Logger from "../util/logger";
+import { sleep, isEmpty } from "../../util/library";
+import Config from '../../util/config';
+import Logger from "../../util/logger";
 
 // API Discord
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
 
 // API Yuuki
 import Control from "../gm/control";
-import { SearchRedeemCode } from "../game/hoyolab/api";
-import { RES as RES_GS } from "../game/genshin/api";
-import { RES as RES_SR } from "../game/starrails/api";
+import API_HOYO from "../../game/hoyolab/api";
+import API_GS from "../../game/genshin/api";
+import API_SR from "../../game/starrails/api";
+
 const log = new Logger("RES-CMD");
 
 const cmd = new SlashCommandBuilder()
@@ -41,7 +42,7 @@ async function run(interaction: CommandInteraction) {
 		await sleep(2)
 
 		if (set_game == "1") {
-			var d_gs = await RES_GS(set_version, set_seed_id)
+			var d_gs = await API_GS.RES(set_version, set_seed_id)
 
 			if (d_gs.data == undefined || d_gs.data.regionInfo == undefined || d_gs.data.regionInfo.resVersionConfig == undefined) {
 				return await interaction.editReply({
@@ -81,7 +82,7 @@ async function run(interaction: CommandInteraction) {
 			})
 
 		} else if (set_game == "2") {
-			var d_sr = await RES_SR(set_version, set_seed_id)
+			var d_sr = await API_SR.RES(set_version, set_seed_id)
 
 			if (d_sr.code != 200) {
 				await interaction.editReply({

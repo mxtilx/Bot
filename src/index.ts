@@ -5,9 +5,10 @@
  */
 
 // Important
-import { sleep, isEmpty, contains } from "./lib";
+import { sleep, isEmpty, contains } from "./util/library";
 import Config from './util/config';
 import Logger from "./util/logger";
+import Interface from './commands/server/Interface';
 
 // WEB
 import express, { Request, Response, NextFunction } from 'express';
@@ -25,10 +26,10 @@ import getEvents, { findEvent } from './events/eventHandler';
 import register from './util/registercommands';
 
 // API
-import Account from "./account/api";
-import Control from "./gm/control";
-import { INFO as INFO_GS } from "./game/genshin/api";
-import { GET_LIST_SERVER as GET_LIST_SERVER_SR } from "./game/starrails/api";
+import Account from "./db/account/api";
+import Control from "./commands/gm/control";
+import API_GS from "./game/genshin/api";
+import API_SR from "./game/starrails/api";
 
 const log = new Logger("YuukiPS");
 log.info("YuukiPS startup....")
@@ -107,7 +108,7 @@ bot.on('interactionCreate', async (interaction) => {
 	if (interaction.isCommand()) {
 
 		log.debug(`/${interaction.commandName} was called by ${username}`);
-		import(`./commands/${interaction.commandName}`).then(async (cmd) => {
+		import(`./commands/discord/${interaction.commandName}`).then(async (cmd) => {
 			await cmd.default.process(interaction);
 		}).catch(async (error) => {
 			log.error(error as unknown as Error);
@@ -254,7 +255,7 @@ web.all("/api", (req: Request, res: Response) => {
 // Testing
 web.all("/api/game/genshin", async (req: Request, res: Response) => {
 	try {
-		let d = await INFO_GS()
+		let d = await API_GS.INFO()
 		return res.json(d)
 	} catch (e) {
 		log.error(e as Error)
@@ -662,7 +663,7 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 
 		var d = req.query
 
-		var data = await GET_LIST_SERVER_SR()
+		var data = await API_SR.GET_LIST_SERVER()
 
 		return res.send(data)
 	} catch (e) {
@@ -735,3 +736,6 @@ ping_job.on("error", (ex: Error) => {
 function get_job() {
 	return new Worker("./src/job/ping")
 }
+
+// Console
+Interface.start();

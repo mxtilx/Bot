@@ -5,7 +5,7 @@
  */
 
 // This is important
-import { sleep, isEmpty, contains } from "../lib";
+import { sleep, isEmpty, contains } from "../util/library";
 import Config from '../util/config';
 import Logger from "../util/logger";
 
@@ -58,18 +58,23 @@ export default async function run(message: Message) {
                 // Login
                 if (!characterAI.isAuthenticated()) {
                     await characterAI.authenticateWithToken(Config.token_CharacterAI);
-
                 }
-                const chat = await characterAI.createOrContinueChat(characterId,message.id);
-                const response = await chat.sendAndAwaitResponse(msg, true)
-                if (!isEmpty(response.text)) {
-                    message.reply({
-                        content: response.text
-                    })
+                if (characterAI.isAuthenticated()) {
+                    const chat = await characterAI.createOrContinueChat(characterId, message.id);
+                    const response = await chat.sendAndAwaitResponse(msg, true)
+                    if (!isEmpty(response.text)) {
+                        message.reply({
+                            content: response.text
+                        })
+                    } else {
+                        log.info(response);
+                        message.reply({
+                            content: "Don't know1"
+                        })
+                    }
                 } else {
-                    log.info(response);
                     message.reply({
-                        content: "Don't know"
+                        content: "Don't know2"
                     })
                 }
             }

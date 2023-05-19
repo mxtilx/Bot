@@ -5,13 +5,13 @@
  */
 
 // This is important
-import { contains, isEmpty, timestr } from "../lib";
+import { contains, isEmpty, timestr } from "../util/library";
 import ConfigR from '../util/config';
 import Logger from "../util/logger";
 import { NodeSSH } from 'node-ssh';
 import { setIntervalAsync, clearIntervalAsync } from "set-interval-async"
 
-import Control from "../gm/control";
+import Control from "../commands/gm/control";
 
 import { parentPort } from "worker_threads"
 

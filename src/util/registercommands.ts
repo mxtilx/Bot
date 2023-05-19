@@ -5,7 +5,7 @@ const log = new Logger("Discord");
 
 export default async function register() {
     const allCommands: ApplicationCommandDataResolvable[] = [];
-    await fs.readdirSync('./src/commands').forEach(async file => {
+    await fs.readdirSync('./src/commands/discord').forEach(async file => {
         await import(`../commands/${file}`).then(async module => {
             const target = module.default.command;
             if (!target) return;

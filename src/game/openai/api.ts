@@ -5,14 +5,14 @@
  */
 
 // This is important
-import { contains, isEmpty } from "../../lib";
+import { contains, isEmpty } from "../../util/library";
 import ConfigR from '../../util/config';
 import Logger from "../../util/logger";
 import { NodeSSH } from 'node-ssh';
 
 const log = new Logger("OpenAI");
 
-export const OpenAI = {
+export const _ = {
 	Chat: async function (msg: string) {
 		// TODO: for fun stuff
 		return {
@@ -23,4 +23,4 @@ export const OpenAI = {
 	}
 }
 
-export default OpenAI;
+export default _;

@@ -5,7 +5,7 @@
  */
 
 // This is important
-import { sleep, isEmpty, contains } from "../lib";
+import { sleep, isEmpty, contains } from "../util/library";
 import Config from '../util/config';
 import Logger from "../util/logger";
 

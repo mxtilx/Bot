@@ -1,5 +1,5 @@
 <!-- @format -->
 
-# YukiBot
+# Yuuki Server
 
 ./run.sh s

@@ -5,18 +5,19 @@
  */
 
 // This is important
-import { sleep, isEmpty } from "../lib";
-import Config from '../util/config';
-import Logger from "../util/logger";
+import { sleep, isEmpty } from "../../util/library";
+import Config from '../../util/config';
+import Logger from "../../util/logger";
 
 // API Discord
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
 
 // API Yuuki
 import Control from "../gm/control";
-import { SearchRedeemCode } from "../game/hoyolab/api";
-import { RES as RES_GS } from "../game/genshin/api";
-import { RES as RES_SR } from "../game/starrails/api";
+import GM_GIO from "../gm/gio";
+import API_HOYO from "../../game/hoyolab/api";
+import API_GS from "../../game/genshin/api";
+import API_SR from "../../game/starrails/api";
 
 const log = new Logger("GM-CMD");
 

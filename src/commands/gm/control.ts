@@ -5,9 +5,9 @@
  */
 
 // This is important
-import { contains, isEmpty } from "../lib";
-import ConfigR from '../util/config';
-import Logger from "../util/logger";
+import { contains, isEmpty } from "../../util/library";
+import ConfigR from '../../util/config';
+import Logger from "../../util/logger";
 import { NodeSSH } from 'node-ssh';
 
 // API Yuuki
@@ -41,7 +41,7 @@ let key = []
 // Thank you ChatGPT
 let cache_serverlist: { [x: string]: string | ListServer[] | number | undefined; cache: any; data: any; msg?: any; code?: any; };
 
-export const Control = {
+export const _ = {
 
 	Config: async function (server_id: string) {
 		// check id server
@@ -405,4 +405,4 @@ export const Control = {
 	}
 }
 
-export default Control;
+export default _;

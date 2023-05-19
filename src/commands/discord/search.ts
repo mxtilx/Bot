@@ -5,16 +5,16 @@
  */
 
 // This is important
-import { sleep, isEmpty } from "../lib";
-import Config from '../util/config';
-import Logger from "../util/logger";
+import { sleep, isEmpty } from "../../util/library";
+import Config from '../../util/config';
+import Logger from "../../util/logger";
 
 // API Discord
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
 
 // API Yuuki
 import Control from "../gm/control";
-import { SearchRedeemCode } from "../game/hoyolab/api"; // TODO: use control version game by game type
+import API_HOYO from "../../game/hoyolab/api";
 
 const log = new Logger("SEARCH-CMD");
 
@@ -34,17 +34,17 @@ async function run(interaction: CommandInteraction) {
 		await sleep(2)		
 
 		if (search == "code gs") {
-			let d = await SearchRedeemCode()
+			let d = await API_HOYO.SearchRedeemCode()
 			console.log(d)
 			d = `Genshin Impact Game code for OS ,found: ${d.toString()}`
 			return await interaction.editReply({ content: d, ...baseReply })
 		} else if (search == "code sr") {
-			let d = await SearchRedeemCode(6)
+			let d = await API_HOYO.SearchRedeemCode(6)
 			console.log(d)
 			d = `Star Rail Game code for OS ,found: ${d.toString()}`
 			return await interaction.editReply({ content: d, ...baseReply })
 		} else if (search == "code hk") {
-			let d = await SearchRedeemCode(1)
+			let d = await API_HOYO.SearchRedeemCode(1)
 			console.log(d)
 			d = `Honkai Impact Game code for OS ,found: ${d.toString()}`
 			return await interaction.editReply({ content: d, ...baseReply })

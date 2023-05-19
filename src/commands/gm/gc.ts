@@ -5,14 +5,14 @@
  */
 
 // This is important
-import { contains, isEmpty } from "../lib";
-import ConfigR from '../util/config';
-import Logger from "../util/logger";
+import { contains, isEmpty } from "../../util/library";
+import ConfigR from '../../util/config';
+import Logger from "../../util/logger";
 import axios from "axios"
 
 const log = new Logger("GM-GC");
 
-export const GC = {
+export const _ = {
 	GM: async function (url: string, uid: any, cmd: any, code: any, set_timeout = 60) {
 		try {
 			const response = await axios.get(url + "api/command", {
@@ -58,4 +58,4 @@ export const GC = {
 	}
 }
 
-export default GC;
+export default _;
