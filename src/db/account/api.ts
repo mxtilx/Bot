@@ -12,7 +12,7 @@ import Logger from "../../util/logger";
 // API Yuuki
 const log = new Logger("ACCOUNT");
 
-import { MongoClient, Filter,ObjectId } from 'mongodb';
+import { MongoClient, Filter, ObjectId } from 'mongodb';
 
 interface Login {
 	message: string;
@@ -61,9 +61,9 @@ export const Accounts = {
 				const database = client.db(Config.AccountDbold.database)
 				const collection = database.collection("accounts")
 
-				let query: Filter<import("mongodb").Document>;
+				let query: any;
 				if (type === 2) {
-					query = { id: username, token: password };
+					query = { _id: username, token: password };
 				} else {
 					query = { username: username };
 				}
@@ -71,7 +71,8 @@ export const Accounts = {
 				const d = await collection.findOne(query)
 
 				// debug
-				log.info(d as any)
+				//log.debug(d)
+				//log.debug(query)
 
 				// about sessionKey is temporary, so when logging in it will generate a new key (save) then use this key to login via the reg token and verify if the token is correct.
 
@@ -85,7 +86,7 @@ export const Accounts = {
 							data: {
 								account: {
 									uid: d._id,
-									name: d.username,									
+									name: d.username,
 									token: d.token
 								}
 							}

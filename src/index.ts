@@ -30,6 +30,7 @@ import Account from "./db/account/api";
 import Control from "./commands/gm/control";
 import API_GS from "./game/genshin/api";
 import API_SR from "./game/starrails/api";
+import { RSAUtils } from "./game/hoyolab/crypto";
 
 const log = new Logger("YuukiPS");
 log.info("YuukiPS startup....")
@@ -42,7 +43,11 @@ process.on("unhandledRejection", (error) => {
 const argv = require("minimist")(process.argv.slice(2))
 log.debug(argv)
 const port_http = argv.port || 3000
+const set_host = argv.host || "localhost"
+const set_https = argv.https || "http"
 const regcmd = argv.reg || false
+
+API_GS.initserver(set_host, port_http, set_https)
 
 var eta_plugin_random = require("./web/plugin/random")
 
@@ -586,7 +591,7 @@ web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
 
 	var c = await Account.GET_ACCOUNT_GC(uid, key, cn, 2)
 
-	log.debug(c)
+	//log.debug(c)
 
 	if (c.retcode == 0) {
 		log.info(`${uid} have logged (login registry) in from ${cn} using ip ${ip}`)
@@ -599,8 +604,8 @@ web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
 // Cached token login (from registry), unfortunately this cannot be deleted or given a zero response
 web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response) => {
 	// TODO ACC
-	log.debug(res)
-	log.debug(req)
+	//log.debug(res)
+	//log.debug(req)
 	log.debug(req.body)
 	//return res.json({ code: 0 })
 
@@ -623,9 +628,9 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 // Username & Password login (from client).
 web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
 	// TODO ACC
-	log.debug(res)
-	log.debug(req)
-	log.debug(req.body)
+	//log.debug(res)
+	//log.debug(req)
+	//log.debug(req.body)
 	//log.warn(req.query)
 	//console.log(req)
 	// hk4e_global = gs and hkrpg_global = sr
@@ -641,7 +646,7 @@ web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
 
 	var c = await Account.GET_ACCOUNT_GC(username, "", cn)
 
-	log.debug(c)
+	//log.debug(c)
 
 	if (c.retcode == 0) {
 		log.info(`${username} have logged (normal login) in from ${cn} using ip ${ip}`)
@@ -668,10 +673,99 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 		return res.send(data)
 	} catch (e) {
 		log.error(e as Error)
+		return res.json({
+			retcode: 1,
+			message: "Error",
+		})
 	}
 })
 
 // GS Stuff
+
+// for list server gs
+web.all("/query_region_list", async (req: Request, res: Response) => {
+	try {
+		//log.debug(req.params)
+		//log.debug(req.query)
+		//log.debug(req.body)
+
+		var d = req.query
+
+		let version = d.version ?? "?0";
+		let ip = req.ip ?? "?1";
+
+		// TODO: get real name
+		let lang = d.lang ?? "?2";
+		let platform = d.platform ?? "?3";
+
+		log.info(`ip ${ip} trying to access region list with version ${version} and language codes ${lang} and platform ${platform}`)
+
+		var data = await API_GS.GET_LIST_REGION(version as string)
+
+		return res.send(data)
+	} catch (e) {
+		log.error(e as Error)
+		return res.json({
+			retcode: 1,
+			message: "Error",
+		})
+	}
+})
+
+web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
+	try {
+		log.debug(req.params)
+		log.debug(req.query)
+		log.debug(req.body)
+		log.debug(req.url)
+
+		var d = req.query
+		var p = req.params
+
+		let version = d.version as string;
+		let ip = req.ip ?? "?1";
+		let dispatchSeed = d.dispatchSeed as string;
+		let key = d.key_id as unknown as number;
+		let name = p.name ?? "none"
+
+		// TODO: get real name
+		let lang = d.lang ?? "?2";
+		let platform = d.platform ?? "?3";
+
+		if (version == undefined || dispatchSeed == undefined || key == undefined) {
+			log.info(`ip ${ip} trying to access region with no config`)
+			return res.send(API_GS.NO_VERSION_CONFIG())
+		}
+
+		log.info(`ip ${ip} trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
+
+		var data = await API_GS.GET_DATA_REGION(name, dispatchSeed, key, version)
+
+		return res.send(data)
+	} catch (e) {
+		log.error(e as Error)
+		return res.send(API_GS.NO_VERSION_CONFIG())
+	}
+})
+
+web.all("/api/key/:id/*", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
+	log.debug(req.body)
+
+	let ip = req.ip ?? "?1";
+
+	let code = req.params[0].split('=')[1];
+
+	log.info(`ip ${ip} trying input code ${code}`)
+
+	// TODO: if code work send to all server in this acc?
+
+	return res.json({
+		retcode: 0,
+		message: "Got it",
+	})
+})
 
 // catch all if not found
 
@@ -736,6 +830,8 @@ ping_job.on("error", (ex: Error) => {
 function get_job() {
 	return new Worker("./src/job/ping")
 }
+
+RSAUtils.initKeys();
 
 // Console
 Interface.start();

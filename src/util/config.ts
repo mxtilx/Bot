@@ -159,7 +159,7 @@ export default class Config {
         name: string
         title: string
         ip: string
-        port: string
+        port: number
         type: number
         game: number
         version: string[]
