@@ -116,7 +116,7 @@ export const _ = {
 			}
 
 			// LOG RESPON
-			log.debug(result)
+			//log.debug(result)
 
 			if (result.msg == "succ" && result.retcode == 0) {
 				return {
