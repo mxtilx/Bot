@@ -48,6 +48,7 @@ const set_https = argv.https || "http"
 const regcmd = argv.reg || false
 
 API_GS.initserver(set_host, port_http, set_https)
+API_SR.initserver(set_host, port_http, set_https)
 
 var eta_plugin_random = require("./web/plugin/random")
 
@@ -169,8 +170,8 @@ bot.on('messageDeleteBulk', async (messages) => {
 
 // Ratelimit
 const limit_cmd = rateLimit({
-	windowMs: 2 * 1000,
-	max: 1,
+	windowMs: 3 * 1000,
+	max: 5,
 	statusCode: 200,
 	message: async (request: Request, response: Response) => {
 		log.info(`limit ${request.ip}`)
@@ -680,6 +681,42 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 	}
 })
 
+web.all("/query_gateway", async (req: Request, res: Response) => {
+	try {
+		log.debug(req.params)
+		log.debug(req.query)
+		log.debug(req.body)
+		log.debug(req.url)
+
+		var d = req.query
+		var p = req.params
+
+		let version = d.version as string;
+		let ip = req.ip ?? "?1";
+		let dispatchSeed = d.dispatch_seed as string;
+		let key = d.key_id as unknown as number;
+		let name = p.name ?? "none"
+
+		// TODO: get real name
+		let lang = d.language_type ?? "?2";
+		let platform = d.platform_type ?? "?3";
+
+		if (version == undefined || dispatchSeed == undefined) {
+			log.info(`ip ${ip} trying to access region with no config`)
+			return res.send(API_GS.NO_VERSION_CONFIG())
+		}
+
+		log.info(`ip ${ip} trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
+
+		var data = await API_SR.GET_DATA_REGION(name, dispatchSeed, key, version)
+
+		return res.send(data)
+	} catch (e) {
+		log.error(e as Error)
+		return res.send(API_GS.NO_VERSION_CONFIG())
+	}
+})
+
 // GS Stuff
 
 // for list server gs
@@ -788,6 +825,7 @@ let ping_job = get_job()
 ping_job.on("message", (d: { type: string; data: any }) => {
 	try {
 		if (d.type == "msg") {
+			log.debug(d);
 			if (Config.Startup.bot) {
 				ping_notif.send(d.data)
 			}
@@ -806,6 +844,8 @@ ping_job.on("message", (d: { type: string; data: any }) => {
 					status: "online"
 				})
 			}
+		} else {
+			log.debug(d);
 		}
 	} catch (e) {
 		log.error(e as Error)

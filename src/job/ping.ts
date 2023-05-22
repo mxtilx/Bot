@@ -70,7 +70,7 @@ function send(raw: { content: any; embeds?: { type: string; title: string; descr
 		})
 	}
 	if (tosend) {
-		log.info("SEND: " + raw)
+		log.debug(raw)
 		if (parentPort !== null) {
 			parentPort.postMessage({
 				type: "msg",
