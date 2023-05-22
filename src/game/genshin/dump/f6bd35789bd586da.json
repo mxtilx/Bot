@@ -2,7 +2,7 @@
 	"retcode": 0,
 	"msg": "",
 	"regionInfo": {
-		"gateserverIp": "47.103.27.150",
+		"gateserverIp": "47.100.9.127",
 		"gateserverPort": 22102,
 		"payCallbackUrl": "http://10.101.11.129:22601/recharge",
 		"areaType": "CN",
@@ -13,7 +13,7 @@
 		"resourceUrlBak": "3.6_live",
 		"dataUrlBak": "",
 		"clientDataVersion": 14299294,
-		"handbookUrl": "https://webstatic.mihoyo.com/ys/event/e20210601blue_post/vert.html?gamewebview=1&page_sn=b3a3f395f09e4f8d&mode=fullscreen&game_biz=hk4e_cn&sign_type=2&auth_appid=bluepost&authkey_ver=1&utm_source=game&utm_medium=ys&utm_campaign=hot",
+		"handbookUrl": "https://webstatic.mihoyo.com/ys/event/e20210601blue_post/vert.html?gamewebview=1&page_sn=a39cb228e2284723&mode=fullscreen&game_biz=hk4e_cn&sign_type=2&auth_appid=bluepost&authkey_ver=1&utm_source=game&utm_medium=ys&utm_campaign=hot",
 		"clientSilenceDataVersion": 14299294,
 		"clientDataMd5": "{\"remoteName\": \"data_versions\", \"md5\": \"6b15d7d09343cf03835c6be6a303f9e8\", \"fileSize\": 5147}",
 		"clientSilenceDataMd5": "{\"remoteName\": \"data_versions\", \"md5\": \"a8eae841a8a120ead89fea25f55274e1\", \"fileSize\": 410}",
@@ -132,15 +132,15 @@
 		"accountBindUrl": "https://user.mihoyo.com",
 		"cdkeyUrl": "https://hk4e-api.mihoyo.com/common/apicdkey/api/exchangeCdkey?sign_type=2&auth_appid=apicdkey&authkey_ver=1",
 		"privacyPolicyUrl": "https://user.mihoyo.com/#/about/privacyInGame?app_id=4&lang=zh-cn&biz=hk4e_cn",
-		"nextResourceUrl": "https://autopatchcn.yuanshen.com/client_game_res/3.6_live",
+		"nextResourceUrl": "https://autopatchcn.yuanshen.com/client_game_res/3.7_live",
 		"nextResVersionConfig": {
-			"version": 0,
+			"version": 14807925,
 			"relogin": false,
-			"md5": "0",
+			"md5": "{\"remoteName\": \"res_versions_external\", \"md5\": \"e6354c43bb971316f5c343cf59cf0fe7\", \"fileSize\": 468070}\r\n{\"remoteName\": \"res_versions_medium\", \"md5\": \"0fafbe58b9ed3e658f7375b5e8538206\", \"fileSize\": 101350}\r\n{\"remoteName\": \"res_versions_streaming\", \"md5\": \"7d4279f16d6d7112a0bf424fa87a290d\", \"fileSize\": 1683}\r\n{\"remoteName\": \"base_revision\", \"md5\": \"d41d8cd98f00b204e9800998ecf8427e\", \"fileSize\": 0}\r\n{\"remoteName\": \"release_res_versions_external\", \"md5\": \"e6354c43bb971316f5c343cf59cf0fe7\", \"fileSize\": 468070}\r\n{\"remoteName\": \"release_res_versions_medium\", \"md5\": \"0fafbe58b9ed3e658f7375b5e8538206\", \"fileSize\": 101350}\r\n{\"remoteName\": \"release_res_versions_streaming\", \"md5\": \"7d4279f16d6d7112a0bf424fa87a290d\", \"fileSize\": 1683}\r\n{\"remoteName\": \"audio_diff_versions_14807925-13951843\", \"md5\": \"303ad889acc64b09ebe1dfd5d810b242\", \"fileSize\": 23701}",
 			"releaseTotalSize": "0",
-			"versionSuffix": "",
-			"branch": "3.6_live",
-			"nextScriptVersion": ""
+			"versionSuffix": "317d785f47",
+			"branch": "3.7_live",
+			"nextScriptVersion": "3.7.0"
 		}
 	},
 	"clientSecretKey": {

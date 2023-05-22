@@ -2,7 +2,7 @@
 	"retcode": 0,
 	"msg": "",
 	"regionInfo": {
-		"gateserverIp": "47.103.17.17",
+		"gateserverIp": "47.103.27.37",
 		"gateserverPort": 22102,
 		"payCallbackUrl": "http://10.101.11.129:22601/recharge",
 		"areaType": "CN",
@@ -13,7 +13,7 @@
 		"resourceUrlBak": "3.6_live",
 		"dataUrlBak": "",
 		"clientDataVersion": 14299294,
-		"handbookUrl": "https://webstatic.mihoyo.com/ys/event/e20210601blue_post/vert.html?gamewebview=1&page_sn=b3a3f395f09e4f8d&mode=fullscreen&game_biz=hk4e_cn&sign_type=2&auth_appid=bluepost&authkey_ver=1&utm_source=game&utm_medium=ys&utm_campaign=hot",
+		"handbookUrl": "https://webstatic.mihoyo.com/ys/event/e20210601blue_post/vert.html?gamewebview=1&page_sn=a39cb228e2284723&mode=fullscreen&game_biz=hk4e_cn&sign_type=2&auth_appid=bluepost&authkey_ver=1&utm_source=game&utm_medium=ys&utm_campaign=hot",
 		"clientSilenceDataVersion": 14299294,
 		"clientDataMd5": "{\"remoteName\": \"data_versions\", \"md5\": \"6b15d7d09343cf03835c6be6a303f9e8\", \"fileSize\": 5147}",
 		"clientSilenceDataMd5": "{\"remoteName\": \"data_versions\", \"md5\": \"a8eae841a8a120ead89fea25f55274e1\", \"fileSize\": 410}",
