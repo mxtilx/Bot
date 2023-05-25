@@ -64,6 +64,8 @@ export const _ = {
 			OSRELAndroid3.6.0 | b89009325796c5cf
 			CNRELAndroid3.6.0 | f6bd35789bd586da
 			CNRELiOS3.6.0     | 24e8cbb8af855e68
+
+			OSRELWin3.7.0     | 31c339cb23bd65a2
 			*/
 
 			var platform = 1

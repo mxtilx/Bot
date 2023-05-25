@@ -171,8 +171,8 @@ export const _ = {
 				msg: "OK"
 			}
 		} catch (error) {
-			log.error(error as Error);
-			log.error(response);
+			//log.error(error as Error);
+			//log.error(response);
 			return {
 				msg: "Error get server1",
 				code: 401
