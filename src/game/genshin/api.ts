@@ -307,6 +307,7 @@ export const _ = {
 
 				dataObj = QueryCurrRegionHttpRsp.fromPartial({
 					regionInfo: reg,
+					/* not work in 3.7 ?
 					clientSecretKey: ec2b.ec2b,
 					regionCustomConfigEncrypted: ec2b.cipher(
 						Buffer.from(
@@ -317,6 +318,7 @@ export const _ = {
 							})
 						)
 					),
+					*/
 				});
 
 			} else {
