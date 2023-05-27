@@ -16,7 +16,7 @@ if [ "$metode" = "s" ];then
 fi
 
 if [ "$metode" = "reg" ];then
- npm run reg
+ npm run start -- --port 10010 --reg true
 fi
 
 if [ "$metode" = "t" ];then

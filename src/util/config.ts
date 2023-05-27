@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
     password: [""],
     id_admin: "",
     id_mod: [""],
+    autoAccount: true,
     accountDB: {
         host: "",
         port: 1,
@@ -129,6 +130,8 @@ export default class Config {
     public static password: string[] = Config.config.password;
     public static id_admin: string = Config.config.id_admin;
     public static id_mod: string = Config.config.id_mod;
+
+    public static autoAccount: boolean = Config.config.autoAccount;
 
     public static accountDB: {
         host: string

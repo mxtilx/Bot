@@ -222,7 +222,7 @@ export const _ = {
 				downloadMode: 0,
 			}
 
-			log.debug(config_custom)
+			//log.debug(config_custom)
 
 			const toaddquery = QueryRegionListHttpRsp.create({
 				regionList: region_list,

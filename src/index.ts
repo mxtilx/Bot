@@ -39,6 +39,8 @@ process.on("unhandledRejection", (error) => {
 	//process.exit(1);
 })
 
+let online_string: number = 9999
+
 // Temporary Config
 const argv = require("minimist")(process.argv.slice(2))
 log.debug(argv)
@@ -187,12 +189,40 @@ const limit_cmd = rateLimit({
 	}
 })
 
+const limit_login = rateLimit({
+	windowMs: 60 * 1000,
+	max: 3,
+	statusCode: 200,
+	message: async (request: Request, response: Response) => {
+		log.info(`limit login ${request.ip}`)
+		return {
+			data: null,
+			retcode: 1,
+			message: "You can only try to log into your account 3x every 1 minute"
+		}
+	}
+})
+
+const limit_tokenlogin = rateLimit({
+	windowMs: 60 * 1000,
+	max: 2,
+	statusCode: 200,
+	message: async (request: Request, response: Response) => {
+		log.info(`limit login token ${request.ip}`)
+		return {
+			data: null,
+			retcode: 1,
+			message: "Expired login (2)"
+		}
+	}
+})
+
 // TODO move route web
 const web = express()
 
 // body-parser middleware
-web.use(bodyParser.json())
-web.use(bodyParser.urlencoded({ extended: true }))
+web.use(bodyParser.json({ limit: '50mb' }))
+web.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
 
 // Core
 web.use(cors());
@@ -217,10 +247,10 @@ web.all("/", (req: Request, res: Response) => {
 	if (type == "sdk") {
 		if (userAgent !== undefined) {
 			if (userAgent.includes("Genshin Impact")) {
-				log.warn(req as any)
+				//log.warn(req as any)
 				return res.send("Hello YuukiPS GS")
 			} else if (userAgent.includes("Star Rail")) {
-				log.warn(req as any)
+				//log.warn(req as any)
 				return res.send("Hello YuukiPS SR")
 			}
 		}
@@ -339,6 +369,28 @@ web.get("/ip", async (req: Request, res: Response) => {
 	res.send(req.ip)
 })
 
+// Combo
+web.all("/status/server", (req: Request, res: Response) => {
+	return res.json({
+		"retcode": 0,
+		"status": {
+			"runMode": "HYBRID",
+			"MemoryMax": 1,
+			"MemoryCurrently": 1,
+			"MemoryInit": 1,
+			"MemoryCommitted": 1,
+			"Thread": 1,
+			"ThreadTotalStarted": 1,
+			"ThreadDaemon": 1,
+			"TotalPlayer": 0,
+			"playerCount": online_string,
+			"maxPlayer": 1000,
+			"DockerGS": "alpine-yuukips-3.7-9dd5847",
+			"Version": "5.0 devkit"
+		}
+	})
+})
+
 // Hoyo Love Log Stuff
 
 web.all("/common/h5log/log/batch", (req: Request, res: Response) => {
@@ -359,9 +411,24 @@ web.all("/log", (req: Request, res: Response) => {
 web.all("/crash/dataUpload", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
+web.all("/h5/upload", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
 web.all("/sw.html", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
+	return res.json({ code: 0 })
+})
+
+web.all("/ys/event/:id_event/index.html", async (req: Request, res: Response) => {
+	//log.debug(req.params)
+	//log.debug(req.query)
+	return res.json({ code: 0 })
+})
+
+web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({ code: 0 })
 })
 
@@ -375,11 +442,67 @@ web.all("/account/device/api/listNewerDevices", (req: Request, res: Response) =>
 	return res.json({ code: 0 })
 })
 
+web.all("/:cn/mdk/shield/api/loginByThirdparty", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/:cn/combo/granter/api/getFont", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/combo/box/api/config/sdk/drmSwitch", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/device-fp/api/getFp", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/account/auth/api/getConfig", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/:cn/mdk/shopwindow/shopwindow/listPriceTier", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/common/:cn/announcement/api/getAlertPic", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/common/:cn/announcement/api/getAlertAnn", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/:cn/combo/red_dot/list", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/v5/gc", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/v5/gcf", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/v5/gcl", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/:cn/mdk/shield/api/loginCaptcha", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+web.all("/privacy/policy/authorization/status", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
 // Config
 web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) => {
 	// Fake Config SR
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({
 		retcode: 0,
 		message: "OK",
@@ -401,8 +524,8 @@ web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) 
 })
 web.all("/:cn/mdk/shield/api/loadConfig", async (req: Request, res: Response) => {
 	// Fake Config SR
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	/*
 	GS Config
 	return res.json({
@@ -510,13 +633,13 @@ web.all("/device-fp/api/getExtList", async (req: Request, res: Response) => {
 	})
 })
 web.all("/admin/mi18n/plat_os/:id1/:id2-version.json", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({ code: 0 })
 })
 web.all("/admin/mi18n/plat_oversea/:id1/:id2-version.json", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({ code: 0 })
 })
 
@@ -531,20 +654,20 @@ web.all("/:cn/mdk/agreement/api/getAgreementInfos", async (req: Request, res: Re
 // Login
 // Login Facebook
 web.all("/sdkFacebookLogin.html", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({ code: 0 })
 })
 // Login Twitter
 web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({ code: 0 })
 })
 // Login Twitter (API?)
 web.all("/Api/twitter_login", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({
 		code: 200,
 		data: {
@@ -557,8 +680,8 @@ web.all("/Api/twitter_login", async (req: Request, res: Response) => {
 })
 // Login Facebook (API?)
 web.all("/Api/facebook_login", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({
 		code: 200,
 		data: {
@@ -571,15 +694,15 @@ web.all("/Api/facebook_login", async (req: Request, res: Response) => {
 })
 // login guest (from client).
 web.all("/:cn/mdk/guest/guest/v2/login", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
+	//log.debug(req.params)
+	//log.debug(req.query)
 	return res.json({ code: 0 })
 })
 // Cached token login (from registry).
-web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
+web.all("/:cn/mdk/shield/api/verify", limit_tokenlogin, async (req: Request, res: Response) => {
 	//log.debug(res)
 	//log.debug(req)
-	log.debug(req.body)
+	//log.debug(req.body)
 
 	var uid = req.body.uid // uid acc?
 	var key = req.body.token // token aka key
@@ -607,7 +730,7 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 	// TODO ACC
 	//log.debug(res)
 	//log.debug(req)
-	log.debug(req.body)
+	//log.debug(req.body)
 	//return res.json({ code: 0 })
 
 	const d = JSON.parse(req.body.data) // tmp just send back
@@ -627,7 +750,7 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 	})
 })
 // Username & Password login (from client).
-web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
+web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Response) => {
 	// TODO ACC
 	//log.debug(res)
 	//log.debug(req)
@@ -663,9 +786,9 @@ web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
 // for list server sr
 web.all("/query_dispatch", async (req: Request, res: Response) => {
 	try {
-		log.debug(req.params)
-		log.debug(req.query)
-		log.debug(req.body)
+		//log.debug(req.params)
+		//log.debug(req.query)
+		//log.debug(req.body)
 
 		var d = req.query
 
@@ -683,10 +806,10 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 
 web.all("/query_gateway", async (req: Request, res: Response) => {
 	try {
-		log.debug(req.params)
-		log.debug(req.query)
-		log.debug(req.body)
-		log.debug(req.url)
+		//log.debug(req.params)
+		//log.debug(req.query)
+		//log.debug(req.body)
+		//log.debug(req.url)
 
 		var d = req.query
 		var p = req.params
@@ -751,10 +874,10 @@ web.all("/query_region_list", async (req: Request, res: Response) => {
 
 web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 	try {
-		log.debug(req.params)
-		log.debug(req.query)
-		log.debug(req.body)
-		log.debug(req.url)
+		//log.debug(req.params)
+		//log.debug(req.query)
+		//log.debug(req.body)
+		//log.debug(req.url)
 
 		var d = req.query
 		var p = req.params
@@ -783,6 +906,12 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 		log.error(e as Error)
 		return res.send(API_GS.NO_VERSION_CONFIG())
 	}
+})
+
+web.all("/query_cur_region", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
+	return res.json({ code: 0 })
 })
 
 web.all("/api/key/:id/*", async (req: Request, res: Response) => {
@@ -831,6 +960,7 @@ ping_job.on("message", (d: { type: string; data: any }) => {
 			}
 			log.info(`Send Ping:`, d.data.content)
 		} else if (d.type == "bot_stats") {
+			online_string = parseInt(d.data);
 			if (Config.Startup.bot) {
 				if (bot == undefined || bot.user == undefined) {
 					return;

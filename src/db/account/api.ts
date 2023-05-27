@@ -12,6 +12,10 @@ import Logger from "../../util/logger";
 // API Yuuki
 const log = new Logger("ACCOUNT");
 
+const db_url = `mongodb://${Config.AccountDbold.user}:${Config.AccountDbold.password}@${Config.AccountDbold.host}:${Config.AccountDbold.port}`;
+
+let db_name_acc = 'accounts';
+
 import { MongoClient, Filter, ObjectId } from 'mongodb';
 
 interface Login {
@@ -21,13 +25,55 @@ interface Login {
 }
 
 interface Data {
-	account: Account;
+	account: APILogin;
 }
 
-interface Account {
-	uid: ObjectId;
+interface APILogin {
+	uid: string;
 	name: string;
 	token: string;
+}
+
+interface AccountDB {
+	_id: string;
+	username: string;
+	password: string;
+	email: string;
+	reservedPlayerId: number;
+	token: string;
+	sessionKey: string;
+	permissions: string[];
+	locale: string;
+	banEndTime: number;
+	banStartTime: number;
+	banReason: string;
+	isBanned: boolean;
+	kickReason: string;
+	kickCodeReason: number;
+	isKick: boolean;
+	tokenAPI: string;
+}
+
+function generateToken(length: number): string {
+	const characters = '0123456789abcdef';
+	let token = '';
+
+	for (let i = 0; i < length; i++) {
+		const randomIndex = Math.floor(Math.random() * characters.length);
+		token += characters[randomIndex];
+	}
+
+	return token;
+}
+
+function validateUsername(username: string): boolean {
+	const pattern = /^[\p{L}\p{N}]{3,50}$/u;
+	return pattern.test(username);
+}
+
+function validateEmail(email: string): boolean {
+	const pattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/u;
+	return pattern.test(email);
 }
 
 export const Accounts = {
@@ -46,20 +92,154 @@ export const Accounts = {
 			}
 		}
 	},
+	CREATE_ACCOUNT_GC: async function (username: string = "", password: string = "", uid: string = "") {
+
+		const client = new MongoClient(db_url);
+		var data = {} as Login // tmp
+
+		if (!validateUsername(username)) {
+			if (!validateEmail(username)) {
+				return {
+					data: null,
+					retcode: 1,
+					message: `Usernames can only be a minimum of 3 and 50 letters and must not have special characters, or use an email format`
+				}
+			}
+		}
+
+		password = "" // no password for tmp
+
+		try {
+			await client.connect();
+
+			const database = client.db(Config.AccountDbold.database);
+			const collection = database.collection<AccountDB>(db_name_acc);
+
+			// Check if the username is already taken
+			const existingAccountUsername = await collection.findOne({ username: username });
+			if (!existingAccountUsername) {
+
+				if (isEmpty(uid)) {
+					const lastAccount = await collection.findOne({}, { sort: { $natural: -1 } });
+					let lastId = 0;
+					if (lastAccount) {
+						//console.log(lastAccount)
+						log.debug(`last acc ${lastAccount._id} with username ${lastAccount.username}`)
+						lastId = parseInt(lastAccount._id);
+					}
+					uid = (lastId + 1).toString();
+					/*
+					let isDuplicateId = true;
+					while (isDuplicateId) {
+						uid = Math.round(Math.random() * 50000).toString();
+						const existingAccount = await collection.findOne({ _id: uid });
+						if (!existingAccount) {
+							isDuplicateId = false;
+						}
+					}
+					*/
+				}
+
+				const existingAccount = await collection.findOne({ _id: uid });
+				if (!existingAccount) {
+
+					const token1 = generateToken(64);
+					const token2 = generateToken(64);
+
+					const dc: AccountDB = {
+						_id: uid,
+						username: username,
+						reservedPlayerId: 0,
+						token: token1,
+						sessionKey: token2,
+						permissions: [],
+						locale: "en_US",
+						banEndTime: 0,
+						banStartTime: 0,
+						isBanned: false,
+						kickCodeReason: 0,
+						isKick: false,
+						password: password,
+						email: "",
+						banReason: "",
+						kickReason: "",
+						tokenAPI: ""
+					};
+
+					//log.debug(dc)
+
+					const result = await collection.insertOne(dc);
+					if (result.insertedId) {
+						log.info(`Account ${username} has been created with id ${result.insertedId}`)
+						data = {
+							retcode: 0,
+							message: "Account created successfully",
+							data: {
+								account: {
+									uid: uid, // uid acc
+									name: username,
+									token: token1,
+								}
+							}
+						}
+					} else {
+						log.info(`Account ${username} failed to create`)
+						console.log(result);
+						data = {
+							data: null,
+							retcode: 1,
+							message: `Account failed to create`
+						}
+					}
+				} else {
+					data = {
+						data: null,
+						retcode: 1,
+						message: `This account UID is already in use, try creating an account with a different UID`
+					}
+				}
+			} else {
+				data = {
+					data: null,
+					retcode: 1,
+					message: `Cannot create an account, because this username has been taken.`
+				}
+			}
+		} catch (error) {
+			log.error(error);
+			data = {
+				data: null,
+				retcode: 1,
+				message: "Database failed to connect, try again (1)"
+			}
+		} finally {
+			await client.close();
+			return data
+		}
+	},
 	// This is a database created by GC and cannot be modified, so maybe it's better to create a separate datebase?
 	GET_ACCOUNT_GC: async function (username: string = "", password: string = "", game: string = "hk4e", type: number = 1) {
 		// type = 1 for login username and 2 for login sessionKey for gs and token for sr?
 		var data = {} as Login // tmp
+
+		if (!validateUsername(username)) {
+			if (!validateEmail(username)) {
+				return {
+					data: null,
+					retcode: 1,
+					message: `Usernames can only be a minimum of 3 and 50 letters and must not have special characters, or use an email format`
+				}
+			}
+		}
+
 		try {
 			// TODO: use mode pooling?
-			const client = new MongoClient(
-				`mongodb://${Config.AccountDbold.user}:${Config.AccountDbold.password}@${Config.AccountDbold.host}:${Config.AccountDbold.port}`
-			)
+			const client = new MongoClient(db_url)
 			try {
 				await client.connect()
 
 				const database = client.db(Config.AccountDbold.database)
-				const collection = database.collection("accounts")
+				const collection = database.collection(db_name_acc)
 
 				let query: any;
 				if (type === 2) {
@@ -74,18 +254,16 @@ export const Accounts = {
 				//log.debug(d)
 				//log.debug(query)
 
-				// about sessionKey is temporary, so when logging in it will generate a new key (save) then use this key to login via the reg token and verify if the token is correct.
-
-				// about token is temporary/perm?, so when logging in it will generate a new key (save) and then verify it from the game server side using account datebase via socket (supposedly) in PacketGetPlayerTokenRsp?
+				// about sessionKey is temporary for gacha
 
 				if (d) {
 					if (game == "hk4e") {
 						data = {
-							message: "OK",
+							message: "Login successfully",
 							retcode: 0,
 							data: {
 								account: {
-									uid: d._id,
+									uid: (d._id).toString(),
 									name: d.username,
 									token: d.token
 								}
@@ -94,10 +272,10 @@ export const Accounts = {
 					} else if (game == "hkrpg") {
 						data = {
 							retcode: 0,
-							message: "OK",
+							message: "Login successfully",
 							data: {
 								account: {
-									uid: d._id, // uid acc
+									uid: (d._id).toString(), // uid acc
 									name: d.username,
 									token: d.token,
 								}
@@ -111,14 +289,27 @@ export const Accounts = {
 						}
 					}
 				} else {
-					data = {
-						data: null,
-						retcode: 1,
-						message: "This account is not registered, please create an account"
+					if (type == 1) {
+						if (Config.autoAccount) {
+							data = await this.CREATE_ACCOUNT_GC(username, password)
+							console.log(data)
+						} else {
+							data = {
+								data: null,
+								retcode: 1,
+								message: "Account is not registered, please create an account at discord.yuuki.me use /account command in discord bot"
+							}
+						}
+					} else {
+						data = {
+							data: null,
+							retcode: 1,
+							message: "Unable to login, try re-login."
+						}
 					}
 				}
 			} catch (error) {
-				log.error(error as Error, true)
+				log.error(error)
 				data = {
 					data: null,
 					retcode: 1,
@@ -129,7 +320,7 @@ export const Accounts = {
 				return data
 			}
 		} catch (error) {
-			log.error(error as Error, true)
+			log.error(error)
 			return {
 				retcode: 1,
 				message: "Database failed to connect, try again (0)"
