@@ -5,6 +5,7 @@
  */
 
 // Important
+import { join } from 'path';
 import { sleep, isEmpty, contains } from "./util/library";
 import Config from './util/config';
 import Logger from "./util/logger";
@@ -19,6 +20,11 @@ import eta from "eta";
 
 // Node
 import { Worker } from 'worker_threads';
+
+// Translate
+import backend from 'i18next-node-fs-backend';
+import cookieParser from 'cookie-parser';
+import i18next from 'i18next';
 
 // API Discord
 import { Client, GatewayIntentBits, Partials, Events, WebhookClient, WebhookClientData, TextChannel, DMChannel, NewsChannel, Routes, REST } from 'discord.js';
@@ -217,12 +223,56 @@ const limit_tokenlogin = rateLimit({
 	}
 })
 
+// Initialize i18next
+i18next.use(backend).init({
+	fallbackLng: 'en', // Default language fallback
+	preload: ['en', 'id'], // Preload supported languages
+	ns: ['translation'],
+	backend: {
+		loadPath: join(__dirname, '../src/language/{{lng}}.json'), // Path to language files
+	},
+});
+
+
 // TODO move route web
 const web = express()
 
 // body-parser middleware
 web.use(bodyParser.json({ limit: '50mb' }))
 web.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
+web.use(cookieParser());
+
+// Function to translate a string based on the user's language preference
+function translateString(key: string, userLanguage: string = "en"): string {
+	const translation = i18next.t(key, { lng: userLanguage });
+	return translation;
+}
+
+// Function to translate a JSON object based on the user's language preference
+function translate(data: Record<string, any>, userLanguage: string = "en"): Record<string, any> {
+	const translatedData: Record<string, any> = {};
+
+	for (const key in data) {
+		if (data.hasOwnProperty(key)) {
+			const value = data[key];
+			if (typeof value === 'string') {
+				const translatedValue = translateString(value, userLanguage);
+				//console.log("load " + value + " > " + translatedValue);
+				translatedData[key] = translatedValue;
+			} else if (typeof value === 'object' && value !== null) {
+				const translatedValue = translate(value, userLanguage);
+				//console.log(translatedValue);
+				translatedData[key] = translatedValue;
+			} else {
+				translatedData[key] = value;
+			}
+		}
+	}
+
+	return translatedData;
+}
+
+
 
 // Core
 web.use(cors());
@@ -498,6 +548,10 @@ web.all("/privacy/policy/authorization/status", (req: Request, res: Response) =>
 	return res.json({ code: 0 })
 })
 
+web.all("/privacy/policy/ms/version", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
 // Config
 web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) => {
 	// Fake Config SR
@@ -750,14 +804,16 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 	})
 })
 // Username & Password login (from client).
-web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Response) => {
+web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
 	// TODO ACC
 	//log.debug(res)
 	//log.debug(req)
 	//log.debug(req.body)
-	//log.warn(req.query)
+	//log.debug()
 	//console.log(req)
 	// hk4e_global = gs and hkrpg_global = sr
+
+	var lang = req.headers['x-rpc-language']?.toString() || 'en';
 
 	var username = req.body.account
 	var password = req.body.password // temporarily useless
@@ -769,16 +825,15 @@ web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Res
 	}
 
 	var c = await Account.GET_ACCOUNT_GC(username, "", cn)
-
+	const ts = translate(c, lang);
 	//log.debug(c)
-
 	if (c.retcode == 0) {
 		log.info(`${username} have logged (normal login) in from ${cn} using ip ${ip}`)
 	} else {
-		log.info(`${username} login failed (normal login) because "${c.message}" in from ${cn} using ip ${ip}`)
+		log.info(`${username} login failed (normal login) because "${c.message}" in from ${cn} using ip ${ip} / ${lang}`)
 	}
 
-	return res.json(c)
+	return res.json(ts)
 })
 
 // SR Stuff

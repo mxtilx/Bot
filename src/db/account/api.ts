@@ -102,7 +102,7 @@ export const Accounts = {
 				return {
 					data: null,
 					retcode: 1,
-					message: `Usernames can only be a minimum of 3 and 50 letters and must not have special characters, or use an email format`
+					message: `UsernameInvaild`
 				}
 			}
 		}
@@ -173,7 +173,7 @@ export const Accounts = {
 						log.info(`Account ${username} has been created with id ${result.insertedId}`)
 						data = {
 							retcode: 0,
-							message: "Account created successfully",
+							message: "AccountCreated",
 							data: {
 								account: {
 									uid: uid, // uid acc
@@ -188,21 +188,21 @@ export const Accounts = {
 						data = {
 							data: null,
 							retcode: 1,
-							message: `Account failed to create`
+							message: `AccountFailed`
 						}
 					}
 				} else {
 					data = {
 						data: null,
 						retcode: 1,
-						message: `This account UID is already in use, try creating an account with a different UID`
+						message: `UsernameAlready`
 					}
 				}
 			} else {
 				data = {
 					data: null,
 					retcode: 1,
-					message: `Cannot create an account, because this username has been taken.`
+					message: `UsernameAlready1.`
 				}
 			}
 		} catch (error) {
@@ -210,7 +210,7 @@ export const Accounts = {
 			data = {
 				data: null,
 				retcode: 1,
-				message: "Database failed to connect, try again (1)"
+				message: "Databasefailed1"
 			}
 		} finally {
 			await client.close();
@@ -227,7 +227,7 @@ export const Accounts = {
 				return {
 					data: null,
 					retcode: 1,
-					message: `Usernames can only be a minimum of 3 and 50 letters and must not have special characters, or use an email format`
+					message: `UsernameInvaild`
 				}
 			}
 		}
@@ -259,7 +259,7 @@ export const Accounts = {
 				if (d) {
 					if (game == "hk4e") {
 						data = {
-							message: "Login successfully",
+							message: "LoginOK",
 							retcode: 0,
 							data: {
 								account: {
@@ -272,7 +272,7 @@ export const Accounts = {
 					} else if (game == "hkrpg") {
 						data = {
 							retcode: 0,
-							message: "Login successfully",
+							message: "LoginOK",
 							data: {
 								account: {
 									uid: (d._id).toString(), // uid acc
@@ -285,7 +285,7 @@ export const Accounts = {
 						data = {
 							data: null,
 							retcode: 1,
-							message: "Where are you stuck?"
+							message: "NoGame"
 						}
 					}
 				} else {
@@ -297,14 +297,14 @@ export const Accounts = {
 							data = {
 								data: null,
 								retcode: 1,
-								message: "Account is not registered, please create an account at discord.yuuki.me use /account command in discord bot"
+								message: "errorcreateaccount"
 							}
 						}
 					} else {
 						data = {
 							data: null,
 							retcode: 1,
-							message: "Unable to login, try re-login."
+							message: "UnableToLogin"
 						}
 					}
 				}
@@ -313,7 +313,7 @@ export const Accounts = {
 				data = {
 					data: null,
 					retcode: 1,
-					message: "Database failed to connect, try again (1)"
+					message: "Databasefailed1"
 				}
 			} finally {
 				await client.close()
@@ -323,7 +323,7 @@ export const Accounts = {
 			log.error(error)
 			return {
 				retcode: 1,
-				message: "Database failed to connect, try again (0)"
+				message: "Databasefailed0"
 			}
 		}
 	}

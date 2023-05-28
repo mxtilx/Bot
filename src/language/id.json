@@ -1,0 +1,13 @@
+{
+	"errorcreateaccount": "Akun tidak terdaftar, silakan buat akun di discord.yuuki.me gunakan perintah /account di bot discord",
+	"UnableToLogin": "Tidak bisa login, coba login ulang.",
+	"Databasefailed0": "Basis data gagal terhubung, coba lagi (0)",
+	"Databasefailed1": "Basis data gagal terhubung, coba lagi (1)",
+	"LoginOK": "Berhasil masuk",
+	"NoGame": "Game ini belum dirilis",
+	"UsernameInvaild": "Nama pengguna hanya boleh minimal 3 dan 50 huruf dan tidak boleh memiliki karakter khusus, atau menggunakan format email",
+	"AccountCreated": "Akun berhasil dibuat",
+	"AccountFailed": "Akun gagal dibuat",
+	"UsernameAlready": "UID akun ini sudah digunakan, coba buat akun dengan UID yang berbeda",
+	"UsernameAlready1": "Tidak dapat membuat akun, karena nama pengguna ini telah digunakan"
+}

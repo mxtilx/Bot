@@ -1,0 +1,13 @@
+{
+	"errorcreateaccount": "Tài khoản chưa được đăng ký, vui lòng tạo một tài khoản tại discord.yuuki.me sử dụng lệnh /account trong bot bất hòa",
+	"UnableToLogin": "Không thể đăng nhập, hãy thử đăng nhập lại.",
+	"Databasefailed0": "Cơ sở dữ liệu không kết nối được, hãy thử lại (0)",
+	"Databasefailed1": "Không thể kết nối cơ sở dữ liệu, hãy thử lại (1)",
+	"LoginOK": "đăng nhập thành công",
+	"NoGame": "Trò chơi này chưa được phát hành",
+	"UsernameInvaild": "Tên người dùng chỉ có thể có tối thiểu 3 và 50 chữ cái và không được có ký tự đặc biệt hoặc sử dụng định dạng email",
+	"AccountCreated": "Tài khoản được tạo thành công",
+	"AccountFailed": "Không thể tạo tài khoản",
+	"UsernameAlready": "UID tài khoản này đã được sử dụng, hãy thử tạo một tài khoản với UID khác",
+	"UsernameAlready1": "Không thể tạo tài khoản vì tên người dùng này đã được sử dụng"
+}

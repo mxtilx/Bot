@@ -1,0 +1,13 @@
+{
+	"errorcreateaccount": "帳戶未註冊，請在 discord.yuuki.me 創建一個帳戶，在 discord bot 中使用 /account 命令",
+	"UnableToLogin": "無法登錄，請嘗試重新登錄。",
+	"Databasefailed0": "數據庫連接失敗，重試 (0)",
+	"Databasefailed1": "數據庫連接失敗，重試（一）",
+	"LoginOK": "登錄成功",
+	"NoGame": "此遊戲尚未發布",
+	"UsernameInvaild": "用戶名只能包含最少 3 個和 50 個字母，並且不得包含特殊字符，或使用電子郵件格式",
+	"AccountCreated": "帳戶創建成功",
+	"AccountFailed": "帳戶創建失敗",
+	"UsernameAlready": "此帳戶 UID 已被使用，請嘗試使用不同的 UID 創建一個帳戶",
+	"UsernameAlready1": "無法創建帳戶，因為此用戶名已被佔用"
+}

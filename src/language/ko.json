@@ -1,0 +1,13 @@
+{
+    "errorcreateaccount": "계정이 등록되어 있지 않습니다. discord.yuuki.me에서 계정을 만드세요. discord 봇에서 /account 명령을 사용하세요.",
+    "UnableToLogin": "로그인할 수 없습니다. 다시 로그인하십시오.",
+    "Databasefailed0": "데이터베이스 연결에 실패했습니다. 다시 시도하십시오(0).",
+    "Databasefailed1": "데이터베이스 연결에 실패했습니다. 다시 시도하십시오. (1)",
+    "LoginOK": "성공적으로 로그인",
+    "NoGame": "이 게임은 아직 출시되지 않았습니다",
+    "UsernameInvaild": "사용자 이름은 최소 3자에서 50자까지만 가능하며 특수 문자를 포함하거나 이메일 형식을 사용할 수 없습니다.",
+    "AccountCreated": "계정이 성공적으로 생성되었습니다.",
+    "AccountFailed": "계정을 만들지 못했습니다.",
+    "UsernameAlready": "이 계정 UID는 이미 사용 중입니다. 다른 UID로 계정을 만들어 보세요.",
+    "UsernameAlready1": "이 사용자 이름이 사용 중이므로 계정을 만들 수 없습니다."
+  }
