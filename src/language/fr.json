@@ -1,0 +1,13 @@
+{
+	"errorcreateaccount": "Le compte n'est pas enregistré, veuillez créer un compte sur discord.yuuki.me, utilisez la commande /account dans le bot discord",
+	"UnableToLogin": "Impossible de se connecter, essayez de vous reconnecter.",
+	"Databasefailed0": "La base de données n'a pas pu se connecter, réessayez (0)",
+	"Databasefailed1": "La base de données n'a pas pu se connecter, réessayez (1)",
+	"LoginOK": "Connectez-vous avec succès",
+	"NoGame": "Ce jeu n'est pas encore sorti",
+	"UsernameInvaild": "Les noms d'utilisateur ne peuvent contenir qu'un minimum de 3 et 50 lettres et ne doivent pas contenir de caractères spéciaux, ni utiliser un format de courrier électronique",
+	"AccountCreated": "Compte créé avec succès",
+	"AccountFailed": "Le compte n'a pas pu être créé",
+	"UsernameAlready": "Cet UID de compte est déjà utilisé, essayez de créer un compte avec un UID différent",
+	"UsernameAlready1": "Impossible de créer un compte, car ce nom d'utilisateur a été pris"
+}
