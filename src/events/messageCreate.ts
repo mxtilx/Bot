@@ -46,10 +46,14 @@ export default async function run(message: Message) {
 
         // If have message
         if (message.content) {
-            var msg = message.content;
+            var msg = message.content.toLocaleLowerCase();
             log.info(
                 `Message ${username}#${username_id} from ${channel_name}#${channel_id}):\n-> ${msg}`
             )
+
+            if (msg.startsWith('/account') || msg.includes('/account')) {
+                message.delete().catch(log.error);
+            }
 
             // Chat with Ayaka
             if (channel_id == "1078345891557158987") {
@@ -60,7 +64,7 @@ export default async function run(message: Message) {
 
                 const chat = new ChatRealtime();
                 //console.log("send data " + msg)
-                
+
                 message.reply('Wait...').then((r) => {
                     chat.listen('msg', (sender: any, type: string, data: any) => {
                         //console.log('Received message: ' + data);
