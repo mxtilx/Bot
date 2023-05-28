@@ -26,12 +26,33 @@ interface Login {
 
 interface Data {
 	account: APILogin;
+	device_grant_required: boolean;
+	realname_operation: string;
+	realperson_required: boolean;
+	safe_mobile_required: boolean;
 }
 
 interface APILogin {
 	uid: string;
 	name: string;
+	email: string;
+	mobile: string;
+	is_email_verify: string;
+	realname: string;
+	identity_card: string;
 	token: string;
+	safe_mobile: string;
+	facebook_name: string;
+	twitter_name: string;
+	game_center_name: string;
+	google_name: string;
+	apple_name: string;
+	sony_name: string;
+	tap_name: string;
+	country: string;
+	reactivate_ticket: string;
+	area_code: string;
+	device_grant_ticket: string;
 }
 
 interface AccountDB {
@@ -176,10 +197,31 @@ export const Accounts = {
 							message: "AccountCreated",
 							data: {
 								account: {
-									uid: uid, // uid acc
+									uid: uid,
 									name: username,
+									email: "",
+									mobile: "",
+									is_email_verify: "0",
+									realname: "",
+									identity_card: "",
 									token: token1,
-								}
+									safe_mobile: "",
+									facebook_name: "",
+									twitter_name: "",
+									game_center_name: "",
+									google_name: "",
+									apple_name: "",
+									sony_name: "",
+									tap_name: "",
+									country: "US",
+									reactivate_ticket: "",
+									area_code: "**",
+									device_grant_ticket: ""
+								},
+								device_grant_required: false,
+								realname_operation: "NONE",
+								realperson_required: false,
+								safe_mobile_required: false
 							}
 						}
 					} else {
@@ -265,8 +307,29 @@ export const Accounts = {
 								account: {
 									uid: (d._id).toString(),
 									name: d.username,
-									token: d.token
-								}
+									email: "",
+									mobile: "",
+									is_email_verify: "0",
+									realname: "",
+									identity_card: "",
+									token: d.token,
+									safe_mobile: "",
+									facebook_name: "",
+									twitter_name: "",
+									game_center_name: "",
+									google_name: "",
+									apple_name: "",
+									sony_name: "",
+									tap_name: "",
+									country: "US",
+									reactivate_ticket: "",
+									area_code: "**",
+									device_grant_ticket: ""
+								},
+								device_grant_required: false,
+								realname_operation: "NONE",
+								realperson_required: false,
+								safe_mobile_required: false
 							}
 						}
 					} else if (game == "hkrpg") {
@@ -278,8 +341,8 @@ export const Accounts = {
 									uid: (d._id).toString(), // uid acc
 									name: d.username,
 									token: d.token,
-								}
-							}
+								} as APILogin
+							} as Data
 						}
 					} else {
 						data = {

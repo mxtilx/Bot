@@ -21,6 +21,12 @@ if [ "$metode" = "cloud" ];then
  npm run start -- --port_cloud 443 --port 10010 --host login.yuuki.me --protocol https
 fi
 
+if [ "$metode" = "teslocal" ];then
+ echo "Run Tes Local"
+ npm run start -- --port_cloud 10010 --port 10010 --host 2.0.0.100 --protocol http
+fi
+
+
 if [ "$metode" = "reg" ];then
  npm run start -- --port 10010 --reg true
 fi

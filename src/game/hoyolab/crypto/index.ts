@@ -20,8 +20,8 @@ export function loadKeys() {
   return keys;
 }
 
-export const DefaultEc2bPath = path.join(__dirname, "ec2b.bin");
-export const DefaultEc2bKeyPath = path.join(__dirname, "ec2b.key");
+export const DefaultEc2bPath = path.join(__dirname, "dispatchSeed.bin");
+export const DefaultEc2bKeyPath = path.join(__dirname, "dispatchKey.bin");
 
 export class Ec2bKey {
   readonly ec2b;

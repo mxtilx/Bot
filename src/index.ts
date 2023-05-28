@@ -6,6 +6,7 @@
 
 // Important
 import { join } from 'path';
+import fs from 'fs/promises';
 import { sleep, isEmpty, contains } from "./util/library";
 import Config from './util/config';
 import Logger from "./util/logger";
@@ -486,11 +487,13 @@ web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
 // Hoyo Acc Stuff
 
 web.all("/account/risky/api/check", async (req: Request, res: Response) => {
-	return res.json({ retcode: 0, message: "OK", data: { id: "", action: "ACTION_NONE", geetest: null } })
+	return res.json({ retcode: 0, message: "OK", data: { id: "none", action: "ACTION_NONE", geetest: null } }) // maybe fix android stuck
 })
 
 web.all("/account/device/api/listNewerDevices", (req: Request, res: Response) => {
-	return res.json({ code: 0 })
+	// Android Stuck ?
+	res.status(200);
+	return res.send("")
 })
 
 web.all("/:cn/mdk/shield/api/loginByThirdparty", (req: Request, res: Response) => {
@@ -692,10 +695,17 @@ web.all("/admin/mi18n/plat_os/:id1/:id2-version.json", async (req: Request, res:
 	//log.debug(req.query)
 	return res.json({ code: 0 })
 })
-web.all("/admin/mi18n/plat_oversea/:id1/:id2-version.json", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
-	return res.json({ code: 0 })
+web.all("/admin/mi18n/plat_oversea/:id1/:id2.json", async (req: Request, res: Response) => {
+	try {
+		const path1 = req.path;
+		const file_id = path1.substring(path1.lastIndexOf("-") + 1);
+		const data = await fs.readFile(join(__dirname, `./language/game/genshin/webstatic/${file_id}`), 'utf8');
+		const jsonData = JSON.parse(data);
+		res.json(jsonData);
+	} catch (err) {
+		log.error(err);
+		res.status(500).send('Error reading or parsing JSON');
+	}
 })
 
 web.all("/data_abtest_api/config/experiment/list", async (req: Request, res: Response) => {
@@ -754,7 +764,7 @@ web.all("/:cn/mdk/guest/guest/v2/login", async (req: Request, res: Response) => 
 	return res.json({ code: 0 })
 })
 // Cached token login (from registry).
-web.all("/:cn/mdk/shield/api/verify", limit_tokenlogin, async (req: Request, res: Response) => {
+web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
 	//log.debug(res)
 	//log.debug(req)
 	//log.debug(req.body)
@@ -794,10 +804,10 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 		retcode: 0,
 		message: "OK",
 		data: {
-			combo_id: 1,
+			combo_id: "157795300", // Android stuck if set 1
 			open_id: d.uid,
 			combo_token: d.token, // I still don't understand what this function is?
-			data: { guest: d.guest },
+			data: "{\"guest\":false}", // maybe this for android too
 			heartbeat: false,
 			account_type: 1,
 			fatigue_remind: null
@@ -805,7 +815,7 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 	})
 })
 // Username & Password login (from client).
-web.post("/:cn/mdk/shield/api/login", async (req: Request, res: Response) => {
+web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Response) => {
 	// TODO ACC
 	//log.debug(res)
 	//log.debug(req)
@@ -954,7 +964,7 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 		let platform = d.platform ?? "?3";
 
 		if (version == undefined || dispatchSeed == undefined || key == undefined) {
-			//log.info(`ip ${ip} trying to access region with no config`)
+			//log.info(`ip ${ip} trying to access region with no config`)			
 			return res.send(API_GS.NO_VERSION_CONFIG())
 		}
 
@@ -970,9 +980,10 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 })
 
 web.all("/query_cur_region", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
-	return res.json({ code: 0 })
+	//log.debug(req.params)
+	//log.debug(req.query)
+	//return res.json({ code: 0 })
+	return res.send(API_GS.NO_VERSION_CONFIG())
 })
 
 web.all("/api/key/:id/*", async (req: Request, res: Response) => {

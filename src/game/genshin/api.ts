@@ -44,6 +44,8 @@ export const _ = {
 	},
 
 	NO_VERSION_CONFIG() {
+		// CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZxoA
+		// CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw== for android no stcuk
 		return `CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZxoA`
 	},
 
