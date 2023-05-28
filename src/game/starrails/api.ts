@@ -20,15 +20,15 @@ const log = new Logger("GAME-API-SR");
 
 let hostname = "";
 let port = 0;
-let usehttps = "";
+let protocol = "";
 
 export const _ = {
 
 	initserver(h: string, p: number, uh: string) {
 		hostname = h
 		port = p
-		usehttps = uh
-		log.info(`set dispatch url sr: ${h} `)
+		protocol = uh
+		log.info(`set dispatch url sr: ${uh}://${h}:${p} `)
 	},
 
 	NO_VERSION_CONFIG() {

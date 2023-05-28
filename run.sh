@@ -15,6 +15,12 @@ if [ "$metode" = "s" ];then
  npm run start -- --port 10010
 fi
 
+if [ "$metode" = "cloud" ];then
+ echo "Run Cloud"
+ # TODO: move to ps.yuuki.me
+ npm run start -- --port_cloud 443 --port 10010 --host login.yuuki.me --protocol https
+fi
+
 if [ "$metode" = "reg" ];then
  npm run start -- --port 10010 --reg true
 fi

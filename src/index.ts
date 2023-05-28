@@ -50,13 +50,14 @@ let online_string: number = 9999
 // Temporary Config
 const argv = require("minimist")(process.argv.slice(2))
 log.debug(argv)
-const port_http = argv.port || 3000
 const set_host = argv.host || "localhost"
-const set_https = argv.https || "http"
+const set_protocol = argv.protocol || "http"
+const set_port_local = argv.port || 3000
+const set_port_cloud = argv.port_cloud || 443
 const regcmd = argv.reg || false
 
-API_GS.initserver(set_host, port_http, set_https)
-API_SR.initserver(set_host, port_http, set_https)
+API_GS.initserver(set_host, set_port_cloud, set_protocol)
+API_SR.initserver(set_host, set_port_cloud, set_protocol)
 
 var eta_plugin_random = require("./web/plugin/random")
 
@@ -906,16 +907,21 @@ web.all("/query_region_list", async (req: Request, res: Response) => {
 
 		var d = req.query
 
-		let version = d.version ?? "?0";
-		let ip = req.ip ?? "?1";
+		let version = d.version as string ?? "?0";
+		let ip = req.ip as string ?? "?1";
 
 		// TODO: get real name
 		let lang = d.lang ?? "?2";
 		let platform = d.platform ?? "?3";
 
+		//const protocol = req.protocol; // 'http' or 'https'
+		//const host = req.get('host'); // domain and port
+		//const fullDomain = `${protocol}://${host}`;
+		//log.debug(`Full Domain: ${fullDomain}`);
+
 		log.info(`ip ${ip} trying to access region list with version ${version} and language codes ${lang} and platform ${platform}`)
 
-		var data = await API_GS.GET_LIST_REGION(version as string)
+		var data = await API_GS.GET_LIST_REGION(version)
 
 		return res.send(data)
 	} catch (e) {
@@ -940,7 +946,7 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 		let version = d.version as string;
 		let ip = req.ip ?? "?1";
 		let dispatchSeed = d.dispatchSeed as string;
-		let key = d.key_id as unknown as number;
+		let key = d.key_id as unknown as number ?? 5;
 		let name = p.name ?? "none"
 
 		// TODO: get real name
@@ -948,7 +954,7 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 		let platform = d.platform ?? "?3";
 
 		if (version == undefined || dispatchSeed == undefined || key == undefined) {
-			log.info(`ip ${ip} trying to access region with no config`)
+			//log.info(`ip ${ip} trying to access region with no config`)
 			return res.send(API_GS.NO_VERSION_CONFIG())
 		}
 
@@ -996,8 +1002,8 @@ web.use((req: Request, res: Response) => {
 });
 
 if (Config.Startup.webserver) {
-	var listener = web.listen(port_http, function () {
-		log.info(`Server started on port ${port_http}`)
+	var listener = web.listen(set_port_local, function () {
+		log.info(`Server started on port ${set_port_local}`)
 	})
 } else {
 	log.info("skip run webserver...")

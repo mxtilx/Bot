@@ -32,15 +32,15 @@ function readJSON(file: string): any {
 
 let hostname = "";
 let port = 0;
-let usehttps = "";
+let protocol = "";
 
 export const _ = {
 
 	initserver(h: string, p: number, uh: string) {
 		hostname = h
 		port = p
-		usehttps = uh
-		log.info(`set dispatch url gs: ${h} `)
+		protocol = uh
+		log.info(`set dispatch url gs: ${uh}://${h}:${p}`)
 	},
 
 	NO_VERSION_CONFIG() {
@@ -66,6 +66,7 @@ export const _ = {
 			CNRELiOS3.6.0     | 24e8cbb8af855e68
 
 			OSRELWin3.7.0     | 31c339cb23bd65a2
+			CNRELWin3.7.0     | 916fa790e214f718
 			*/
 
 			var platform = 1
@@ -195,12 +196,14 @@ export const _ = {
 			}
 		}
 	},
-	GET_LIST_REGION: async function (cn: string = "", raw: boolean = false) {
+	GET_LIST_REGION: async function (cn: string = "", raw: boolean = false, chost: string = "") {
 		try {
-
 			const region_list: RegionSimpleInfo[] = []
 			Config.server.forEach(item => {
-				var dispatchUrl = `${usehttps}://${hostname}:${port}/query_cur_region/${item.name}`
+				var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/${item.name}`
+				if (!isEmpty(chost)) {
+					dispatchUrl = `${chost}/query_cur_region/${item.name}`
+				}
 				if (!isEmpty(item.dispatchUrl)) {
 					dispatchUrl = item.dispatchUrl
 				}
@@ -254,7 +257,7 @@ export const _ = {
 				return this.NO_VERSION_CONFIG();
 			}
 
-			log.debug(`Client Key: ${key}`)
+			//log.debug(`Client Key: ${key}`)
 
 			const dispatchData = Config.server.find(r => r.name == name && contains(version, r.version) == true)
 
@@ -264,7 +267,7 @@ export const _ = {
 
 				// found config
 
-				var dispatchUrl = `${usehttps}://${hostname}:${port}`
+				var dispatchUrl = `${protocol}://${hostname}:${port}`
 				let reg = RegionInfo.fromPartial({
 					gateserverIp: dispatchData.ip,
 					gateserverPort: dispatchData.port,
