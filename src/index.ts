@@ -38,6 +38,7 @@ import Control from "./commands/gm/control";
 import API_GS from "./game/genshin/api";
 import API_SR from "./game/starrails/api";
 import { RSAUtils } from "./game/hoyolab/crypto";
+import axios from 'axios';
 
 const log = new Logger("YuukiPS");
 log.info("YuukiPS startup....")
@@ -466,6 +467,14 @@ web.all("/crash/dataUpload", (req: Request, res: Response) => {
 web.all("/h5/upload", (req: Request, res: Response) => {
 	return res.json({ code: 0 })
 })
+web.all("/h5/dataUpload", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+web.all("/errlog", (req: Request, res: Response) => {
+	return res.json({ code: 0 })
+})
+
+// event
 web.all("/sw.html", async (req: Request, res: Response) => {
 	//log.debug(req.params)
 	//log.debug(req.query)
@@ -690,22 +699,30 @@ web.all("/device-fp/api/getExtList", async (req: Request, res: Response) => {
 		}
 	})
 })
-web.all("/admin/mi18n/plat_os/:id1/:id2-version.json", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
-	return res.json({ code: 0 })
-})
-web.all("/admin/mi18n/plat_oversea/:id1/:id2.json", async (req: Request, res: Response) => {
-	try {
-		const path1 = req.path;
-		const file_id = path1.substring(path1.lastIndexOf("-") + 1);
-		const data = await fs.readFile(join(__dirname, `./language/game/genshin/webstatic/${file_id}`), 'utf8');
-		const jsonData = JSON.parse(data);
-		res.json(jsonData);
-	} catch (err) {
-		log.error(err);
-		res.status(500).send('Error reading or parsing JSON');
+web.all("/admin/:id3/:id4/:id1/:id2.json", async (req: Request, res: Response) => {
+	var url = `https://webstatic.hoyoverse.com/admin/${req.params.id3}/${req.params.id4}/${req.params.id1}/${req.params.id2}.json`;
+	if (req.params.id4 == "plat_os") {
+		//log.info(`${req.originalUrl}`)
+		url = `https://webstatic.hoyoverse.com` + req.originalUrl
+		//return res.json({ code: 0 }) 
 	}
+	var file = `./language/game/genshin/webstatic/${req.params.id1}-${req.params.id2}.json`
+	try {
+		// if found
+		const data = await fs.readFile(join(__dirname, file), 'utf8');
+		const jsonData = JSON.parse(data);
+		return res.json(jsonData);
+	} catch (err) {
+		log.warn(`No found ${file} so find ${url}`);
+		const response = await axios.get(url, {
+			timeout: 1000 * 10
+		})
+		const d = response.data
+		const jsonString = JSON.stringify(d, null, 4)
+		fs.writeFile(join(__dirname, file), jsonString)
+		return res.json(d);
+	}
+	//res.status(500).send('Error reading or parsing JSON');
 })
 
 web.all("/data_abtest_api/config/experiment/list", async (req: Request, res: Response) => {
