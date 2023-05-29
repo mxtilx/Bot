@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<%~ includeFile('./../../views/layout/head', it) %>
+
+<%~ includeFile('./../../views/lib/top', it) %>
+
+<body>
+  <main>
+
+    <h1 class="text-center p-3">YuukiPS Account</h1>
+
+    <div class="container">
+
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Login</h1>
+          </div>
+
+          <div class="modal-body p-5 pt-0">
+            <form action="/account/login" method="POST">
+
+              <% if (it.action == 'OK_LOGIN') { %>
+              <div class="alert alert-success" role="alert">
+                Login successful (but it doesn't work in-game)
+              </div>
+              <% }  %>
+
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control rounded-3" name="login_username" placeholder="melon">
+                <label>Username</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control rounded-3" name="login_password" placeholder="passmelon123">
+                <label>Password</label>
+              </div>
+
+              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Login</button>
+
+              <hr class="my-4">
+
+              <h2 class="fs-5 fw-bold mb-3">Or Registration</h2>
+
+              <% if (it.action == 'OK_REG') { %>
+              <div class="alert alert-success" role="alert">
+                <%= it.message %> ,You can close this page, using the username you created.
+              </div>
+              <% } else if(it.action == 'FAILD_REG') { %>
+              <div class="alert alert-danger" role="alert">
+                <%= it.message %>
+              </div>
+              <% } %>
+
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control rounded-3" name="reg_username" placeholder="melon">
+                <label for="floatingInput">Username</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="email" class="form-control rounded-3" name="reg_email" placeholder="melon@yuuki.me">
+                <label for="floatingInput">Email</label>
+                <small class="text-body-secondary">This email is used for password reset or account update.</small>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control rounded-3" name="reg_pass" placeholder="Password">
+                <label for="floatingPassword">Password</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control rounded-3" name="reg_pass_tes" placeholder="Password">
+                <label for="floatingPassword">Please retype password</label>
+              </div>
+
+              <div class="h-captcha" data-sitekey="34254aaf-2cd9-423d-9271-181c3f5e72a1"></div>
+
+              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Sign up</button>
+              <small class="text-body-secondary">By clicking Sign up, you agree to the terms of use.</small>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- end -->
+
+      <p class="text-center py-3">
+        <a href="/" class="btn btn-primary">Back to Home</a>
+      </p>
+
+      <%~ includeFile('./../../views/layout/footer', it) %>
+
+    </div>
+  </main>
+</body>
+
+<%~ includeFile('./../../views/lib/down', it) %>
+
+</html>

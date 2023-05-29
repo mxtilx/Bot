@@ -1,25 +1,26 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
-import GM_GIO from "../gm/gio";
-import API_HOYO from "../../game/hoyolab/api";
-import API_GS from "../../game/genshin/api";
-import API_SR from "../../game/starrails/api";
+import Control from "../gm/control"
+import GM_GIO from "../gm/gio"
+import API_HOYO from "../../game/hoyolab/api"
+import API_GS from "../../game/genshin/api"
+import API_SR from "../../game/starrails/api"
 
-const log = new Logger("GM-CMD");
+const log = new Logger("GM-CMD")
 
 const cmd = new SlashCommandBuilder()
 	.setName("cmd")
@@ -35,14 +36,13 @@ const cmd = new SlashCommandBuilder()
 	)
 
 async function run(interaction: CommandInteraction) {
-
-	const baseReply: InteractionReplyOptions = { ephemeral: false }; // shit
+	const baseReply: InteractionReplyOptions = { ephemeral: false } // shit
 
 	try {
-		let server_id = interaction.options.get("id")?.value?.toString() ?? '';
-		let uid = interaction.options.get("uid")?.value?.toString() ?? '';
-		let set_command = interaction.options.get("command")?.value?.toString() ?? '';
-		let set_code = interaction.options.get("code")?.value?.toString() ?? '';
+		let server_id = interaction.options.get("id")?.value?.toString() ?? ""
+		let uid = interaction.options.get("uid")?.value?.toString() ?? ""
+		let set_command = interaction.options.get("command")?.value?.toString() ?? ""
+		let set_code = interaction.options.get("code")?.value?.toString() ?? ""
 
 		let id_user = interaction.user.id
 		let name_user = interaction.user.username
@@ -56,11 +56,11 @@ async function run(interaction: CommandInteraction) {
 		return await interaction.editReply({ content: `${d.msg} | ${d.code}`, ...baseReply })
 	} catch (err) {
 		log.error(err as Error)
-		return await interaction.reply({ content: "Unknown error", ...baseReply });
+		return await interaction.reply({ content: "Unknown error", ...baseReply })
 	}
 }
 
-let _;
+let _
 export default _ = {
 	process: run,
 	command: cmd

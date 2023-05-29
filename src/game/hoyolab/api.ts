@@ -1,10 +1,11 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
-import axios from "axios";
+import axios from "axios"
 
 function getPotentialCodes(searchResult: string) {
 	const regex = /[A-Z0-9]{8,}/g
@@ -12,7 +13,7 @@ function getPotentialCodes(searchResult: string) {
 	//log.debug("HoyolabApiClient", "Potential codes", "Substrings", regexResult)
 	const uppercaseRegex = /[A-Z]+/
 	if (regexResult == undefined) {
-		return "";
+		return ""
 	}
 	const potentialCodes = regexResult.filter((str: string) => uppercaseRegex.exec(str))
 	//log.debug("HoyolabApiClient", "Potential codes", "Result", potentialCodes)
@@ -36,7 +37,14 @@ export const _ = {
 		const pt = getPotentialCodes(r)
 		return pt
 	},
-	ClaimRedeem: async function (uid:string | number = 0, region = "os_asia", key = "", game = "hk4e", ck_token = "", ck_acc_id = "") {
+	ClaimRedeem: async function (
+		uid: string | number = 0,
+		region = "os_asia",
+		key = "",
+		game = "hk4e",
+		ck_token = "",
+		ck_acc_id = ""
+	) {
 		// hk4e = gs, hkrpg=sr for asia prod_official_asia
 		const url = `https://sg-${game}-api.hoyoverse.com/common/apicdkey/api/webExchangeCdkey?uid=${uid}&region=${region}&lang=en&cdkey=${key}&game_biz=${game}_global&sLangKey=en-us`
 		console.log("Check: " + url)
@@ -128,4 +136,4 @@ export const _ = {
 		}
 	}
 }
-export default _;
+export default _

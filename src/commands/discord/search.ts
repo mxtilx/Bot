@@ -1,22 +1,23 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
-import API_HOYO from "../../game/hoyolab/api";
+import Control from "../gm/control"
+import API_HOYO from "../../game/hoyolab/api"
 
-const log = new Logger("SEARCH-CMD");
+const log = new Logger("SEARCH-CMD")
 
 const cmd = new SlashCommandBuilder()
 	.setName("search")
@@ -24,14 +25,13 @@ const cmd = new SlashCommandBuilder()
 	.addStringOption((option) => option.setName("search").setDescription("code gs,sr,hk").setRequired(true))
 
 async function run(interaction: CommandInteraction) {
-
-	const baseReply: InteractionReplyOptions = { ephemeral: false }; // shit
+	const baseReply: InteractionReplyOptions = { ephemeral: false } // shit
 
 	try {
-		let search = interaction.options.get("search")?.value?.toString() ?? '';
+		let search = interaction.options.get("search")?.value?.toString() ?? ""
 
 		await interaction.deferReply(baseReply)
-		await sleep(2)		
+		await sleep(2)
 
 		if (search == "code gs") {
 			let d = await API_HOYO.SearchRedeemCode()
@@ -57,7 +57,7 @@ async function run(interaction: CommandInteraction) {
 	}
 }
 
-let _;
+let _
 export default _ = {
 	process: run,
 	command: cmd

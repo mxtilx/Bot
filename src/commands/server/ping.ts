@@ -1,11 +1,13 @@
-import Logger from '../../util/logger';
+/** @format */
 
-import { Command } from './Interface';
+import Logger from "../../util/logger"
 
-import fs from 'fs';
+import { Command } from "./Interface"
 
-const log = new Logger('/ping', 'blue');
+import fs from "fs"
+
+const log = new Logger("/ping", "blue")
 
 export default async function handle(command: Command) {
-  log.log(`udah goblok`);
+	log.log(`udah goblok`)
 }

@@ -10,7 +10,7 @@
 <body>
 
 
-  <div class="d-flex min-vh-100" lc-helper="background" style="background: url(https://ps.yuuki.me/image/banner1.png) center center / cover no-repeat rgb(68, 68, 68); background-blend-mode: overlay; --darkreader-inline-bgcolor:#33373a;">
+  <div class="d-flex min-vh-100" lc-helper="background" style="background: url(/image/banner1.png) center center / cover no-repeat rgb(68, 68, 68); background-blend-mode: overlay; --darkreader-inline-bgcolor:#33373a;">
 
     <div class="align-self-center text-center text-light col-md-8 offset-md-2">
 
@@ -28,11 +28,11 @@
       <div class="mt-4">
         <div class="btn-group btn-group-lg" role="group" aria-label="Button group with nested dropdown">
 
-          <a class="btn btn-primary" href="/command">Command Web</a>
+          <a class="btn btn-primary" href="/command">Command</a>
 
           <div class="btn-group" role="group">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-              Play
+            <button type="button" class="btn btn-primary dropdown-toggle btn-lg" data-bs-toggle="dropdown" aria-expanded="false">
+              Playing
             </button>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="/game/genshin">Genshin Impact</a></li>
@@ -40,7 +40,7 @@
             </ul>
           </div>
 
-          <a class="btn btn-primary" href="https://github.com/YuukiPS/DockerGS" target="_blank" rel="sponsored">Create Server</a>
+          <a class="btn btn-primary" href="/account/login" target="_blank" rel="sponsored">Register/Login</a>
 
         </div>
       </div>

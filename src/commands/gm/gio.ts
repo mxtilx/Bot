@@ -1,17 +1,18 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { contains, isEmpty } from "../../util/library";
-import ConfigR from '../../util/config';
-import Logger from "../../util/logger";
+import { contains, isEmpty } from "../../util/library"
+import ConfigR from "../../util/config"
+import Logger from "../../util/logger"
 import axios from "axios"
 import crypto from "crypto"
 
-const log = new Logger("GM-GIO");
+const log = new Logger("GM-GIO")
 
 export const _ = {
 	Sign: function (raw: any = null) {
@@ -26,7 +27,13 @@ export const _ = {
 		raw["sign"] = sha256_result
 		return raw
 	},
-	CMD: function (cmd: number, uid: number | undefined = undefined, msg: string | undefined = undefined, raw: any = null, region = "dev_gio") {
+	CMD: function (
+		cmd: number,
+		uid: number | undefined = undefined,
+		msg: string | undefined = undefined,
+		raw: any = null,
+		region = "dev_gio"
+	) {
 		let params = {
 			cmd: `${cmd}`,
 			region: region,
@@ -146,7 +153,7 @@ export const _ = {
 		}
 	},
 	Server: async function (server_url: string, set_timeout: number = 60) {
-		var response = null;
+		var response = null
 		try {
 			// 1101 = Server Status
 			let params = this.CMD(1101)
@@ -181,4 +188,4 @@ export const _ = {
 	}
 }
 
-export default _;
+export default _

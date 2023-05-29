@@ -3,4 +3,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="<%= it.description %>" />
   <title>YuukiPS - <%= it.title %></title>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+
 </head>

@@ -11,18 +11,19 @@ export function timestr(time: number) {
 	return timeDifferenceInSeconds < 60
 		? `${timeDifferenceInSeconds} seconds ago`
 		: timeDifferenceInSeconds < 3600
-			? `${Math.floor(timeDifferenceInSeconds / 60)} minutes ${timeDifferenceInSeconds % 60} seconds ago`
-			: timeDifferenceInSeconds < 86400
-				? `${Math.floor(timeDifferenceInSeconds / 3600)} hours ${Math.floor(
-					(timeDifferenceInSeconds % 3600) / 60
-				)} minutes ${timeDifferenceInSeconds % 60} seconds ago`
-				: `${Math.floor(timeDifferenceInSeconds / 86400)} days ${Math.floor(
-					(timeDifferenceInSeconds % 86400) / 3600
-				)} hours ${Math.floor((timeDifferenceInSeconds % 3600) / 60)} minutes ${timeDifferenceInSeconds % 60
-				} seconds ago`
+		? `${Math.floor(timeDifferenceInSeconds / 60)} minutes ${timeDifferenceInSeconds % 60} seconds ago`
+		: timeDifferenceInSeconds < 86400
+		? `${Math.floor(timeDifferenceInSeconds / 3600)} hours ${Math.floor(
+				(timeDifferenceInSeconds % 3600) / 60
+		  )} minutes ${timeDifferenceInSeconds % 60} seconds ago`
+		: `${Math.floor(timeDifferenceInSeconds / 86400)} days ${Math.floor(
+				(timeDifferenceInSeconds % 86400) / 3600
+		  )} hours ${Math.floor((timeDifferenceInSeconds % 3600) / 60)} minutes ${
+				timeDifferenceInSeconds % 60
+		  } seconds ago`
 }
 export function isEmpty(str: string | any[]) {
-	return !str || str.length === 0
+	return str == undefined || !str || str.length === 0
 }
 export function contains(target: any, pattern: any[]) {
 	var value = 0

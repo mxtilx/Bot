@@ -1,41 +1,45 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
-import API_HOYO from "../../game/hoyolab/api";
-import API_GS from "../../game/genshin/api";
-import API_SR from "../../game/starrails/api";
-import API_ACC from "../../db/account/api";
+import Control from "../gm/control"
+import API_HOYO from "../../game/hoyolab/api"
+import API_GS from "../../game/genshin/api"
+import API_SR from "../../game/starrails/api"
+import API_ACC from "../../db/account/api"
 
-const log = new Logger("Account-CMD");
+const log = new Logger("Account-CMD")
 
-const cmd = new SlashCommandBuilder().setName("account")
+const cmd = new SlashCommandBuilder()
+	.setName("account")
 	.setDescription("YuukiPS Account")
 	.addStringOption((option) => option.setName("metode").setDescription("try create|forget|login").setRequired(true))
-	.addStringOption((option) => option.setName("username").setDescription("Email account/username for YuukiPS").setRequired(true))
-	.addStringOption((option) => option.setName("password").setDescription("Password for your YuukiPS Account").setRequired(false))
+	.addStringOption((option) =>
+		option.setName("username").setDescription("Email account/username for YuukiPS").setRequired(true)
+	)
+	.addStringOption((option) =>
+		option.setName("password").setDescription("Password for your YuukiPS Account").setRequired(false)
+	)
 
 async function run(interaction: CommandInteraction) {
-
-	const baseReply: InteractionReplyOptions = { ephemeral: true }; // shit
+	const baseReply: InteractionReplyOptions = { ephemeral: true } // shit
 
 	try {
-
-		var metode = interaction.options.get("metode")?.value?.toString() ?? '';
-		var username = interaction.options.get("username")?.value?.toString() ?? '';
-		var password = interaction.options.get("password")?.value?.toString() ?? '';
+		var metode = interaction.options.get("metode")?.value?.toString() ?? ""
+		var username = interaction.options.get("username")?.value?.toString() ?? ""
+		var password = interaction.options.get("password")?.value?.toString() ?? ""
 
 		await interaction.deferReply(baseReply)
 		await sleep(3)
@@ -44,11 +48,12 @@ async function run(interaction: CommandInteraction) {
 
 		// tmp
 		if (metode == "create") {
-			let r = await API_ACC.CREATE_ACCOUNT_GC(username, password);
+			let r = await API_ACC.CREATE_ACCOUNT_GC(username, password)
 			tes = `${r.message}`
 		} else {
-			tes = "this method is not yet available...";
+			tes = `Metode ${metode} is not yet available...`
 		}
+		log.warn(`Account ${username} get respon ${tes}`)
 
 		return await interaction.editReply({ content: `${tes}`, ...baseReply })
 	} catch (err) {
@@ -57,7 +62,7 @@ async function run(interaction: CommandInteraction) {
 	}
 }
 
-let _;
+let _
 export default _ = {
 	process: run,
 	command: cmd

@@ -58,3 +58,9 @@ if [ "$metode" = "clean" ];then
  echo "Clean node_module"
  rm -rf node_modules && npm install
 fi
+
+if [ "$metode" = "fix" ];then
+ cd src
+ npx prettier --config .prettierrc.json --write .
+ cd ..
+fi

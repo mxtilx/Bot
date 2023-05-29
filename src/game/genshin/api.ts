@@ -1,18 +1,26 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty, contains } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty, contains } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // Proto
-import { ForceUpdateInfo, QueryCurrRegionHttpRsp, QueryRegionListHttpRsp, RegionInfo, RegionSimpleInfo, StopServerInfo } from './proto/schema';
+import {
+	ForceUpdateInfo,
+	QueryCurrRegionHttpRsp,
+	QueryRegionListHttpRsp,
+	RegionInfo,
+	RegionSimpleInfo,
+	StopServerInfo
+} from "./proto/schema"
 
-import { Ec2bKey, RSAUtils } from "../../game/hoyolab/crypto";
+import { Ec2bKey, RSAUtils } from "../../game/hoyolab/crypto"
 
 const ec2b = new Ec2bKey()
 
@@ -22,20 +30,64 @@ import fs from "fs"
 import path from "path"
 import crypto from "crypto"
 
-const log = new Logger("GAME-API-GS");
+const log = new Logger("GAME-API-GS")
 
 const KEY_SIZE = 256
 
 function readJSON(file: string): any {
-	return JSON.parse(fs.readFileSync(file, 'utf-8'));
+	return JSON.parse(fs.readFileSync(file, "utf-8"))
 }
 
-let hostname = "";
-let port = 0;
-let protocol = "";
+let hostname = ""
+let port = 0
+let protocol = ""
+
+let COVER_SWITCH_DATA = {
+	gacha: 1,
+	mall: 2,
+	battle_pass: 3,
+	bulletin: 4,
+	mail: 5,
+	time: 6,
+	community: 7,
+	handbook: 8,
+	feedback: 9,
+	quest: 10,
+	map: 11,
+	team: 12,
+	friends: 13,
+	avatar_list: 14,
+	character: 15,
+	activity: 16,
+	multiplayer: 17,
+	recharge_card: 18,
+	exchange_code: 19,
+	guide_rating: 20,
+	share: 21,
+	mcoin: 22,
+	battle_pass_recharge: 23,
+	achievement: 24,
+	photograph: 25,
+	network_latency_icon: 26,
+	user_center: 27,
+	account_binding: 28,
+	recommend_panel: 29,
+	codex: 30,
+	report: 31,
+	derivative_mall: 32,
+	edit_name: 33,
+	edit_signature: 34,
+	resin_card: 35,
+	file_integrity_check: 36,
+	activity_h5: 37,
+	survey: 38,
+	concert_package: 39,
+	cloud_game: 40,
+	battle_pass_discount: 41,
+	share_bbs: 42
+}
 
 export const _ = {
-
 	initserver(h: string, p: number, uh: string) {
 		hostname = h
 		port = p
@@ -46,7 +98,7 @@ export const _ = {
 	NO_VERSION_CONFIG() {
 		// CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZxoA
 		// CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw== for android no stcuk
-		return `CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZxoA`
+		return `CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==`
 	},
 
 	RES: async function (version = "OSRELAndroid3.5.0", seed_id = "3f8038a6406a3b89", key_rsa = 5, audio_lang = 2) {
@@ -69,6 +121,7 @@ export const _ = {
 
 			OSRELWin3.7.0     | 31c339cb23bd65a2
 			CNRELWin3.7.0     | 916fa790e214f718
+			OSRELAndroid3.7.0 | 24fdd422d5cce0cb
 			*/
 
 			var platform = 1
@@ -122,7 +175,7 @@ export const _ = {
 
 				console.log("Verified signature =>", verified)
 
-				var decoded = QueryCurrRegionHttpRsp.decode(result);
+				var decoded = QueryCurrRegionHttpRsp.decode(result)
 				if (decoded.regionInfo !== undefined && decoded.regionInfo.resVersionConfig) {
 					//save dump
 					const jsonString = JSON.stringify(decoded, null, 4)
@@ -201,7 +254,7 @@ export const _ = {
 	GET_LIST_REGION: async function (cn: string = "", raw: boolean = false, chost: string = "") {
 		try {
 			const region_list: RegionSimpleInfo[] = []
-			Config.server.forEach(item => {
+			Config.server.forEach((item) => {
 				var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/${item.name}`
 				if (!isEmpty(chost)) {
 					dispatchUrl = `${chost}/query_cur_region/${item.name}`
@@ -224,7 +277,7 @@ export const _ = {
 				loadPatch: false,
 				showexception: false,
 				regionConfig: "pm|fk|add",
-				downloadMode: 0,
+				downloadMode: 0
 			}
 
 			//log.debug(config_custom)
@@ -232,14 +285,9 @@ export const _ = {
 			const toaddquery = QueryRegionListHttpRsp.create({
 				regionList: region_list,
 				clientSecretKey: ec2b.ec2b,
-				clientCustomConfigEncrypted: ec2b.cipher(
-					Buffer.from(
-						JSON.stringify(config_custom),
-						"utf8"
-					)
-				),
+				clientCustomConfigEncrypted: ec2b.cipher(Buffer.from(JSON.stringify(config_custom), "utf8")),
 				enableLoginPc: true
-			});
+			})
 
 			//const buffer = QueryRegionListHttpRsp.encode(toaddquery).finish()
 			return Buffer.from(QueryRegionListHttpRsp.encode(toaddquery).finish()).toString("base64")
@@ -254,19 +302,17 @@ export const _ = {
 	},
 	GET_DATA_REGION: async function (name: string = "", seed: string = "", key: number = 5, version: string = "") {
 		try {
-
 			if (!key) {
-				return this.NO_VERSION_CONFIG();
+				return this.NO_VERSION_CONFIG()
 			}
 
 			//log.debug(`Client Key: ${key}`)
 
-			const dispatchData = Config.server.find(r => r.name == name && contains(version, r.version) == true)
+			const dispatchData = Config.server.find((r) => r.name == name && contains(version, r.version) == true)
 
-			let dataObj: QueryCurrRegionHttpRsp;
+			let dataObj: QueryCurrRegionHttpRsp
 
 			if (dispatchData !== undefined) {
-
 				// found config
 
 				var dispatchUrl = `${protocol}://${hostname}:${port}`
@@ -282,36 +328,36 @@ export const _ = {
 					userCenterUrl: `${dispatchUrl}/`,
 					accountBindUrl: `${dispatchUrl}/`,
 					cdkeyUrl: `${dispatchUrl}/api/key/hk4e/`,
-					privacyPolicyUrl: `${dispatchUrl}/`,
-				});
+					privacyPolicyUrl: `${dispatchUrl}/`
+				})
 
-				// res data				
+				// res data
 				let j = readJSON(`./src/game/genshin/dump/${seed}.json`) as QueryCurrRegionHttpRsp
 				if (j.regionInfo !== undefined) {
-					reg.resourceUrl = j.regionInfo.resourceUrl;
-					reg.dataUrl = j.regionInfo.dataUrl;
-					reg.resourceUrlBak = j.regionInfo.resourceUrlBak;
+					reg.resourceUrl = j.regionInfo.resourceUrl
+					reg.dataUrl = j.regionInfo.dataUrl
+					reg.resourceUrlBak = j.regionInfo.resourceUrlBak
 
-					reg.clientDataVersion = j.regionInfo.clientDataVersion;
-					reg.clientDataMd5 = j.regionInfo.clientDataMd5;
+					reg.clientDataVersion = j.regionInfo.clientDataVersion
+					reg.clientDataMd5 = j.regionInfo.clientDataMd5
 
-					reg.clientSilenceDataVersion = j.regionInfo.clientSilenceDataVersion;
-					reg.clientSilenceDataMd5 = j.regionInfo.clientSilenceDataMd5;
+					reg.clientSilenceDataVersion = j.regionInfo.clientSilenceDataVersion
+					reg.clientSilenceDataMd5 = j.regionInfo.clientSilenceDataMd5
 
-					reg.resVersionConfig = j.regionInfo.resVersionConfig;
-					reg.nextResVersionConfig = j.regionInfo.nextResVersionConfig;
+					reg.resVersionConfig = j.regionInfo.resVersionConfig
+					reg.nextResVersionConfig = j.regionInfo.nextResVersionConfig
 
-					reg.clientSilenceVersionSuffix = j.regionInfo.clientSilenceVersionSuffix;
-					reg.clientVersionSuffix = j.regionInfo.clientVersionSuffix;
+					reg.clientSilenceVersionSuffix = j.regionInfo.clientSilenceVersionSuffix
+					reg.clientVersionSuffix = j.regionInfo.clientVersionSuffix
 
-					reg.nextResourceUrl = j.regionInfo.nextResourceUrl;
+					reg.nextResourceUrl = j.regionInfo.nextResourceUrl
 				} else {
 					log.error(`skip ${seed}`)
 				}
 				//log.info(j);
 
 				dataObj = QueryCurrRegionHttpRsp.fromPartial({
-					regionInfo: reg,
+					regionInfo: reg
 					/* not work in 3.7 ?
 					clientSecretKey: ec2b.ec2b,
 					regionCustomConfigEncrypted: ec2b.cipher(
@@ -324,10 +370,8 @@ export const _ = {
 						)
 					),
 					*/
-				});
-
+				})
 			} else {
-
 				// not found config (TODO: add multi lang)
 				dataObj = QueryCurrRegionHttpRsp.fromPartial({
 					retcode: 20,
@@ -335,17 +379,15 @@ export const _ = {
 					forceUdpate: {
 						forceUpdateUrl: "https://ps.yuuki.me"
 					}
-				});
-
+				})
 			}
 
 			return RSAUtils.encryptAndSign(QueryCurrRegionHttpRsp.encode(dataObj).finish(), key.toString())
-
 		} catch (error) {
 			log.error(error as Error)
-			return this.NO_VERSION_CONFIG();
+			return this.NO_VERSION_CONFIG()
 		}
 	}
 }
 
-export default _;
+export default _

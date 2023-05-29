@@ -1,16 +1,17 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { contains, isEmpty } from "../../util/library";
-import ConfigR from '../../util/config';
-import Logger from "../../util/logger";
+import { contains, isEmpty } from "../../util/library"
+import ConfigR from "../../util/config"
+import Logger from "../../util/logger"
 import axios from "axios"
 
-const log = new Logger("GM-GC");
+const log = new Logger("GM-GC")
 
 export const _ = {
 	GM: async function (url: string, uid: any, cmd: any, code: any, set_timeout = 60) {
@@ -49,7 +50,7 @@ export const _ = {
 				data: d.status
 			}
 		} catch (error) {
-			log.error(error as Error);
+			log.error(error as Error)
 			return {
 				msg: "Error Get",
 				code: 302
@@ -58,4 +59,4 @@ export const _ = {
 	}
 }
 
-export default _;
+export default _

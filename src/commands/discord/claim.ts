@@ -1,25 +1,26 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
-import GM_GIO from "../gm/gio";
-import API_HOYO from "../../game/hoyolab/api";
-import API_GS from "../../game/genshin/api";
-import API_SR from "../../game/starrails/api";
+import Control from "../gm/control"
+import GM_GIO from "../gm/gio"
+import API_HOYO from "../../game/hoyolab/api"
+import API_GS from "../../game/genshin/api"
+import API_SR from "../../game/starrails/api"
 
-const log = new Logger("claim-CMD");
+const log = new Logger("claim-CMD")
 
 const cmd = new SlashCommandBuilder()
 	.setName("claim")
@@ -29,10 +30,7 @@ const cmd = new SlashCommandBuilder()
 		option.setName("uid_acc").setDescription("Set uid account, found in cookies").setRequired(true)
 	)
 	.addStringOption((option) =>
-		option
-			.setName("key")
-			.setDescription("Set key (code), you can input (all) to try all code")
-			.setRequired(true)
+		option.setName("key").setDescription("Set key (code), you can input (all) to try all code").setRequired(true)
 	)
 	.addStringOption((option) =>
 		option.setName("token").setDescription("Set token, found in cookies").setRequired(true)
@@ -50,12 +48,12 @@ const cmd = new SlashCommandBuilder()
 
 async function run(interaction: CommandInteraction) {
 	try {
-		var uid_game = interaction.options.get("uid_game")?.value?.toString() ?? '';
-		var uid_acc = interaction.options.get("uid_acc")?.value?.toString() ?? '';
-		var key = interaction.options.get("key")?.value?.toString() ?? '';
-		var token = interaction.options.get("token")?.value?.toString() ?? '';
-		var region = interaction.options.get("region")?.value?.toString() ?? '';
-		var game_name = interaction.options.get("game_name")?.value?.toString() ?? '';
+		var uid_game = interaction.options.get("uid_game")?.value?.toString() ?? ""
+		var uid_acc = interaction.options.get("uid_acc")?.value?.toString() ?? ""
+		var key = interaction.options.get("key")?.value?.toString() ?? ""
+		var token = interaction.options.get("token")?.value?.toString() ?? ""
+		var region = interaction.options.get("region")?.value?.toString() ?? ""
+		var game_name = interaction.options.get("game_name")?.value?.toString() ?? ""
 
 		if (!region) {
 			region = "os_asia"
@@ -116,7 +114,7 @@ async function run(interaction: CommandInteraction) {
 	}
 }
 
-let _;
+let _
 export default _ = {
 	process: run,
 	command: cmd

@@ -1,26 +1,25 @@
-import Logger from '../../util/logger';
+/** @format */
 
-import { Command } from './Interface';
+import Logger from "../../util/logger"
 
-import fs from 'fs';
+import { Command } from "./Interface"
 
-const log = new Logger('/ping', 'blue');
+import fs from "fs"
 
-import axios from 'axios';
+const log = new Logger("/ping", "blue")
 
-function generateRandomKey(length:number=40) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-    let key = '';
-  
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      key += characters[randomIndex];
-    }
-  
-    return key;
-  }
+import axios from "axios"
 
-export default async function handle(command: Command) {
+function generateRandomKey(length: number = 40) {
+	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+	let key = ""
 
-    
+	for (let i = 0; i < length; i++) {
+		const randomIndex = Math.floor(Math.random() * characters.length)
+		key += characters[randomIndex]
+	}
+
+	return key
 }
+
+export default async function handle(command: Command) {}

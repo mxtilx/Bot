@@ -1,25 +1,26 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
-import GM_GIO from "../gm/gio";
-import API_HOYO from "../../game/hoyolab/api";
-import API_GS from "../../game/genshin/api";
-import API_SR from "../../game/starrails/api";
+import Control from "../gm/control"
+import GM_GIO from "../gm/gio"
+import API_HOYO from "../../game/hoyolab/api"
+import API_GS from "../../game/genshin/api"
+import API_SR from "../../game/starrails/api"
 
-const log = new Logger("link-CMD");
+const log = new Logger("link-CMD")
 
 const cmd = new SlashCommandBuilder()
 	.setName("link")
@@ -30,12 +31,11 @@ const cmd = new SlashCommandBuilder()
 	)
 
 async function run(interaction: CommandInteraction) {
-
-	const baseReply: InteractionReplyOptions = { ephemeral: false }; // shit
+	const baseReply: InteractionReplyOptions = { ephemeral: false } // shit
 
 	try {
-		let game_id = interaction.options.get("game")?.value?.toString() ?? '';
-		let set_version = interaction.options.get("version")?.value?.toString() ?? '';
+		let game_id = interaction.options.get("game")?.value?.toString() ?? ""
+		let set_version = interaction.options.get("version")?.value?.toString() ?? ""
 		let id_user = interaction.user.id
 
 		await interaction.deferReply(baseReply)
@@ -44,12 +44,12 @@ async function run(interaction: CommandInteraction) {
 		let d = await API_GS.INFO(set_version)
 
 		if (d == undefined || d.data == undefined) {
-			return;
+			return
 		}
 
 		var info = `Currently Available ` + d.data.length + " Version\n\n"
 
-		d.data.forEach(function (i: { data: { game: { latest: { version: any; entry: any; path: any; }; }; }; }) {
+		d.data.forEach(function (i: { data: { game: { latest: { version: any; entry: any; path: any } } } }) {
 			// TODO: check pre-download
 			var version = i.data.game.latest.version
 			var cn_game = i.data.game.latest.entry
@@ -71,4 +71,3 @@ async function run(interaction: CommandInteraction) {
 		return await interaction.editReply({ content: "Unknown error", ...baseReply })
 	}
 }
-

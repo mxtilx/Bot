@@ -1,25 +1,26 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
-import GM_GIO from "../gm/gio";
-import API_HOYO from "../../game/hoyolab/api";
-import API_GS from "../../game/genshin/api";
-import API_SR from "../../game/starrails/api";
+import Control from "../gm/control"
+import GM_GIO from "../gm/gio"
+import API_HOYO from "../../game/hoyolab/api"
+import API_GS from "../../game/genshin/api"
+import API_SR from "../../game/starrails/api"
 
-const log = new Logger("CMD-MAIL");
+const log = new Logger("CMD-MAIL")
 
 const cmd = new SlashCommandBuilder()
 	.setName("mail")
@@ -35,9 +36,9 @@ const cmd = new SlashCommandBuilder()
 
 async function run(interaction: CommandInteraction) {
 	try {
-		let server_id = interaction.options.get("id")?.value?.toString() ?? '';
-		let uid = interaction.options.get("uid")?.value?.toString() ?? '';
-		let set_command = interaction.options.get("command")?.value?.toString() ?? '';
+		let server_id = interaction.options.get("id")?.value?.toString() ?? ""
+		let uid = interaction.options.get("uid")?.value?.toString() ?? ""
+		let set_command = interaction.options.get("command")?.value?.toString() ?? ""
 		let username = interaction.user.username
 
 		// TODO: add gc mail
@@ -51,10 +52,10 @@ async function run(interaction: CommandInteraction) {
 			// send multi item
 			var more_item = set_command.split(",")
 			var itemtoadd: {
-				item_id: any; // item id
-				amount: any; // quantity
-				level: number; // level
-				promote_level: number; // cts
+				item_id: any // item id
+				amount: any // quantity
+				level: number // level
+				promote_level: number // cts
 			}[] = []
 			more_item.forEach(function (data_msg: string) {
 				log.info(data_msg)
@@ -93,7 +94,7 @@ async function run(interaction: CommandInteraction) {
 	}
 }
 
-let _;
+let _
 export default _ = {
 	process: run,
 	command: cmd

@@ -1,33 +1,32 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
-import API_HOYO from "../../game/hoyolab/api";
-import API_GS from "../../game/genshin/api";
-import API_SR from "../../game/starrails/api";
+import Control from "../gm/control"
+import API_HOYO from "../../game/hoyolab/api"
+import API_GS from "../../game/genshin/api"
+import API_SR from "../../game/starrails/api"
 
-const log = new Logger("ONLINE-CMD");
+const log = new Logger("ONLINE-CMD")
 
 const cmd = new SlashCommandBuilder().setName("online").setDescription("Check Server Online Player")
 
 async function run(interaction: CommandInteraction) {
-
-	const baseReply: InteractionReplyOptions = { ephemeral: false }; // shit
+	const baseReply: InteractionReplyOptions = { ephemeral: false } // shit
 
 	try {
-
 		await interaction.deferReply(baseReply)
 		await sleep(3)
 
@@ -47,7 +46,7 @@ async function run(interaction: CommandInteraction) {
 	}
 }
 
-let _;
+let _
 export default _ = {
 	process: run,
 	command: cmd

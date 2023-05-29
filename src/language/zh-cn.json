@@ -1,13 +1,13 @@
 {
-    "errorcreateaccount": "帐户未注册，请在 discord.yuuki.me 创建一个帐户，在 discord bot 中使用 /account 命令",
-    "UnableToLogin": "无法登录，请尝试重新登录。",
-    "Databasefailed0": "数据库连接失败，重试 (0)",
-    "Databasefailed1": "数据库连接失败，重试（一）",
-    "LoginOK": "登录成功",
-    "NoGame": "此游戏尚未发布",
-    "UsernameInvaild": "用户名只能包含最少 3 个和 50 个字母，并且不得包含特殊字符，或使用电子邮件格式",
-    "AccountCreated": "帐户创建成功",
-    "AccountFailed": "帐户创建失败",
-    "UsernameAlready": "此帐户 UID 已被使用，请尝试使用不同的 UID 创建一个帐户",
-    "UsernameAlready1": "无法创建帐户，因为此用户名已被占用"
-  }
+	"errorcreateaccount": "帐户未注册，请在 discord.yuuki.me 创建一个帐户，在 discord bot 中使用 /account 命令",
+	"UnableToLogin": "无法登录，请尝试重新登录。",
+	"Databasefailed0": "数据库连接失败，重试 (0)",
+	"Databasefailed1": "数据库连接失败，重试（一）",
+	"LoginOK": "登录成功",
+	"NoGame": "此游戏尚未发布",
+	"UsernameInvaild": "用户名只能包含最少 3 个和 50 个字母，并且不得包含特殊字符，或使用电子邮件格式",
+	"AccountCreated": "帐户创建成功",
+	"AccountFailed": "帐户创建失败",
+	"UsernameAlready": "此帐户 UID 已被使用，请尝试使用不同的 UID 创建一个帐户",
+	"UsernameAlready1": "无法创建帐户，因为此用户名已被占用"
+}

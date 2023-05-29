@@ -1,28 +1,42 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { contains, isEmpty, timestr } from "../util/library";
-import ConfigR from '../util/config';
-import Logger from "../util/logger";
-import { NodeSSH } from 'node-ssh';
+import { contains, isEmpty, timestr } from "../util/library"
+import ConfigR from "../util/config"
+import Logger from "../util/logger"
+import { NodeSSH } from "node-ssh"
 import { setIntervalAsync, clearIntervalAsync } from "set-interval-async"
 
-import Control from "../commands/gm/control";
+import Control from "../commands/gm/control"
 
 import { parentPort } from "worker_threads"
 
-const log = new Logger("PING");
+const log = new Logger("PING")
 
 const regex_ram = /\((\d+\.\d+)%\)/
 
 // send msg
 var tmp_cek: any[] = []
 var last_msg: any[] = []
-function send(raw: { content: any; embeds?: { type: string; title: string; description: string; color: number; fields: { name: string; value: string }[]; footer: { text: string } }[] }, id: any) {
+function send(
+	raw: {
+		content: any
+		embeds?: {
+			type: string
+			title: string
+			description: string
+			color: number
+			fields: { name: string; value: string }[]
+			footer: { text: string }
+		}[]
+	},
+	id: any
+) {
 	var found = last_msg.findIndex((el) => el.id === id)
 	var toadd = false
 	var tosend = false
@@ -99,7 +113,11 @@ async function restart(mnt_type: string | number, mnt_name: any, id_server: any,
 setIntervalAsync(async () => {
 	let d = await Control.Server()
 	var total_online = 0
-	d.data.forEach(async function (i: { id: any; name: any; server: { player: any; ram: any; cpu: any; online: any; startup: any; monitor: any } }) {
+	d.data.forEach(async function (i: {
+		id: any
+		name: any
+		server: { player: any; ram: any; cpu: any; online: any; startup: any; monitor: any }
+	}) {
 		//log.info(i);
 		var id_server = i.id
 		var server_name = i.name

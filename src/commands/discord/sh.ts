@@ -1,21 +1,22 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { sleep, isEmpty } from "../../util/library";
-import Config from '../../util/config';
-import Logger from "../../util/logger";
+import { sleep, isEmpty } from "../../util/library"
+import Config from "../../util/config"
+import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control";
+import Control from "../gm/control"
 
-const log = new Logger("SH-CMD");
+const log = new Logger("SH-CMD")
 
 const cmd = new SlashCommandBuilder()
 	.setName("sh")
@@ -24,12 +25,11 @@ const cmd = new SlashCommandBuilder()
 	.addStringOption((option) => option.setName("command").setDescription("who").setRequired(true))
 
 async function run(interaction: CommandInteraction) {
-
-	const baseReply: InteractionReplyOptions = { ephemeral: false }; // shit
+	const baseReply: InteractionReplyOptions = { ephemeral: false } // shit
 
 	try {
-		let set_command = interaction.options.get("command")?.value?.toString() ?? '';
-		let server_id = interaction.options.get("id")?.value?.toString() ?? '';
+		let set_command = interaction.options.get("command")?.value?.toString() ?? ""
+		let server_id = interaction.options.get("id")?.value?.toString() ?? ""
 		let id_user = interaction.user.id
 		let name_user = interaction.user.username
 
@@ -44,7 +44,7 @@ async function run(interaction: CommandInteraction) {
 
 		let d = await Control.SH(set_command, server_id)
 
-		console.log(d);
+		console.log(d)
 
 		if (isEmpty(d.msg)) {
 			return await interaction.editReply({ content: `gak responnnya goblok`, ...baseReply })
@@ -60,7 +60,7 @@ async function run(interaction: CommandInteraction) {
 	}
 }
 
-let _;
+let _
 export default _ = {
 	process: run,
 	command: cmd

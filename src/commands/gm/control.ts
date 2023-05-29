@@ -1,55 +1,61 @@
 /**
+ * @format
  * @package YuukiPS
  * @author Yuuki
  * @license GPL-3.0
  */
 
 // This is important
-import { contains, isEmpty } from "../../util/library";
-import ConfigR from '../../util/config';
-import Logger from "../../util/logger";
-import { NodeSSH } from 'node-ssh';
+import { contains, isEmpty } from "../../util/library"
+import ConfigR from "../../util/config"
+import Logger from "../../util/logger"
+import { NodeSSH } from "node-ssh"
 
 // API Yuuki
-import GC from "../gm/gc";
-import GIO from "../gm/gio";
+import GC from "../gm/gc"
+import GIO from "../gm/gio"
 
-const log = new Logger("GM-Control");
+const log = new Logger("GM-Control")
 
 interface ListServer {
-	name: string;
-	id: string;
-	server: DataServer;
+	name: string
+	id: string
+	server: DataServer
 }
 
 interface DataServer {
-	online: boolean;
-	player: number;
-	game: any;
-	version: any;
-	public: any;
-	monitor: any;
-	cpu: string;
-	ram: string;
-	startup: string;
-	commit: string;
-	sub: string;
+	online: boolean
+	player: number
+	game: any
+	version: any
+	public: any
+	monitor: any
+	cpu: string
+	ram: string
+	startup: string
+	commit: string
+	sub: string
 }
 
 // TODO: better use datebase
 let key = []
 // Thank you ChatGPT
-let cache_serverlist: { [x: string]: string | ListServer[] | number | undefined; cache: any; data: any; msg?: any; code?: any; };
+let cache_serverlist: {
+	[x: string]: string | ListServer[] | number | undefined
+	cache: any
+	data: any
+	msg?: any
+	code?: any
+}
 
 export const _ = {
-
 	Config: async function (server_id: string) {
 		// check id server
 		if (server_id) {
 			//console.log("shit",server_id)
-			var g_config = ConfigR.server.find((server) => server.name == server_id);
+			var g_config = ConfigR.server.find((server) => server.name == server_id)
 			if (!g_config) {
-				const string_list_server = ConfigR.server.map((server) => server.name).join(", ");
+				const string_list_server = ConfigR.server.map((server) => server.name).join(", ")
 				return {
 					msg: `Config (${server_id}) not found, try another like: ${string_list_server}`,
 					code: 404
@@ -156,14 +162,13 @@ export const _ = {
 		if (cache_serverlist && Date.now() < cache_serverlist.cache) {
 			cache_serverlist["msg"] = "OK but cache"
 			if (server_id) {
-				return cache_serverlist.data.find((j: { id: any; }) => j.id == server_id)
+				return cache_serverlist.data.find((j: { id: any }) => j.id == server_id)
 			}
 			return cache_serverlist
 		}
 
 		const r = await Promise.all(
 			Object.keys(obj).map(async (key, index) => {
-
 				var d = obj[index]
 
 				var o = {
@@ -177,7 +182,7 @@ export const _ = {
 					ram: "???",
 					startup: "???",
 					commit: "???",
-					sub: "???",
+					sub: "???"
 				}
 
 				var server_live = false
@@ -258,7 +263,7 @@ export const _ = {
 					name: d.title,
 					id: d.name,
 					server: o
-				};
+				}
 
 				return tmp
 			})
@@ -272,13 +277,12 @@ export const _ = {
 			cache: Date.now() + 10 * 1000 // 10 sec
 		}
 		if (server_id) {
-			return cache_serverlist.data.find((j: { id: any; }) => j.id == server_id)
+			return cache_serverlist.data.find((j: { id: any }) => j.id == server_id)
 		}
 
 		return cache_serverlist
 	},
 	SH: async function (raw: string, server_id: string, timeout: number = 30) {
-
 		// check server
 		var configis = await this.Config(server_id)
 		if (configis.code != 200) {
@@ -297,67 +301,65 @@ export const _ = {
 			}
 		}
 
-		const password = dt.ssh.password;
-		const ssh = new NodeSSH();
+		const password = dt.ssh.password
+		const ssh = new NodeSSH()
 
-		let result: { stdout: string; stderr: string } | undefined;
+		let result: { stdout: string; stderr: string } | undefined
 
 		try {
-
 			await ssh.connect({
 				host: dt.ip,
 				username: dt.ssh.username,
 				port: dt.ssh.port,
 				password,
-				tryKeyboard: true,
-			});
+				tryKeyboard: true
+			})
 
 			try {
-				const commandPromise = ssh.execCommand(raw, { cwd: '.' });
+				const commandPromise = ssh.execCommand(raw, { cwd: "." })
 				const timeoutPromise = new Promise<{ stdout: string; stderr: string }>((_, reject) => {
 					setTimeout(() => {
-						reject(new Error('Command execution timeout'));
-					}, 1000 * timeout); // Command execution timeout duration of 5 seconds
-				});
+						reject(new Error("Command execution timeout"))
+					}, 1000 * timeout) // Command execution timeout duration of 5 seconds
+				})
 
-				result = await Promise.race([commandPromise, timeoutPromise]);
+				result = await Promise.race([commandPromise, timeoutPromise])
 			} finally {
-				ssh.dispose();
+				ssh.dispose()
 			}
 
 			if (result && result.stderr) {
 				return {
 					msg: result.stderr,
 					code: 404
-				};
+				}
 			} else if (result && result.stdout) {
 				return {
 					msg: result.stdout,
 					code: 200
-				};
+				}
 			} else {
 				return {
-					msg: 'Unknown response',
+					msg: "Unknown response",
 					code: 500
-				};
+				}
 			}
 		} catch (error) {
-			log.error(error as Error);
+			log.error(error as Error)
 			if (error instanceof Error) {
-				if (error.message === 'Command execution timeout') {
+				if (error.message === "Command execution timeout") {
 					log.warn(`sh "${raw}" timeout in server ${server_id}`)
 					return {
-						msg: 'Command execution timeout',
+						msg: "Command execution timeout",
 						code: 408
-					};
+					}
 				}
 			}
 			return {
-				msg: 'Error SH',
+				msg: "Error SH",
 				code: 301
-			};
+			}
 		}
-
 	},
 	Verified: async function (tes: any) {
 		/*
@@ -405,4 +407,4 @@ export const _ = {
 	}
 }
 
-export default _;
+export default _
