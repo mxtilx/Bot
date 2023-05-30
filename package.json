@@ -4,7 +4,7 @@
 	"description": "This is main YuukiPS server which controls other servers such as GC, GIO, etc and is used for commands via web or bots such as discord.",
 	"main": "./src/",
 	"scripts": {
-		"start": "ts-node-dev src/index.ts --respawn --transpile-only"
+		"start": "nodemon -L --delay 3 --exec ts-node-dev src/index.ts --respawn --transpile-only"
 	},
 	"repository": {
 		"type": "git",
@@ -51,6 +51,7 @@
 	"devDependencies": {
 		"@types/cookie-parser": "^1.4.3",
 		"@types/i18next-node-fs-backend": "^2.1.2",
+		"nodemon": "^2.0.22",
 		"ts-node-dev": "^2.0.0",
 		"typescript": "^5.0.4"
 	}

@@ -18,6 +18,7 @@ fi
 if [ "$metode" = "cloud" ];then
  echo "Run Cloud"
  # TODO: move to ps.yuuki.me
+ npm install
  npm run start -- --port_cloud 443 --port 10010 --host login.yuuki.me --protocol https
 fi
 

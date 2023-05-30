@@ -422,7 +422,7 @@ web.all("/game/genshin/:id", (req: Request, res: Response) => {
 })
 
 web.all("/api", (req: Request, res: Response) => {
-	res.send("API YuukiPS")
+	res.send("API YuukiPS v2")
 })
 
 // Testing
