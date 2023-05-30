@@ -1,14 +1,14 @@
 {
-	"name": "yuuki-server",
+	"name": "yuuki-core",
 	"version": "1.0.0",
-	"description": "This is an app to control all yuuki server",
+	"description": "This is main YuukiPS server which controls other servers such as GC, GIO, etc and is used for commands via web or bots such as discord.",
 	"main": "./src/",
 	"scripts": {
 		"start": "ts-node-dev src/index.ts --respawn --transpile-only"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/akbaryahya/YukiBot.git"
+		"url": "git+https://github.com/YuukiPS/Core.git"
 	},
 	"keywords": [
 		"bot"
@@ -16,9 +16,9 @@
 	"author": "Yuuki",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/akbaryahya/YukiBot/issues"
+		"url": "https://github.com/YuukiPS/Core/issues"
 	},
-	"homepage": "https://github.com/akbaryahya/YukiBot#readme",
+	"homepage": "https://github.com/YuukiPS/Core#readme",
 	"dependencies": {
 		"@discordjs/rest": "^1.0.1",
 		"@types/body-parser": "^1.19.2",

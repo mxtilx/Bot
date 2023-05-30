@@ -1,0 +1,27 @@
+version: '3'
+services:
+  yuuki-core:
+    image: node:current-alpine
+    container_name: yuuki-core
+    user: "node"
+    working_dir: /home/node/app
+    volumes:
+      - ./:/home/node/app
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    restart: always
+    #entrypoint: ./run.sh cloud
+    command: "sh ./run.sh cloud"
+    environment:
+      - TZ=Asia/Makassar
+    networks:
+      - homesw
+    stdin_open: true
+    tty: true
+
+networks:
+  homesw:
+    name: control
+    external: true
