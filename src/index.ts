@@ -335,13 +335,14 @@ web.all("/account/login", async (req: Request, res: Response) => {
 
 	var p = req.body
 	if (!isEmpty(p.login_username) && !isEmpty(p.login_password)) {
-		log.debug(userAgent)
-		log.debug({ msg: "params login", tes: req.params })
-		log.debug({ msg: "query login", tes: req.query })
-		log.debug({ msg: "body login", tes: req.body })
+		//log.debug(userAgent)
+		//log.debug({ msg: "params login", tes: req.params })
+		//log.debug({ msg: "query login", tes: req.query })
+		//log.debug({ msg: "body login", tes: req.body })
 
 		if (userAgent !== undefined && userAgent.includes("ZFBrowser")) {
 			// not work
+			/*
 			var accessToken = btoa(
 				JSON.stringify({
 					account: p.login_username,
@@ -352,6 +353,8 @@ web.all("/account/login", async (req: Request, res: Response) => {
 			return res.send(
 				`<h1>Wait login...</h1><meta http-equiv="refresh" content="0;url=uniwebview://sdkThirdLogin?accessToken=${accessToken}">`
 			)
+			*/
+			action = "OK_LOGIN"
 		} else {
 			action = "OK_LOGIN"
 		}
