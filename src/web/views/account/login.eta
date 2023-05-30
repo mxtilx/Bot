@@ -23,7 +23,7 @@
 
               <% if (it.action == 'OK_LOGIN') { %>
               <div class="alert alert-success" role="alert">
-                Login successful (but it doesn't work in-game)
+                IGNORE THIS MESSAGE BECAUSE IT'S ONLY TESTING, THE LOGIN FUNCTION IS STILL UNDER DEVELOPMENT. USE THE REGISTER PAGE IF YOU WANT TO REGISTER
               </div>
               <% }  %>
 
@@ -35,9 +35,7 @@
               <div class="form-floating mb-3">
                 <input type="password" class="form-control rounded-3" name="login_password" placeholder="passmelon123">
                 <label>Password</label>
-              </div>
-
-              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Login</button>
+              </div>              
 
               <hr class="my-4">
 
@@ -45,7 +43,7 @@
 
               <% if (it.action == 'OK_REG') { %>
               <div class="alert alert-success" role="alert">
-                <%= it.message %> ,You can close this page, using the username you created.
+                <%= it.message %> ,You can close this page, using username you created.
               </div>
               <% } else if(it.action == 'FAILD_REG') { %>
               <div class="alert alert-danger" role="alert">
@@ -67,6 +65,7 @@
               <div class="form-floating mb-3">
                 <input type="password" class="form-control rounded-3" name="reg_pass" placeholder="Password">
                 <label for="floatingPassword">Password</label>
+                <small class="text-body-secondary">This password is used for manage your data account like player data in each server, so don't forget your password. You can put random passwords in (in-game) because this function doesn't yet exist but passwords on ps.yuuki.me don't ever use random passwords because this is important.</small>
               </div>
 
               <div class="form-floating mb-3">
@@ -76,8 +75,9 @@
 
               <div class="h-captcha" data-sitekey="34254aaf-2cd9-423d-9271-181c3f5e72a1"></div>
 
-              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Sign up</button>
-              <small class="text-body-secondary">By clicking Sign up, you agree to the terms of use.</small>
+              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Sign up or Login</button>
+
+              <small class="text-body-secondary">By clicking Sign up & Login, you agree to terms of use.</small>
 
             </form>
           </div>

@@ -1,5 +1,7 @@
 /** @format */
 
+import Constants from "./constants"
+
 export function sleep(ms: number) {
 	return new Promise((resolve) => {
 		setTimeout(resolve, 1000 * ms)
@@ -40,4 +42,14 @@ export function contains2(target: any, pattern: any[]) {
 		}
 	})
 	return value === 1
+}
+
+export function clientTypeFromClientId(clientId: number): string {
+	const clientType = Constants.ClientType
+
+	if (clientId in clientType) {
+		return clientType[clientId]
+	}
+
+	return "UNKNOWN: " + clientId
 }

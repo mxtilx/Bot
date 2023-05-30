@@ -10,6 +10,7 @@ const DEFAULT_CONFIG = {
 	token_OpenAi: "",
 	token: "",
 	clientId: "",
+	clientSecret: "",
 	guildId: "",
 	password: [""],
 	id_admin: "",
@@ -131,6 +132,7 @@ export default class Config {
 	public static token_OpenAi: string = Config.config.token_OpenAi
 	public static token: string = Config.config.token
 	public static clientId: string = Config.config.clientId
+	public static clientSecret: string = Config.config.clientSecret
 	public static guildId: string = Config.config.guildId
 	public static password: string[] = Config.config.password
 	public static id_admin: string = Config.config.id_admin

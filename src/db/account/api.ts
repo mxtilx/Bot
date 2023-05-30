@@ -211,7 +211,7 @@ export const Accounts = {
 									token: token1,
 									safe_mobile: "",
 									facebook_name: "",
-									twitter_name: "",
+									twitter_name: username,
 									game_center_name: "",
 									google_name: "",
 									apple_name: "",
@@ -292,7 +292,8 @@ export const Accounts = {
 		username: string = "",
 		password: string = "",
 		game: string = "hk4e",
-		type: number = 1
+		type: number = 1,
+		autoAccount: boolean = false
 	) {
 		// type = 1 for login username and 2 for login sessionKey for gs and token for sr?
 		var data = {} as Login // tmp
@@ -354,7 +355,7 @@ export const Accounts = {
 									token: d.token,
 									safe_mobile: "",
 									facebook_name: "",
-									twitter_name: "",
+									twitter_name: d.username,
 									game_center_name: "",
 									google_name: "",
 									apple_name: "",
@@ -398,7 +399,7 @@ export const Accounts = {
 					}
 				} else {
 					if (type == 1) {
-						if (Config.autoAccount) {
+						if (autoAccount) {
 							data = await this.CREATE_ACCOUNT_GC(username, password)
 							console.log(data)
 						} else {

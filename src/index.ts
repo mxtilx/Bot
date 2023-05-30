@@ -8,10 +8,11 @@
 // Important
 import { join } from "path"
 import fs from "fs/promises"
-import { sleep, isEmpty, contains } from "./util/library"
+import { sleep, isEmpty, contains, clientTypeFromClientId } from "./util/library"
 import Config from "./util/config"
 import Logger from "./util/logger"
 import Interface from "./commands/server/Interface"
+import crypto from "crypto"
 
 // WEB
 import express, { Request, Response, NextFunction } from "express"
@@ -53,6 +54,7 @@ import API_SR from "./game/starrails/api"
 
 import { RSAUtils } from "./game/hoyolab/crypto"
 import axios from "axios"
+import { statusCodes } from "./util/constants"
 
 const log = new Logger("YuukiPS")
 log.info("YuukiPS startup....")
@@ -308,19 +310,12 @@ web.all("/", (req: Request, res: Response) => {
 	const type = req.query.type
 
 	// login browser? (query: 'type=sdk'), sometimes it is cached by browser if login is official, so it breaks it. Maybe the Yuukips launcher has to clear cache every time you log in?
-	if (type == "sdk") {
-		if (userAgent !== undefined) {
-			if (userAgent.includes("Genshin Impact")) {
-				//log.warn(req as any)
-				return res.redirect("/account/login")
-				//return res.send("Hello YuukiPS GS")
-			} else if (userAgent.includes("Star Rail")) {
-				//log.warn(req as any)
-				return res.send("Hello YuukiPS SR")
-			}
-		}
+	if (userAgent !== undefined && userAgent.includes("ZFBrowser")) {
+		return res.redirect("/account/login")
 	} else {
 		log.info(`Home Enter ${userAgent}`)
+		//log.debug({ msg: "query home", tes: req.query })
+		//log.debug({ msg: "body home", tes: req.body })
 	}
 
 	res.render("home", {
@@ -336,9 +331,30 @@ web.all("/account/login", async (req: Request, res: Response) => {
 	var action = "none"
 	var message = ""
 
+	const userAgent = req.headers["user-agent"]
+
 	var p = req.body
 	if (!isEmpty(p.login_username) && !isEmpty(p.login_password)) {
-		action = "OK_LOGIN"
+		log.debug(userAgent)
+		log.debug({ msg: "params login", tes: req.params })
+		log.debug({ msg: "query login", tes: req.query })
+		log.debug({ msg: "body login", tes: req.body })
+
+		if (userAgent !== undefined && userAgent.includes("ZFBrowser")) {
+			// not work
+			var accessToken = btoa(
+				JSON.stringify({
+					account: p.login_username,
+					password: p.login_password,
+					is_crypto: false
+				})
+			)
+			return res.send(
+				`<h1>Wait login...</h1><meta http-equiv="refresh" content="0;url=uniwebview://sdkThirdLogin?accessToken=${accessToken}">`
+			)
+		} else {
+			action = "OK_LOGIN"
+		}
 	} else if (!isEmpty(p.reg_username) && !isEmpty(p.reg_email) && !isEmpty(p.reg_pass) && !isEmpty(p.reg_pass_tes)) {
 		try {
 			var lang = req.headers["x-rpc-language"]?.toString() || "en"
@@ -359,7 +375,7 @@ web.all("/account/login", async (req: Request, res: Response) => {
 					action = "FAILD_REG"
 				}
 				message = ts.message
-				log.debug(r)
+				//log.debug(r)
 			} else {
 				log.debug(dx)
 				action = "FAILD_REG"
@@ -490,7 +506,7 @@ web.get("/ip", async (req: Request, res: Response) => {
 // Combo
 web.all("/status/server", (req: Request, res: Response) => {
 	return res.json({
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		status: {
 			runMode: "HYBRID",
 			MemoryMax: 1,
@@ -503,7 +519,7 @@ web.all("/status/server", (req: Request, res: Response) => {
 			TotalPlayer: 0,
 			playerCount: online_string,
 			maxPlayer: 1000,
-			DockerGS: "alpine-yuukips-3.7-9dd5847",
+			DockerGS: "null",
 			Version: "5.0 devkit"
 		}
 	})
@@ -561,13 +577,61 @@ web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
 // Hoyo Acc Stuff
 
 web.all("/account/risky/api/check", async (req: Request, res: Response) => {
-	return res.json({ retcode: 0, message: "OK", data: { id: "none", action: "ACTION_NONE", geetest: null } }) // maybe fix android stuck
+	return res.json({
+		retcode: statusCodes.success.RETCODE,
+		message: "OK",
+		data: { id: "none", action: "ACTION_NONE", geetest: null }
+	}) // maybe fix android stuck
 })
 
 web.all("/account/device/api/listNewerDevices", (req: Request, res: Response) => {
 	// Android Stuck ?
 	res.status(404)
 	return res.send("")
+})
+
+web.all("/bus/combo/granter/login/beforeVerify", (req: Request, res: Response) => {
+	log.debug({ msg: "query beforeVerify", tes: req.query })
+	log.debug({ msg: "body beforeVerify", tes: req.body })
+	return res.json({
+		retcode: statusCodes.success.RETCODE,
+		message: "OK",
+		data: {
+			is_heartbeat_required: false,
+			is_realname_required: false,
+			is_guardian_required: false
+		}
+	})
+})
+
+web.all("/:cn/combo/panda/qrcode/fetch", (req: Request, res: Response) => {
+	log.debug({ msg: "query qrcode", tes: req.query })
+	log.debug({ msg: "body qrcode", tes: req.body })
+
+	let url = "https://google.com/Api/login_by_qr"
+	let expires = new Date().setHours(1, 0, 0).toString()
+	let ticket = Buffer.from(crypto.randomUUID().replaceAll("-", "")).toString("hex")
+
+	let debug = {
+		retcode: statusCodes.success.RETCODE,
+		message: "OK",
+		data: { url: `${url}?expire=${expires}\u0026ticket=${ticket}\u0026device=${req.body.device}` }
+	}
+
+	log.debug(debug)
+
+	return res.json(debug)
+})
+
+web.all("/:cn/combo/panda/qrcode/query", (req: Request, res: Response) => {
+	log.debug({ msg: "query qrcodeq", tes: req.query })
+	log.debug({ msg: "body qrcodeq", tes: req.body })
+
+	let debug = { retcode: statusCodes.error.FAIL, message: "QRCode login is disabled!" }
+
+	log.debug(debug)
+
+	return res.json(debug)
 })
 
 web.all("/dgen", (req: Request, res: Response) => {
@@ -583,7 +647,7 @@ web.all("/dsign", (req: Request, res: Response) => {
 
 web.all("/:cn/mdk/shield/api/actionTicket", (req: Request, res: Response) => {
 	log.debug(req.body)
-	return res.json({ retcode: 0, message: "OK", data: { ticket: `123` } }) // OK=0
+	return res.json({ retcode: statusCodes.success.RETCODE, message: "OK", data: { ticket: `123` } }) // OK=0
 })
 
 web.all("/:cn/mdk/shield/api/emailCaptcha", (req: Request, res: Response) => {
@@ -593,11 +657,58 @@ web.all("/:cn/mdk/shield/api/emailCaptcha", (req: Request, res: Response) => {
 
 web.all("/:cn/mdk/shield/api/bindEmail", (req: Request, res: Response) => {
 	log.debug(req.body)
-	return res.json({ retcode: 0, message: "Success", data: 404 }) // OK=0
+	return res.json({ retcode: statusCodes.success.RETCODE, message: "Success", data: 404 }) // OK=0
 })
 
-web.all("/:cn/mdk/shield/api/loginByThirdparty", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
+web.all("/:cn/mdk/shield/api/loginByThirdparty", async (req: Request, res: Response) => {
+	//log.debug({ msg: "params loginByThirdparty", tes: req.params })
+	//log.debug({ msg: "query loginByThirdparty", tes: req.query })
+	//log.debug({ msg: "body loginByThirdparty", tes: req.body })
+
+	var b = req.body
+	var token = (b.access_token as string) ?? ""
+
+	var lang = req.headers["x-rpc-language"]?.toString() || "en"
+	let ip = req.ip ?? "?1"
+
+	//log.info(`token ${token} login...`)
+
+	let c = { retcode: statusCodes.error.LOGIN_FAILED, message: "Error Login" }
+
+	try {
+		const response = await axios.get("https://discord.com/api/users/@me", {
+			headers: {
+				Authorization: `Bearer ${token}`
+			}
+		})
+
+		const userData = response.data
+		//log.debug("profile yor", userData)
+
+		var username = userData.email
+		if (!isEmpty(username)) {
+			c = await Account.GET_ACCOUNT_GC(username, "", "hk4e", 1, true) // tmp hk4e
+
+			const ts = translate(c, lang)
+
+			log.debug(c)
+
+			if ((c.retcode as number) == 0) {
+				log.info(`${username} have logged discord using ip ${ip}`)
+			} else {
+				log.info(`${username} login failed discord because "${c.message}" in using ip ${ip} / ${lang}`)
+			}
+
+			return res.json(ts)
+		} else {
+			c = { retcode: statusCodes.error.LOGIN_FAILED, message: "No found acc discord" }
+		}
+	} catch (error) {
+		log.debug("Error fetching user data:", error)
+		c = { retcode: statusCodes.error.LOGIN_FAILED, message: "No find acc discord" }
+	}
+
+	return res.json(c)
 })
 
 web.all("/:cn/combo/granter/api/getFont", (req: Request, res: Response) => {
@@ -609,7 +720,11 @@ web.all("/combo/box/api/config/sdk/drmSwitch", (req: Request, res: Response) => 
 })
 
 web.all("/device-fp/api/getFp", (req: Request, res: Response) => {
-	return res.json({ retcode: 0, message: "OK", data: { device_fp: `${req.body.device_fp}`, code: 200, msg: "ok" } })
+	return res.json({
+		retcode: statusCodes.success.RETCODE,
+		message: "OK",
+		data: { device_fp: `${req.body.device_fp}`, code: 200, msg: "ok" }
+	})
 })
 
 web.all("/account/auth/api/getConfig", (req: Request, res: Response) => {
@@ -670,53 +785,58 @@ web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) 
 	// Fake Config SR
 	//log.debug(req.params)
 	//log.debug(req.query)
+	// https://sdk-static.mihoyo.com/hk4e_global/combo/granter/api/getConfig?app_id=4&channel_id=1&client_type=3 cn only
 	return res.json({
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		message: "OK",
 		data: {
-			protocol: false,
-			qr_enabled: false,
-			log_level: "DEBUG",
+			protocol: true,
+			qr_enabled: true,
+			log_level: "INFO",
 			announce_url: "https://ps.yuuki.me/news",
-			push_alias_type: 0,
-			disable_ysdk_guard: true,
+			push_alias_type: 2,
+			disable_ysdk_guard: false,
 			enable_announce_pic_popup: true,
-			app_name: "YuukiPS",
-			qr_enabled_apps: { bbs: false, cloud: false },
-			qr_app_icons: { app: "", bbs: "", cloud: "" },
-			qr_cloud_display_name: "HoyoShit",
+			name: "原神海外",
+			qr_enabled_apps: { bbs: true, cloud: true },
+			qr_app_icons: {
+				app: "",
+				bbs: "",
+				cloud: ""
+			},
+			qr_cloud_display_name: "1",
+			qr_app_display_name: "2",
+			qr_bbs_display_name: "3",
 			enable_user_center: true
 		}
 	})
 })
 web.all("/:cn/mdk/shield/api/loadConfig", async (req: Request, res: Response) => {
-	// Fake Config SR
-	//log.debug(req.params)
-	//log.debug(req.query)
+	var d = req.query
+	var key = (d.game_key ?? 0) as number
+	let client = clientTypeFromClientId((d.client ?? 0) as number)
+	log.info(`load config ${key} with ${client}`)
 	return res.json({
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		message: "OK",
 		data: {
 			id: 6,
-			game_key: "hk4e_global",
-			client: "PC",
+			game_key: key,
+			client: client,
 			identity: "I_IDENTITY",
 			guest: true,
 			ignore_versions: "",
 			scene: "S_NORMAL",
-			name: "YuukiPS",
+			name: "原神海外",
 			disable_regist: false,
 			enable_email_captcha: false,
-			thirdparty: ["fb", "tw", "gl", "ap"],
+			thirdparty: ["tw"],
 			disable_mmt: false,
 			server_guest: true,
 			thirdparty_ignore: {},
 			enable_ps_bind_account: false,
 			thirdparty_login_configs: {
-				fb: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 2592000 },
-				gl: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 604800 },
-				tw: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 2592000 },
-				ap: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 604800 }
+				tw: { token_type: "TK_GAME_TOKEN", game_token_expires_in: 2592000 }
 			},
 			initialize_firebase: false,
 			bbs_auth_login: true,
@@ -731,7 +851,7 @@ web.all("/combo/box/api/config/sw/precache", (req: Request, res: Response) => {
 })
 web.all("/combo/box/api/config/sdk/combo", async (req: Request, res: Response) => {
 	return res.json({
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		message: "OK",
 		data: {
 			vals: { disable_email_bind_skip: "false", email_bind_remind_interval: "7", email_bind_remind: "false" }
@@ -740,7 +860,7 @@ web.all("/combo/box/api/config/sdk/combo", async (req: Request, res: Response) =
 })
 web.all("/:cn/combo/granter/api/compareProtocolVersion", async (req: Request, res: Response) => {
 	return res.json({
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		message: "OK",
 		data: {
 			modified: true,
@@ -762,7 +882,7 @@ web.all("/:cn/combo/granter/api/compareProtocolVersion", async (req: Request, re
 
 web.all("/device-fp/api/getExtList", async (req: Request, res: Response) => {
 	return res.json({
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		message: "OK",
 		data: {
 			code: 200,
@@ -815,24 +935,82 @@ web.all("/admin/:id3/:id4/:id1/:id2.json", async (req: Request, res: Response) =
 })
 
 web.all("/data_abtest_api/config/experiment/list", async (req: Request, res: Response) => {
-	return res.json({ retcode: 0, success: true, message: "", data: [] })
+	return res.json({
+		retcode: statusCodes.success.RETCODE,
+		success: true,
+		message: "",
+		data: [
+			{
+				code: 1000,
+				type: 2,
+				config_id: "14",
+				period_id: "6036_99",
+				version: "1",
+				configs: { cardType: "old" }
+			}
+		]
+	})
 })
 
 web.all("/:cn/mdk/agreement/api/getAgreementInfos", async (req: Request, res: Response) => {
-	return res.json({ retcode: 0, message: "OK", data: { marketing_agreements: [] } })
+	return res.json({ retcode: statusCodes.success.RETCODE, message: "OK", data: { marketing_agreements: [] } })
 })
 
 // Login
-// Login Facebook
-web.all("/sdkFacebookLogin.html", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
+
 // Login Twitter
 web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
+	//log.debug("sdk parms", req.params)
+	//log.debug("sdk qu", req.query)
+	//log.debug("body sdk", req.body)
+
+	var q = req.query
+
+	var key = q.consumer_key as string
+	var code = q.code as string
+
+	const redirectUri = "https://login.yuuki.me/sdkTwitterLogin.html"
+
+	if (!isEmpty(key)) {
+		//return res.redirect("/account/login?sdk=twitter")
+
+		// or
+		const scope = "identify email guilds"
+		const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${
+			Config.clientId
+		}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`
+		return res.redirect(discordAuthUrl)
+	} else if (!isEmpty(code)) {
+		// Get Token
+		const tokenParams = new URLSearchParams({
+			client_id: Config.clientId,
+			client_secret: Config.clientSecret,
+			grant_type: "authorization_code",
+			code: code,
+			redirect_uri: redirectUri,
+			scope: "identify email guilds"
+		})
+		try {
+			const tokenResponse = await axios.post("https://discord.com/api/oauth2/token", tokenParams, {
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded"
+				}
+			})
+			//var accessToken = btoa(JSON.stringify(tokenResponse.data.access_token))
+			return res.send(
+				`<h1>Wait login Discord...</h1><meta http-equiv="refresh" content="0;url=uniwebview://sdkThirdLogin?accessToken=${tokenResponse.data.access_token}">`
+			)
+			//log.debug("data your dm", data)
+		} catch (error) {
+			log.debug("Error exchanging code for token:", error)
+		}
+	}
+	/*
+	res.render("account/sdk/twitter", {
+		title: "Login Twitter",
+		description: "Register or login for a YuukiPS Account"
+	})
+	*/
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 // Login Twitter (API?)
@@ -842,12 +1020,35 @@ web.all("/Api/twitter_login", async (req: Request, res: Response) => {
 	return res.json({
 		code: 200,
 		data: {
-			auth_url: "https://ps.yuuki.me",
+			auth_url: "https://login.yuuki.me/account/login",
 			info: "",
 			msg: "Success",
 			status: 1
 		}
 	})
+})
+// Login Twitter (API?)
+web.all("/Api/twitter_access", async (req: Request, res: Response) => {
+	log.debug(req.params)
+	log.debug(req.query)
+	log.debug(req.body)
+	var p = req.query
+	return res.json({
+		code: 200,
+		data: {
+			access_token: p.access_token,
+			info: "",
+			msg: "Success",
+			status: 1
+		}
+	})
+})
+
+// Login Facebook
+web.all("/sdkFacebookLogin.html", async (req: Request, res: Response) => {
+	//log.debug(req.params)
+	//log.debug(req.query)
+	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 // Login Facebook (API?)
 web.all("/Api/facebook_login", async (req: Request, res: Response) => {
@@ -863,11 +1064,24 @@ web.all("/Api/facebook_login", async (req: Request, res: Response) => {
 		}
 	})
 })
+
 // login guest (from client).
 web.all("/:cn/mdk/guest/guest/v2/login", async (req: Request, res: Response) => {
 	//log.debug(req.params)
-	log.debug(req.body)
-	return res.json({ retcode: 200, message: "TES :)", data: 404 })
+	//log.debug(req.body)
+	/*
+	{
+    game_key: 'hk4e_global',
+    sign: 'd7a5fedf5e9919e3d93c95c45a69b047246e94a168a9f56b9079805fbdc5801d',
+    client: 2,
+    device: 'b917ca0e21fd9f9c',
+    g_version: 'OSRELAndroid3.6.0'
+  }
+	*/
+	return res.json({
+		retcode: statusCodes.error.LOGIN_FAILED,
+		message: "Please register at ps2.yuuki.me or join discord.yuuki.me or open register in-game"
+	})
 })
 // Cached token login (from registry).
 web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
@@ -907,7 +1121,7 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 
 	return res.json({
 		message: "OK",
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		data: {
 			account_type: 1,
 			heartbeat: false,
@@ -940,7 +1154,7 @@ web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Res
 		cn = cn.split("_")["0"]
 	}
 
-	var c = await Account.GET_ACCOUNT_GC(username, "", cn)
+	var c = await Account.GET_ACCOUNT_GC(username, "", cn, 1, Config.autoAccount)
 	const ts = translate(c, lang)
 	//log.debug(c)
 	if (c.retcode == 0) {
@@ -1108,7 +1322,7 @@ web.all("/api/key/:id/*", async (req: Request, res: Response) => {
 	// TODO: if code work send to all server in this acc?
 
 	return res.json({
-		retcode: 0,
+		retcode: statusCodes.success.RETCODE,
 		message: "Got it"
 	})
 })
