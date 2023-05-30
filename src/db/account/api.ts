@@ -89,12 +89,12 @@ function generateToken(length: number): string {
 }
 
 function validateUsername(username: string): boolean {
-	const pattern = /^[\p{L}\p{N}]{3,50}$/u
+	const pattern = /^[\w.!-]{3,50}$/
 	return pattern.test(username)
 }
 
 function validateEmail(email: string): boolean {
-	const pattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/u
+	const pattern = /^[A-Za-z0-9._%+\-!]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
 	return pattern.test(email)
 }
 
