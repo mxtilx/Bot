@@ -6,10 +6,6 @@ if [ "$metode" = "fix" ];then
  npx prettier --config .prettierrc.json --write .
 fi
 
-if [ "$metode" = "b" ];then
- docker build -t "siakbary/yuukibot:latest" --progress=plain .;
-fi
-
 if [ "$metode" = "s" ];then
  echo "Run Localhost"
  npm run start -- --port 10010
@@ -27,25 +23,10 @@ if [ "$metode" = "teslocal" ];then
  npm run start -- --port_cloud 10010 --port 10010 --host 2.0.0.100 --protocol http
 fi
 
-
 if [ "$metode" = "reg" ];then
  npm run start -- --port 10010 --reg true
 fi
 
-if [ "$metode" = "t" ];then
- echo "Run Docker"
- docker run --rm -it -v //e/DOC/Akbar/Work/site/Yuuki-Bot/src/config.json:/app/src/config.json siakbary/yuukibot:latest
-fi
-
-# Push Private
-if [ "$metode" = "private_push" ];then
- docker push repo.yuuki.me/yuukibot:latest
-fi
-
-# Push Public
-if [ "$metode" = "push" ];then
- docker push siakbary/yuukibot:latest
-fi
 
 if [ "$metode" = "gen_ts" ];then
  echo "Gen TS proto for GS"

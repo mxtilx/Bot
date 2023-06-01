@@ -110,8 +110,8 @@ const bot = new Client({
 })
 
 bot.on(Events.Error, (error: any) => {
-	log.error(error)
-	//process.exit(1);
+	log.debug({ event: "bot dc", log: error })
+	process.exit(1);
 })
 
 async function registerEvent(event: string, ...args: any) {
@@ -566,8 +566,13 @@ web.all("/sw.html", async (req: Request, res: Response) => {
 })
 
 web.all("/ys/event/:id_event/index.html", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
+	log.debug({ msg: "params event", tes: req.params })
+	log.debug({ msg: "query event", tes: req.query })
+	log.debug({ msg: "body event", tes: req.body })
+	var p = req.params
+	if (p.id_event == "e20210830cloud") {
+		return res.redirect("/command")
+	}
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
@@ -1371,18 +1376,17 @@ ping_job.on("message", (d: { type: string; data: any }) => {
 					status: "online"
 				})
 			}
-		} else {
-			log.debug(d)
 		}
+		log.debug(d)
 	} catch (e) {
-		log.error(e as Error)
+		log.debug({ event: "ping error send", log: e })
 		// Stop the Worker and restart it
 		//ping_job.terminate();
 		//ping_job = get_job();
 	}
 })
 ping_job.on("error", (ex: Error) => {
-	log.error(ex)
+	log.debug({ event: "ping error 0", log: ex })
 
 	// Stop the Worker and restart it
 	try {
@@ -1391,7 +1395,7 @@ ping_job.on("error", (ex: Error) => {
 			ping_job = get_job()
 		}, 3000)
 	} catch (error) {
-		log.error(error as Error)
+		log.debug({ event: "ping error 1", log: error })
 	}
 })
 function get_job() {
