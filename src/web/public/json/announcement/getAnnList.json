@@ -1,0 +1,86 @@
+{
+	"retcode": 0,
+	"message": "OK",
+	"data": {
+		"list": [
+			{
+				"list": [
+					{
+						"ann_id": 1250,
+						"title": "1",
+						"subtitle": "2",
+						"banner": "",
+						"content": "",
+						"type_label": "Game",
+						"tag_label": "1",
+						"tag_icon": "",
+						"login_alert": 1,
+						"lang": "id-id",
+						"start_time": "2020-09-25 04:05:30",
+						"end_time": "2023-10-30 11:00:00",
+						"type": 2,
+						"remind": 0,
+						"alert": 0,
+						"tag_start_time": "2000-01-02 08:04:05",
+						"tag_end_time": "2030-01-02 08:04:05",
+						"remind_ver": 1,
+						"has_content": true,
+						"extra_remind": 0
+					},
+					{
+						"ann_id": 1251,
+						"title": "",
+						"subtitle": "",
+						"banner": "",
+						"content": "",
+						"type_label": "Game",
+						"tag_label": "1",
+						"tag_icon": "",
+						"login_alert": 1,
+						"lang": "id-id",
+						"start_time": "2020-09-25 15:12:09",
+						"end_time": "2030-10-30 11:00:00",
+						"type": 2,
+						"remind": 0,
+						"alert": 0,
+						"tag_start_time": "2000-01-02 15:04:05",
+						"tag_end_time": "2030-01-02 15:04:05",
+						"remind_ver": 1,
+						"has_content": true,
+						"extra_remind": 0
+					}
+				],
+				"type_id": 2,
+				"type_label": "Game"
+			},
+			{
+				"list": [],
+				"type_id": 1,
+				"type_label": "Event"
+			}
+		],
+		"total": 2,
+		"type_list": [
+			{
+				"id": 2,
+				"name": "游戏系统公告",
+				"mi18n_name": "Game"
+			},
+			{
+				"id": 1,
+				"name": "活动公告",
+				"mi18n_name": "Event"
+			}
+		],
+		"alert": false,
+		"alert_id": 0,
+		"timezone": -5,
+		"t": "1685713977000",
+		"pic_list": [],
+		"pic_total": 0,
+		"pic_type_list": [],
+		"pic_alert": false,
+		"pic_alert_id": 0,
+		"static_sign": ""
+	}
+}

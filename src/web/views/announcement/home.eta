@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- HTTP 1.1 -->
+  <meta http-equiv="pragma" content="no-cache">
+  <!-- HTTP 1.0 -->
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta name="applicable-device" content="mobile">
+  <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="Description" content="">
+  <meta name="Keywords" content="">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="email=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  <meta name="Copyright" content="YuukiPS">
+  <link href="/css/home.css" rel="stylesheet">
+</head>
+
+<body>
+  <div id="root">
+    <div id="content"></div>
+  </div>
+  <div id="frame" />
+  <script id="vconsole" data-src="/js/vconsole.min.js"></script>
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/announcement/hoyo-log.js"></script>
+  <script src="/js/announcement/vendors_c236e5ec5392956a78d9.js"></script>
+  <script src="/js/announcement/bundle_8dc2310b51692280f568.js?v2"></script>
+</body>
+
+</html>

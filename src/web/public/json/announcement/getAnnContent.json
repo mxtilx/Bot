@@ -1,0 +1,27 @@
+{
+	"retcode": 0,
+	"message": "OK",
+	"data": {
+		"list": [
+			{
+				"ann_id": 1250,
+				"title": "1",
+				"subtitle": "1",
+				"banner": "",
+				"content": "",
+				"lang": "id-id"
+			},
+			{
+				"ann_id": 1251,
+				"title": "",
+				"subtitle": "",
+				"banner": "",
+				"content": "",
+				"lang": "id-id"
+			}
+		],
+		"total": 2,
+		"pic_list": [],
+		"pic_total": 0
+	}
+}

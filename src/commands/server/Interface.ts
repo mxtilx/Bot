@@ -51,7 +51,7 @@ export default class Interface {
 
 		Interface.rl.on("close", () => {
 			console.log("Have a great day!")
-			process.exit(0)
+			process.exit()
 		})
 	}
 }

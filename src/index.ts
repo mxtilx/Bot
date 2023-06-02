@@ -55,6 +55,7 @@ import API_SR from "./game/starrails/api"
 import { RSAUtils } from "./game/hoyolab/crypto"
 import axios from "axios"
 import { statusCodes } from "./util/constants"
+import announcement from "./web/plugin/announcement"
 
 const log = new Logger("YuukiPS")
 log.info("YuukiPS startup....")
@@ -76,6 +77,8 @@ const regcmd = argv.reg || false
 
 API_GS.initserver(set_host, set_port_cloud, set_protocol)
 API_SR.initserver(set_host, set_port_cloud, set_protocol)
+
+var domain = `${set_protocol}://${set_host}:${set_port_cloud}`
 
 var eta_plugin_random = require("./web/plugin/random")
 
@@ -111,7 +114,7 @@ const bot = new Client({
 
 bot.on(Events.Error, (error: any) => {
 	log.debug({ event: "bot dc", log: error })
-	process.exit(1);
+	process.exit(1)
 })
 
 async function registerEvent(event: string, ...args: any) {
@@ -576,13 +579,96 @@ web.all("/ys/event/:id_event/index.html", async (req: Request, res: Response) =>
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
+// announcement
 web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
-	return res.json({ retcode: 200, message: "Success", data: 404 })
+	//log.debug({ msg: "params announcement", tes: req.params })
+	//log.debug({ msg: "query announcement", tes: req.query })
+	//log.debug({ msg: "body announcement", tes: req.body })
+	res.render("announcement/home", {
+		title: "Announcement",
+		description: "Im lazy to write"
+	})
+})
+web.all("/common/:cn/announcement/api/:id1", async (req: Request, res: Response) => {
+	var p = req.params
+	var target = p.id1
+	//log.debug({ msg: "params " + target, tes: req.params })
+	//log.debug({ msg: "query " + target, tes: req.query })
+	//log.debug({ msg: "body " + target, tes: req.body })
+	let jsonData = null
+	let time_ms = Date.now().toString()
+	if (target == "getAnnList") {
+		var cx = await announcement.getPostData(false)
+		jsonData = {
+			retcode: 0,
+			message: "OK",
+			data: {
+				list: [
+					{
+						list: cx,
+						type_id: 2,
+						type_label: "Announcement"
+					},
+					{
+						list: [],
+						type_id: 1,
+						type_label: "YuukiPS"
+					}
+				],
+				total: 2,
+				type_list: [
+					{
+						id: 2,
+						name: "Announcement",
+						mi18n_name: "Announcement"
+					},
+					{
+						id: 1,
+						name: "YuukiPS",
+						mi18n_name: "YuukiPS"
+					}
+				],
+				alert: false,
+				alert_id: 0,
+				timezone: -5,
+				t: time_ms,
+				pic_list: [],
+				pic_total: 0,
+				pic_type_list: [],
+				pic_alert: false,
+				pic_alert_id: 0,
+				static_sign: ""
+			}
+		}
+	} else if (target == "getAnnContent") {
+		var cx = await announcement.getPostData(true)
+		jsonData = {
+			retcode: 0,
+			message: "OK",
+			data: {
+				list: cx,
+				total: cx.length,
+				pic_list: [],
+				pic_total: 0
+			}
+		}
+	} else {
+		try {
+			const data = await fs.readFile(join(__dirname, `./web/public/json/announcement/${target}.json`), "utf8")
+			jsonData = JSON.parse(data)
+		} catch (err) {
+			console.error(err)
+			jsonData = {
+				data: null,
+				message: "Error 500",
+				retcode: -1
+			}
+		}
+	}
+	return res.json(jsonData)
 })
 
-//
+// idk
 
 web.all("/game_weather/weather/get_weather", async (req: Request, res: Response) => {
 	log.debug({ msg: "params weather", tes: req.params })
@@ -591,6 +677,13 @@ web.all("/game_weather/weather/get_weather", async (req: Request, res: Response)
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
+web.all("/map_manage/:id1/id2.png", async (req: Request, res: Response) => {
+	//log.debug({ msg: "params weather", tes: req.params })
+	//log.debug({ msg: "query weather", tes: req.query })
+	//log.debug({ msg: "body weather", tes: req.body })
+	return res.json({ retcode: 200, message: "Success", data: 404 })
+})
+// /map_manage/20221124/0ebe6d2f65fb5cc5ed4046a01a68dda9_7334983767356242405.png
 // Hoyo Acc Stuff
 
 web.all("/account/risky/api/check", async (req: Request, res: Response) => {
@@ -800,8 +893,8 @@ web.all("/privacy/policy/ms/version", (req: Request, res: Response) => {
 // Config
 web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) => {
 	// Fake Config SR
-	//log.debug(req.params)
-	//log.debug(req.query)
+	log.debug(req.params)
+	log.debug(req.query)
 	// https://sdk-static.mihoyo.com/hk4e_global/combo/granter/api/getConfig?app_id=4&channel_id=1&client_type=3 cn only
 	return res.json({
 		retcode: statusCodes.success.RETCODE,
@@ -810,7 +903,9 @@ web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) 
 			protocol: true,
 			qr_enabled: true,
 			log_level: "INFO",
-			announce_url: "https://ps.yuuki.me/news",
+			announce_url:
+				domain +
+				"/hk4e_yuuki/announcement/index.html?sdk_presentation_style=fullscreen&sdk_screen_transparent=true&auth_appid=announcement&authkey_ver=1&game_biz=hk4e_yuuki&sign_type=2&version=1.37&game=hk4e#/",
 			push_alias_type: 2,
 			disable_ysdk_guard: false,
 			enable_announce_pic_popup: true,

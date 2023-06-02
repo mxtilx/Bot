@@ -36,7 +36,7 @@ const cmd = new SlashCommandBuilder()
 	)
 
 async function run(interaction: CommandInteraction) {
-	const baseReply: InteractionReplyOptions = { ephemeral: false } // shit
+	const baseReply: InteractionReplyOptions = { ephemeral: true } // shit
 
 	try {
 		let server_id = interaction.options.get("id")?.value?.toString() ?? ""

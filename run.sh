@@ -15,6 +15,7 @@ if [ "$metode" = "cloud" ];then
  echo "Run Cloud"
  # TODO: move to ps.yuuki.me
  npm install
+ npm update
  npm run start -- --port_cloud 443 --port 10010 --host login.yuuki.me --protocol https
 fi
 
@@ -42,7 +43,7 @@ if [ "$metode" = "clean" ];then
 fi
 
 if [ "$metode" = "fix" ];then
- cd src
+ #cd src
  npx prettier --config .prettierrc.json --write .
- cd ..
+ #cd ..
 fi

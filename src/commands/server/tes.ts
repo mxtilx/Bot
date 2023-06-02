@@ -9,17 +9,12 @@ import fs from "fs"
 const log = new Logger("/ping", "blue")
 
 import axios from "axios"
+import announcement from "../../web/plugin/announcement"
 
-function generateRandomKey(length: number = 40) {
-	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-	let key = ""
+export default async function handle(command: Command) {
 
-	for (let i = 0; i < length; i++) {
-		const randomIndex = Math.floor(Math.random() * characters.length)
-		key += characters[randomIndex]
-	}
+	var data = await announcement.getPostData();
 
-	return key
+	console.log(data)
+
 }
-
-export default async function handle(command: Command) {}
