@@ -251,29 +251,42 @@ export const _ = {
 			}
 		}
 	},
-	GET_LIST_REGION: async function (cn: string = "", raw: boolean = false, chost: string = "") {
+	GET_LIST_REGION: async function (version: string = "", raw: boolean = false, chost: string = "") {
 		try {
 			const region_list: RegionSimpleInfo[] = []
 			Config.server.forEach((item) => {
-				var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/${item.name}`
-				if (!isEmpty(chost)) {
-					dispatchUrl = `${chost}/query_cur_region/${item.name}`
+				if (contains(version, item.version)) {
+					var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/${item.name}`
+					if (!isEmpty(chost)) {
+						dispatchUrl = `${chost}/query_cur_region/${item.name}`
+					}
+					if (!isEmpty(item.dispatchUrl)) {
+						dispatchUrl = item.dispatchUrl
+					}
+					const regionSimpleInfo1 = RegionSimpleInfo.create({
+						dispatchUrl: dispatchUrl,
+						type: "DEV_PUBLIC",
+						name: item.name,
+						title: item.title
+					})
+					region_list.push(regionSimpleInfo1)
 				}
-				if (!isEmpty(item.dispatchUrl)) {
-					dispatchUrl = item.dispatchUrl
-				}
+			})
+
+			if (region_list.length == 0) {
+				var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/not_found`
 				const regionSimpleInfo1 = RegionSimpleInfo.create({
 					dispatchUrl: dispatchUrl,
 					type: "DEV_PUBLIC",
-					name: item.name,
-					title: item.title
+					name: "not_found",
+					title: "YuukiPS - Update Game Client"
 				})
 				region_list.push(regionSimpleInfo1)
-			})
+			}
 
 			let config_custom = {
-				sdkenv: cn.includes("CN") ? "0" : "2",
-				checkdevice: cn.includes("CN") ? true : false,
+				sdkenv: version.includes("CN") ? "0" : "2",
+				checkdevice: version.includes("CN") ? true : false,
 				loadPatch: false,
 				showexception: false,
 				regionConfig: "pm|fk|add",

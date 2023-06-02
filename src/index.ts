@@ -582,6 +582,15 @@ web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
+//
+
+web.all("/game_weather/weather/get_weather", async (req: Request, res: Response) => {
+	log.debug({ msg: "params weather", tes: req.params })
+	log.debug({ msg: "query weather", tes: req.query })
+	log.debug({ msg: "body weather", tes: req.body })
+	return res.json({ retcode: 200, message: "Success", data: 404 })
+})
+
 // Hoyo Acc Stuff
 
 web.all("/account/risky/api/check", async (req: Request, res: Response) => {
