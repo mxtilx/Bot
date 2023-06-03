@@ -1,5 +1,7 @@
 /** @format */
 
+import * as fs from "fs"
+
 import Constants from "./constants"
 
 export function sleep(ms: number) {
@@ -67,4 +69,16 @@ export function bitsToGigabytes(bits: number) {
 
 export function bytesToGigabytes(bytes: number) {
 	return (bytes / (1024 * 1024 * 1024)).toFixed(3)
+}
+
+export function readFileAsync(filePath: string): Promise<any> {
+	return new Promise<any>((resolve, reject) => {
+		fs.readFile(filePath, "utf8", (err, data) => {
+			if (err) {
+				reject(err)
+			} else {
+				resolve(JSON.parse(data))
+			}
+		})
+	})
 }

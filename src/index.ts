@@ -15,7 +15,8 @@ import {
 	clientTypeFromClientId,
 	generateSEOTitle,
 	bitsToGigabytes,
-	bytesToGigabytes
+	bytesToGigabytes,
+	readFileAsync
 } from "./util/library"
 import Config from "./util/config"
 import Logger from "./util/logger"
@@ -450,6 +451,84 @@ web.all("/game/:cn", async (req: Request, res: Response) => {
 
 web.all("/api", (req: Request, res: Response) => {
 	res.send("API YuukiPS v2")
+})
+
+// Launcher Api
+web.get("/api/:namegame/patch/:md5", async (req: Request, res: Response) => {
+	const { md5 } = req.params
+	const filePath = join(__dirname, `./web/public/json/genshin-impact/version/patch/${md5}.json`)
+	try {
+		const fileContent = await fs.readFile(filePath)
+		res.setHeader("Content-Type", "application/json")
+		res.send(fileContent)
+	} catch (error) {
+		log.debug({ name: `error ${md5} : ${filePath}`, tes: error })
+		return res.json({ retcode: 404, message: "Error", data: 404 })
+	}
+})
+
+web.all("/api/launcher/server", async (req: Request, res: Response) => {
+	//log.debug({ msg: "params launcher", tes: req.params })
+	//log.debug({ msg: "query launcher", tes: req.query })
+	//log.debug({ msg: "body launcher", tes: req.body })
+	const time_ms = Date.now().toString()
+	return res.json({
+		time: time_ms,
+		list: [
+			{
+				name: "YuukiPS",
+				host: "ps.yuuki.me",
+				game: "GS",
+				port: 443,
+				https: true,
+				version: "3.4.0"
+			},
+			{
+				name: "Localhost",
+				host: "localhost",
+				game: "GS",
+				port: 443,
+				https: false,
+				version: "3.4.0"
+			},
+			{
+				name: "Official Servers",
+				host: "official",
+				game: "GS",
+				port: 443,
+				https: true,
+				version: "3.4.0"
+			}
+		]
+	})
+})
+web.all("/api/:namegame/banner", async (req: Request, res: Response) => {
+	log.debug({ msg: "params banner", tes: req.params })
+	log.debug({ msg: "query banner", tes: req.query })
+	log.debug({ msg: "body banner", tes: req.body })
+	const filePath = join(__dirname, `./web/public/json/genshin-impact/banner.json`)
+	try {
+		const fileContent = await fs.readFile(filePath)
+		res.setHeader("Content-Type", "application/json")
+		res.send(fileContent)
+	} catch (error) {
+		log.debug({ name: `error banner : ${filePath}`, tes: error })
+		return res.json({ retcode: 404, message: "Error", data: 404 })
+	}
+})
+web.all("/api/:namegame/event", async (req: Request, res: Response) => {
+	log.debug({ msg: "params event", tes: req.params })
+	log.debug({ msg: "query event", tes: req.query })
+	log.debug({ msg: "body event", tes: req.body })
+	const filePath = join(__dirname, `./web/public/json/genshin-impact/event.json`)
+	try {
+		const fileContent = await fs.readFile(filePath)
+		res.setHeader("Content-Type", "application/json")
+		res.send(fileContent)
+	} catch (error) {
+		log.debug({ name: `error event : ${filePath}`, tes: error })
+		return res.json({ retcode: 404, message: "Error", data: 404 })
+	}
 })
 
 // Testing
