@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<%~ includeFile('./layout/head', it) %>
+
+<%~ includeFile('./lib/top', it) %>
+
+<body>
+
+  <div class="container py-3">
+
+    <header>
+
+      <div class="b-4 border-bottom">
+        <a href="/" class="text-decoration-none">
+          <h1 class="fs-4">YuukiPS <span class="badge bg-secondary"><%= it.game_title %></span></h1>
+        </a>
+      </div>
+
+    </header>
+
+    <main>
+
+      <div class="p-3 pb-md-2 mx-auto">
+        <h3>Download Game</h3>
+      </div>
+
+      <% if (it.data) { %>
+      <div class="accordion" id="version">
+
+        <% it.data.forEach(function(version){ %>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#v<%= version.id %>" aria-expanded="true" aria-controls="v<%= version.id %>">
+              <%= version.platfrom %>
+            </button>
+          </h2>
+          <div id="v<%= version.id %>" class="accordion-collapse collapse" data-bs-parent="#version">
+            <div class="accordion-body">
+
+              <% if (Array.isArray(version.version)) { %>
+
+              <% version.version.forEach(function(x) { %>
+
+              <div class="accordion" id="vg-<%= version.platfrom %>">
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#vg-<%= version.platfrom %>-<%= x.name %>" aria-expanded="true" aria-controls="vg-<%= version.platfrom %>-<%= x.name %>">
+                      <%= x.name %> / <%= x.project.name %>
+                    </button>
+                  </h2>
+                  <div id="vg-<%= version.platfrom %>-<%= x.name %>" class="accordion-collapse collapse" data-bs-parent="#vg-<%= version.platfrom %>">
+                    <div class="accordion-body">
+
+                      <% if (Array.isArray(x.download)) { %>
+                      <% x.download.forEach(function(xd) { %>
+
+                      <h5>Link: <%= xd.name %></h5>
+                      <a class="btn btn-primary" href="<%= xd.launcher %>">Download Launcher</a>
+
+                      <% for (var key in xd.game) { %>
+
+                      <hr>
+                      </hr>
+                      <h4><%= key %></h4>
+                      <h5>Game Data</h5>
+
+                      <% if (xd.game.hasOwnProperty(key)) { %>
+
+                      <% if (Array.isArray(xd.game[key])) { %>
+
+                      <% xd.game[key].forEach(function(xdx) { %>
+
+                      <p><a class="btn btn-primary" href="<%= xdx.path %>">Download <%= xdx.name %> (<%= it.bytesToGigabytes(xdx.size) %> GB)</a></p>
+
+                      <% if (Array.isArray(xdx.voice_packs)) { %>
+                      <h6>Voice Data</h6>
+                      <% xdx.voice_packs.forEach(function(vc1) { %>
+
+                      <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.size) %> GB)</a>
+
+                      <% }) %>
+                      <% } %>
+
+                      <hr>
+                      </hr>
+
+                      <% }) %>
+
+
+                      <% } else { %>
+
+                      <p> <a class="btn btn-primary" href="<%= xd.game[key].path %>">Download <%= key %> (<%= it.bytesToGigabytes(xd.game[key].size) %> GB)</a></p>
+
+                      <% if (Array.isArray(xd.game[key].voice_packs)) { %>
+                      <h6>Voice Data</h6>
+                      <% xd.game[key].voice_packs.forEach(function(vc1) { %>
+
+                      <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.size) %> GB)</a>
+
+                      <% }) %>
+                      <% } %>
+
+                      <% } %>
+
+                      <% } %>
+                      <% } %>
+
+
+                      <% }) %>
+                      <% } %>
+
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+
+              <% }) %>
+
+              <% } %>
+
+            </div>
+
+
+          </div>
+        </div>
+
+        <% }) %>
+
+      </div>
+      <% }else { %>
+
+      <div class="alert alert-info" role="alert">
+        <h3>Will be available soon...</h3>
+      </div>
+
+      <% } %>
+
+
+      <div class="p-3 pb-md-2 mx-auto">
+        <h3>Stats</h3>
+      </div>
+
+      <table class="table">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Nama Server</th>
+            <th scope="col">Online</th>
+            <th scope="col">CPU</th>
+            <th scope="col">RAM</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Modal -->
+      <div class="modal fade" id="detail_info" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Detailed Info</h1>
+            </div>
+            <div class="modal-body">
+              <!-- Detailed info will be displayed here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+  
+  <!-- end -->
+
+  <p class="text-center py-3">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+  </p>
+
+  <%~ includeFile('./layout/footer', it) %>
+
+</body>
+
+<%~ includeFile('./lib/down', it) %>
+
+<script src="/js/online.js?t=<% (random) %>"></script>
+
+</html>

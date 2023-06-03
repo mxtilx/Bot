@@ -53,3 +53,18 @@ export function clientTypeFromClientId(clientId: number): string {
 
 	return "UNKNOWN: " + clientId
 }
+
+export function generateSEOTitle(slug: string) {
+	const words = slug.split("-")
+	const capitalizedWords = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+	const seoTitle = capitalizedWords.join(" ")
+	return seoTitle
+}
+
+export function bitsToGigabytes(bits: number) {
+	return (bits / (8 * 1024 * 1024 * 1024)).toFixed(3)
+}
+
+export function bytesToGigabytes(bytes: number) {
+	return (bytes / (1024 * 1024 * 1024)).toFixed(3)
+}

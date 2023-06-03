@@ -1,4 +1,4 @@
 {
   "ext": "js,ts",
-  "ignore": ["**/*.json","web/public/*"]
+  "ignore": ["**/*.json","src/web/public/*"]
 }

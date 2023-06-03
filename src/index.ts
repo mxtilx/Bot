@@ -8,7 +8,15 @@
 // Important
 import { join } from "path"
 import fs from "fs/promises"
-import { sleep, isEmpty, contains, clientTypeFromClientId } from "./util/library"
+import {
+	sleep,
+	isEmpty,
+	contains,
+	clientTypeFromClientId,
+	generateSEOTitle,
+	bitsToGigabytes,
+	bytesToGigabytes
+} from "./util/library"
 import Config from "./util/config"
 import Logger from "./util/logger"
 import Interface from "./commands/server/Interface"
@@ -409,18 +417,34 @@ web.all("/command", (req: Request, res: Response) => {
 	})
 })
 
-// Web
-web.all("/game/genshin", (req: Request, res: Response) => {
-	res.render("genshin_list", {
-		title: "Download Genshin",
-		description: "Im lazy to write"
-	})
-})
-// Web Download
-web.all("/game/genshin/:id", (req: Request, res: Response) => {
-	res.render("genshin_dl", {
-		title: "Download Genshin",
-		description: "Im lazy to write"
+// Web Portal
+web.all("/game/:cn", async (req: Request, res: Response) => {
+	//log.debug({ msg: "params game", tes: req.params })
+	//log.debug({ msg: "query game", tes: req.query })
+	//log.debug({ msg: "body game", tes: req.body })
+	var game_id = 0
+	var p = req.params
+	if (p.cn == "genshin-impact") {
+		game_id = 1
+	} else if (p.cn == "star-rail") {
+		game_id = 2
+	} else {
+		p.cn = "no-found"
+	}
+	var title = generateSEOTitle(p.cn)
+	let data
+	try {
+		data = JSON.parse(await fs.readFile(join(__dirname, `./web/public/json/${p.cn}/download.json`), "utf8"))
+	} catch (error) {
+		log.error(error)
+	}
+	res.render("game", {
+		game_title: `${title}`,
+		game_id: game_id,
+		title: `Playing Private Servers For ${title}`,
+		description: `Embark on an unforgettable adventure in the captivating world of ${title} Game! Join our private server for true adventurers and explore vast landscapes, daunting dungeons, and mystical creatures. Engage in epic quests, battles, and uncover hidden treasures. Customize your character, forge alliances, and conquer challenges in a constantly evolving universe. Join us now and become a legend in ${title} Game!`,
+		data: data,
+		bytesToGigabytes: bytesToGigabytes
 	})
 })
 

@@ -35,8 +35,8 @@
               Playing
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/game/genshin">Genshin Impact</a></li>
-              <li><a class="dropdown-item" href="/game/starrail">Star Rail</a></li>
+              <li><a class="dropdown-item" href="/game/genshin-impact">Genshin Impact</a></li>
+              <li><a class="dropdown-item" href="/game/star-rail">Star Rail</a></li>
             </ul>
           </div>
 
