@@ -9,6 +9,33 @@ import * as _m0 from "protobufjs/minimal"
 
 export const protobufPackage = ""
 
+export interface ServerDispatchDataCBT2 {
+	retcode?: number
+	msg?: string
+	regionName?: string
+	ip?: string
+	port?: number
+	stopBeginTime?: number
+	stopEndTime?: number
+	dataUseAssetBoundle?: boolean
+	resUseAssetBoundle?: boolean
+	assetBundleUrl?: string
+	exResourceUrl?: string
+	luaUrl?: string
+	asbRelogin?: number
+	asbMemo?: string
+	designDataRelogin?: number
+	designDataMemo?: string
+	clientSecretKey?: string
+	recordGameObjectUserData?: string
+	useTcp?: boolean
+	customServiceUrl?: string
+	operationFeedbackUrl?: string
+	privacyInGameUrl?: string
+	clientRecordReplay?: boolean
+	serverDescription?: string
+}
+
 export interface ServerDispatchData {
 	onlineReplayUploadUrl?: string
 	iINOPFNCDEN?: boolean
@@ -66,6 +93,391 @@ export interface RegionSimpleInfo {
 
 export interface QueryRegionListHttpRsp {
 	regionList?: RegionSimpleInfo[]
+}
+
+function createBaseServerDispatchDataCBT2(): ServerDispatchDataCBT2 {
+	return {
+		retcode: 0,
+		msg: "",
+		regionName: "",
+		ip: "",
+		port: 0,
+		stopBeginTime: 0,
+		stopEndTime: 0,
+		dataUseAssetBoundle: false,
+		resUseAssetBoundle: false,
+		assetBundleUrl: "",
+		exResourceUrl: "",
+		luaUrl: "",
+		asbRelogin: 0,
+		asbMemo: "",
+		designDataRelogin: 0,
+		designDataMemo: "",
+		clientSecretKey: "",
+		recordGameObjectUserData: "",
+		useTcp: false,
+		customServiceUrl: "",
+		operationFeedbackUrl: "",
+		privacyInGameUrl: "",
+		clientRecordReplay: false,
+		serverDescription: ""
+	}
+}
+
+export const ServerDispatchDataCBT2 = {
+	encode(message: ServerDispatchDataCBT2, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+		if (message.retcode !== undefined && message.retcode !== 0) {
+			writer.uint32(8).uint32(message.retcode)
+		}
+		if (message.msg !== undefined && message.msg !== "") {
+			writer.uint32(18).string(message.msg)
+		}
+		if (message.regionName !== undefined && message.regionName !== "") {
+			writer.uint32(26).string(message.regionName)
+		}
+		if (message.ip !== undefined && message.ip !== "") {
+			writer.uint32(34).string(message.ip)
+		}
+		if (message.port !== undefined && message.port !== 0) {
+			writer.uint32(40).uint32(message.port)
+		}
+		if (message.stopBeginTime !== undefined && message.stopBeginTime !== 0) {
+			writer.uint32(48).uint32(message.stopBeginTime)
+		}
+		if (message.stopEndTime !== undefined && message.stopEndTime !== 0) {
+			writer.uint32(56).uint32(message.stopEndTime)
+		}
+		if (message.dataUseAssetBoundle === true) {
+			writer.uint32(64).bool(message.dataUseAssetBoundle)
+		}
+		if (message.resUseAssetBoundle === true) {
+			writer.uint32(72).bool(message.resUseAssetBoundle)
+		}
+		if (message.assetBundleUrl !== undefined && message.assetBundleUrl !== "") {
+			writer.uint32(82).string(message.assetBundleUrl)
+		}
+		if (message.exResourceUrl !== undefined && message.exResourceUrl !== "") {
+			writer.uint32(90).string(message.exResourceUrl)
+		}
+		if (message.luaUrl !== undefined && message.luaUrl !== "") {
+			writer.uint32(98).string(message.luaUrl)
+		}
+		if (message.asbRelogin !== undefined && message.asbRelogin !== 0) {
+			writer.uint32(104).uint32(message.asbRelogin)
+		}
+		if (message.asbMemo !== undefined && message.asbMemo !== "") {
+			writer.uint32(114).string(message.asbMemo)
+		}
+		if (message.designDataRelogin !== undefined && message.designDataRelogin !== 0) {
+			writer.uint32(120).uint32(message.designDataRelogin)
+		}
+		if (message.designDataMemo !== undefined && message.designDataMemo !== "") {
+			writer.uint32(130).string(message.designDataMemo)
+		}
+		if (message.clientSecretKey !== undefined && message.clientSecretKey !== "") {
+			writer.uint32(138).string(message.clientSecretKey)
+		}
+		if (message.recordGameObjectUserData !== undefined && message.recordGameObjectUserData !== "") {
+			writer.uint32(146).string(message.recordGameObjectUserData)
+		}
+		if (message.useTcp === true) {
+			writer.uint32(152).bool(message.useTcp)
+		}
+		if (message.customServiceUrl !== undefined && message.customServiceUrl !== "") {
+			writer.uint32(162).string(message.customServiceUrl)
+		}
+		if (message.operationFeedbackUrl !== undefined && message.operationFeedbackUrl !== "") {
+			writer.uint32(170).string(message.operationFeedbackUrl)
+		}
+		if (message.privacyInGameUrl !== undefined && message.privacyInGameUrl !== "") {
+			writer.uint32(178).string(message.privacyInGameUrl)
+		}
+		if (message.clientRecordReplay === true) {
+			writer.uint32(184).bool(message.clientRecordReplay)
+		}
+		if (message.serverDescription !== undefined && message.serverDescription !== "") {
+			writer.uint32(194).string(message.serverDescription)
+		}
+		return writer
+	},
+
+	decode(input: _m0.Reader | Uint8Array, length?: number): ServerDispatchDataCBT2 {
+		const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input)
+		let end = length === undefined ? reader.len : reader.pos + length
+		const message = createBaseServerDispatchDataCBT2()
+		while (reader.pos < end) {
+			const tag = reader.uint32()
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 8) {
+						break
+					}
+
+					message.retcode = reader.uint32()
+					continue
+				case 2:
+					if (tag !== 18) {
+						break
+					}
+
+					message.msg = reader.string()
+					continue
+				case 3:
+					if (tag !== 26) {
+						break
+					}
+
+					message.regionName = reader.string()
+					continue
+				case 4:
+					if (tag !== 34) {
+						break
+					}
+
+					message.ip = reader.string()
+					continue
+				case 5:
+					if (tag !== 40) {
+						break
+					}
+
+					message.port = reader.uint32()
+					continue
+				case 6:
+					if (tag !== 48) {
+						break
+					}
+
+					message.stopBeginTime = reader.uint32()
+					continue
+				case 7:
+					if (tag !== 56) {
+						break
+					}
+
+					message.stopEndTime = reader.uint32()
+					continue
+				case 8:
+					if (tag !== 64) {
+						break
+					}
+
+					message.dataUseAssetBoundle = reader.bool()
+					continue
+				case 9:
+					if (tag !== 72) {
+						break
+					}
+
+					message.resUseAssetBoundle = reader.bool()
+					continue
+				case 10:
+					if (tag !== 82) {
+						break
+					}
+
+					message.assetBundleUrl = reader.string()
+					continue
+				case 11:
+					if (tag !== 90) {
+						break
+					}
+
+					message.exResourceUrl = reader.string()
+					continue
+				case 12:
+					if (tag !== 98) {
+						break
+					}
+
+					message.luaUrl = reader.string()
+					continue
+				case 13:
+					if (tag !== 104) {
+						break
+					}
+
+					message.asbRelogin = reader.uint32()
+					continue
+				case 14:
+					if (tag !== 114) {
+						break
+					}
+
+					message.asbMemo = reader.string()
+					continue
+				case 15:
+					if (tag !== 120) {
+						break
+					}
+
+					message.designDataRelogin = reader.uint32()
+					continue
+				case 16:
+					if (tag !== 130) {
+						break
+					}
+
+					message.designDataMemo = reader.string()
+					continue
+				case 17:
+					if (tag !== 138) {
+						break
+					}
+
+					message.clientSecretKey = reader.string()
+					continue
+				case 18:
+					if (tag !== 146) {
+						break
+					}
+
+					message.recordGameObjectUserData = reader.string()
+					continue
+				case 19:
+					if (tag !== 152) {
+						break
+					}
+
+					message.useTcp = reader.bool()
+					continue
+				case 20:
+					if (tag !== 162) {
+						break
+					}
+
+					message.customServiceUrl = reader.string()
+					continue
+				case 21:
+					if (tag !== 170) {
+						break
+					}
+
+					message.operationFeedbackUrl = reader.string()
+					continue
+				case 22:
+					if (tag !== 178) {
+						break
+					}
+
+					message.privacyInGameUrl = reader.string()
+					continue
+				case 23:
+					if (tag !== 184) {
+						break
+					}
+
+					message.clientRecordReplay = reader.bool()
+					continue
+				case 24:
+					if (tag !== 194) {
+						break
+					}
+
+					message.serverDescription = reader.string()
+					continue
+			}
+			if ((tag & 7) === 4 || tag === 0) {
+				break
+			}
+			reader.skipType(tag & 7)
+		}
+		return message
+	},
+
+	fromJSON(object: any): ServerDispatchDataCBT2 {
+		return {
+			retcode: isSet(object.retcode) ? Number(object.retcode) : 0,
+			msg: isSet(object.msg) ? String(object.msg) : "",
+			regionName: isSet(object.regionName) ? String(object.regionName) : "",
+			ip: isSet(object.ip) ? String(object.ip) : "",
+			port: isSet(object.port) ? Number(object.port) : 0,
+			stopBeginTime: isSet(object.stopBeginTime) ? Number(object.stopBeginTime) : 0,
+			stopEndTime: isSet(object.stopEndTime) ? Number(object.stopEndTime) : 0,
+			dataUseAssetBoundle: isSet(object.dataUseAssetBoundle) ? Boolean(object.dataUseAssetBoundle) : false,
+			resUseAssetBoundle: isSet(object.resUseAssetBoundle) ? Boolean(object.resUseAssetBoundle) : false,
+			assetBundleUrl: isSet(object.assetBundleUrl) ? String(object.assetBundleUrl) : "",
+			exResourceUrl: isSet(object.exResourceUrl) ? String(object.exResourceUrl) : "",
+			luaUrl: isSet(object.luaUrl) ? String(object.luaUrl) : "",
+			asbRelogin: isSet(object.asbRelogin) ? Number(object.asbRelogin) : 0,
+			asbMemo: isSet(object.asbMemo) ? String(object.asbMemo) : "",
+			designDataRelogin: isSet(object.designDataRelogin) ? Number(object.designDataRelogin) : 0,
+			designDataMemo: isSet(object.designDataMemo) ? String(object.designDataMemo) : "",
+			clientSecretKey: isSet(object.clientSecretKey) ? String(object.clientSecretKey) : "",
+			recordGameObjectUserData: isSet(object.recordGameObjectUserData)
+				? String(object.recordGameObjectUserData)
+				: "",
+			useTcp: isSet(object.useTcp) ? Boolean(object.useTcp) : false,
+			customServiceUrl: isSet(object.customServiceUrl) ? String(object.customServiceUrl) : "",
+			operationFeedbackUrl: isSet(object.operationFeedbackUrl) ? String(object.operationFeedbackUrl) : "",
+			privacyInGameUrl: isSet(object.privacyInGameUrl) ? String(object.privacyInGameUrl) : "",
+			clientRecordReplay: isSet(object.clientRecordReplay) ? Boolean(object.clientRecordReplay) : false,
+			serverDescription: isSet(object.serverDescription) ? String(object.serverDescription) : ""
+		}
+	},
+
+	toJSON(message: ServerDispatchDataCBT2): unknown {
+		const obj: any = {}
+		message.retcode !== undefined && (obj.retcode = Math.round(message.retcode))
+		message.msg !== undefined && (obj.msg = message.msg)
+		message.regionName !== undefined && (obj.regionName = message.regionName)
+		message.ip !== undefined && (obj.ip = message.ip)
+		message.port !== undefined && (obj.port = Math.round(message.port))
+		message.stopBeginTime !== undefined && (obj.stopBeginTime = Math.round(message.stopBeginTime))
+		message.stopEndTime !== undefined && (obj.stopEndTime = Math.round(message.stopEndTime))
+		message.dataUseAssetBoundle !== undefined && (obj.dataUseAssetBoundle = message.dataUseAssetBoundle)
+		message.resUseAssetBoundle !== undefined && (obj.resUseAssetBoundle = message.resUseAssetBoundle)
+		message.assetBundleUrl !== undefined && (obj.assetBundleUrl = message.assetBundleUrl)
+		message.exResourceUrl !== undefined && (obj.exResourceUrl = message.exResourceUrl)
+		message.luaUrl !== undefined && (obj.luaUrl = message.luaUrl)
+		message.asbRelogin !== undefined && (obj.asbRelogin = Math.round(message.asbRelogin))
+		message.asbMemo !== undefined && (obj.asbMemo = message.asbMemo)
+		message.designDataRelogin !== undefined && (obj.designDataRelogin = Math.round(message.designDataRelogin))
+		message.designDataMemo !== undefined && (obj.designDataMemo = message.designDataMemo)
+		message.clientSecretKey !== undefined && (obj.clientSecretKey = message.clientSecretKey)
+		message.recordGameObjectUserData !== undefined &&
+			(obj.recordGameObjectUserData = message.recordGameObjectUserData)
+		message.useTcp !== undefined && (obj.useTcp = message.useTcp)
+		message.customServiceUrl !== undefined && (obj.customServiceUrl = message.customServiceUrl)
+		message.operationFeedbackUrl !== undefined && (obj.operationFeedbackUrl = message.operationFeedbackUrl)
+		message.privacyInGameUrl !== undefined && (obj.privacyInGameUrl = message.privacyInGameUrl)
+		message.clientRecordReplay !== undefined && (obj.clientRecordReplay = message.clientRecordReplay)
+		message.serverDescription !== undefined && (obj.serverDescription = message.serverDescription)
+		return obj
+	},
+
+	create<I extends Exact<DeepPartial<ServerDispatchDataCBT2>, I>>(base?: I): ServerDispatchDataCBT2 {
+		return ServerDispatchDataCBT2.fromPartial(base ?? {})
+	},
+
+	fromPartial<I extends Exact<DeepPartial<ServerDispatchDataCBT2>, I>>(object: I): ServerDispatchDataCBT2 {
+		const message = createBaseServerDispatchDataCBT2()
+		message.retcode = object.retcode ?? 0
+		message.msg = object.msg ?? ""
+		message.regionName = object.regionName ?? ""
+		message.ip = object.ip ?? ""
+		message.port = object.port ?? 0
+		message.stopBeginTime = object.stopBeginTime ?? 0
+		message.stopEndTime = object.stopEndTime ?? 0
+		message.dataUseAssetBoundle = object.dataUseAssetBoundle ?? false
+		message.resUseAssetBoundle = object.resUseAssetBoundle ?? false
+		message.assetBundleUrl = object.assetBundleUrl ?? ""
+		message.exResourceUrl = object.exResourceUrl ?? ""
+		message.luaUrl = object.luaUrl ?? ""
+		message.asbRelogin = object.asbRelogin ?? 0
+		message.asbMemo = object.asbMemo ?? ""
+		message.designDataRelogin = object.designDataRelogin ?? 0
+		message.designDataMemo = object.designDataMemo ?? ""
+		message.clientSecretKey = object.clientSecretKey ?? ""
+		message.recordGameObjectUserData = object.recordGameObjectUserData ?? ""
+		message.useTcp = object.useTcp ?? false
+		message.customServiceUrl = object.customServiceUrl ?? ""
+		message.operationFeedbackUrl = object.operationFeedbackUrl ?? ""
+		message.privacyInGameUrl = object.privacyInGameUrl ?? ""
+		message.clientRecordReplay = object.clientRecordReplay ?? false
+		message.serverDescription = object.serverDescription ?? ""
+		return message
+	}
 }
 
 function createBaseServerDispatchData(): ServerDispatchData {

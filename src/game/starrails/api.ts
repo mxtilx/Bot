@@ -13,7 +13,7 @@ import axios from "axios"
 import fs from "fs"
 
 // Proto
-import { ServerDispatchData, RegionSimpleInfo, QueryRegionListHttpRsp } from "./proto/schema"
+import { ServerDispatchData, RegionSimpleInfo, QueryRegionListHttpRsp, ServerDispatchDataCBT2 } from "./proto/schema"
 
 import { Ec2bKey, RSAUtils } from "../../game/hoyolab/crypto"
 
@@ -22,6 +22,13 @@ const log = new Logger("GAME-API-SR")
 let hostname = ""
 let port = 0
 let protocol = ""
+
+interface Region {
+	dispatch_url: string
+	env_type: string
+	title: string
+	name: string
+}
 
 export const _ = {
 	initserver(h: string, p: number, uh: string) {
@@ -103,32 +110,89 @@ export const _ = {
 			}
 		}
 	},
-	GET_LIST_SERVER: async function (raw = false) {
+	GET_LIST_REGION: async function (version = "", raw = false, chost: string = "") {
 		try {
-			const region_list = []
-			const regionSimpleInfo1 = RegionSimpleInfo.create({
-				dispatchUrl: "http://2.0.0.100:10010/query_gateway",
-				envType: "2",
-				name: "sr-gc1",
-				title: "YuukiPS SR"
+			let region_list: RegionSimpleInfo[] = []
+			let region_listCBT: Region[] = []
+
+			// Extract the version number using regex
+			const versionRegex = /(\d+\.\d+\.\d+)/
+			const match = version.match(versionRegex)
+			const versionNumber = match ? match[1] : ""
+
+			// Check if the version number is less than 0.70.0
+			let encode = versionNumber < "0.70.0"
+
+			//console.log(versionNumber) // Output: 0.70.0
+			//console.log(isUnder070) // Output: false
+
+			Config.server.forEach((item) => {
+				if (item.game == 2) {
+					if (contains(version, item.version)) {
+						var dispatchUrl = `${protocol}://${hostname}:${port}/query_gateway/${item.name}`
+						if (!isEmpty(chost)) {
+							dispatchUrl = `${chost}/query_gateway/${item.name}`
+						}
+						if (!isEmpty(item.dispatchUrl)) {
+							dispatchUrl = item.dispatchUrl
+						}
+
+						if (encode) {
+							const regionSimpleInfo1 = RegionSimpleInfo.create({
+								dispatchUrl: dispatchUrl,
+								envType: "DEV_PUBLIC",
+								name: item.name,
+								title: item.title
+							})
+							region_list.push(regionSimpleInfo1)
+						} else {
+							region_listCBT.push({
+								dispatch_url: dispatchUrl,
+								env_type: "2",
+								title: item.name, // id server
+								name: item.title // REAL TITLE LOL
+							})
+						}
+					}
+				}
 			})
-			region_list.push(regionSimpleInfo1)
 
-			const regionSimpleInfo2 = RegionSimpleInfo.create({
-				dispatchUrl: "http://2.0.0.100:10010/query_gateway",
-				envType: "2",
-				name: "sr-gc2",
-				title: "MelonPS SR"
-			})
-			region_list.push(regionSimpleInfo2)
+			var dispatchUrl = `${protocol}://${hostname}:${port}/query_gateway/not_found`
+			if (encode) {
+				if (region_list.length == 0) {
+					const regionSimpleInfo1 = RegionSimpleInfo.create({
+						dispatchUrl: dispatchUrl,
+						envType: "DEV_PUBLIC",
+						name: "not_found",
+						title: "YuukiPS - Update Game Client"
+					})
+					region_list.push(regionSimpleInfo1)
+				}
+			} else {
+				if (region_listCBT.length == 0) {
+					region_listCBT.push({
+						dispatch_url: dispatchUrl,
+						env_type: "2",
+						title: "not_found", // id server
+						name: "YuukiPS - Update Game Client" // REAL TITLE LOL
+					})
+				}
+			}
 
-			const toaddquery = QueryRegionListHttpRsp.create({
-				regionList: region_list
-			})
-
-			const buffer = QueryRegionListHttpRsp.encode(toaddquery).finish()
-
-			return Buffer.from(buffer).toString("base64")
+			if (encode) {
+				// CBT3 + REL?
+				const toaddquery = QueryRegionListHttpRsp.create({
+					regionList: region_list
+				})
+				const buffer = QueryRegionListHttpRsp.encode(toaddquery).finish()
+				return Buffer.from(buffer).toString("base64")
+			} else {
+				// CBT2
+				return {
+					region_list: region_listCBT,
+					retcode: 0
+				}
+			}
 		} catch (error) {
 			console.log(error)
 			// TODO: check if error
@@ -140,55 +204,35 @@ export const _ = {
 	},
 	GET_DATA_REGION: async function (name: string = "", seed: string = "", key: number = 5, version: string = "") {
 		try {
-			if (!key) {
-				return this.NO_VERSION_CONFIG()
+
+			const dispatchData = Config.server.find(
+				(r) => r.name == name && contains(version, r.version) == true && r.game == 2
+			)
+
+			let dataObjCBT2: ServerDispatchDataCBT2
+
+			if (dispatchData !== undefined) {
+				dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
+					retcode: 0,
+					msg: "OK",
+					regionName: dispatchData.name,
+					ip: dispatchData.ip,
+					port: dispatchData.port,
+					serverDescription: dispatchData.title,
+					exResourceUrl: "https://ps.yuuki.me/asb/design",
+					dataUseAssetBoundle: false,
+					resUseAssetBoundle: false,
+					assetBundleUrl: "https://ps.yuuki.me/asb"
+				} as ServerDispatchDataCBT2)
+			} else {
+				dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
+					retcode: 20,
+					msg: `Server ${name} does not support ${version} version, Use another server or update game client!. if you believe this is an error that shouldn't be happening please send this id or screenshot to discord support (SEED: ${seed})`,
+					customServiceUrl: "https://ps.yuuki.me"
+				})
 			}
 
-			//log.debug(`Client Key: ${key}`)
-
-			//const dispatchData = Config.server.find(r => r.name == name && contains(version, r.version) == true)
-
-			const dataObj = ServerDispatchData.fromPartial({
-				_AssetBundleVersionUpdateUrl:
-					"https://autopatchos.starrails.com/asb/V1.0Live/output_4186973_52d0b74c56",
-				_LuaBundleVersionUpdateUrl: "https://autopatchos.starrails.com/lua/V1.0Live/output_4135247_48f4e37838",
-				enableDesignDataBundleVersionUpdate: true,
-				_DesignDataBundleVersionUpdateUrl:
-					"https://autopatchos.starrails.com/design_data/V1.0Live/output_4188516_478ae5483e",
-				name: "YuukiSR",
-				port: 22102,
-				enableAssetBundleVersionUpdate: true,
-				host: "2.0.0.100",
-				onlineReplayUploadUrl: "https://prod-official-asia-upload01.starrails.com/upload_replay",
-				redeemCodeUrl: "https://sg-hkrpg-api.hoyoverse.com/common/apicdkey/api",
-				luaPatchVersion: "4135247",
-				officialCommunityUrl:
-					"https://act.hoyoverse.com/sr/event/ob-combine-page/index.html?game_biz=hkrpg_global&sign_type=2&auth_appid=e20230216socialpage&authkey_ver=1&gamebrowser=1&mode=fullscreen",
-				loginWhiteMsg: "星穹列車將於2023/04/26 10:00（UTC+8）啟程，請開拓者耐心等待～",
-				kMJAFDLEPOH:
-					"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",
-				eventTrackingOpen: true,
-				temporaryMaintenanceUrl: "https://m.hoyolab.com/toBBS.html?game_id=6",
-				iFixPatchRevision: "4186933",
-				_IFixPatchVersionUpdateUrl: "https://autopatchos.starrails.com/ifix/V1.0Live/output_4186933_fbdb7f24b2",
-				customServiceUrl:
-					"https://webstatic-sea.hoyoverse.com/csc-service-center-fe/index.html?sign_type=2&auth_appid=csc&authkey_ver=1&win_direction=portrait&page_id=11",
-				onlineReplayDownloadUrl: "https://downloadjp.starrails.com/replay/prod_official_asia"
-			} as ServerDispatchData)
-
-			let rsp
-			try {
-				rsp = ServerDispatchData.encode(dataObj).finish()
-			} catch {
-				rsp = ServerDispatchData.encode(
-					ServerDispatchData.fromPartial({
-						stopBeginTime: Date.now(),
-						stopEndTime: Date.now() * 2
-					})
-				).finish()
-			}
-
-			return Buffer.from(rsp).toString("base64")
+			return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
 		} catch (error) {
 			log.error(error as Error)
 			return this.NO_VERSION_CONFIG()

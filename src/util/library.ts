@@ -12,19 +12,26 @@ export function sleep(ms: number) {
 export function timestr(time: number) {
 	const currentTimeInSeconds = Math.floor(Date.now() / 1000)
 	const timeDifferenceInSeconds = currentTimeInSeconds - time
-	return timeDifferenceInSeconds < 60
-		? `${timeDifferenceInSeconds} seconds ago`
-		: timeDifferenceInSeconds < 3600
-		? `${Math.floor(timeDifferenceInSeconds / 60)} minutes ${timeDifferenceInSeconds % 60} seconds ago`
-		: timeDifferenceInSeconds < 86400
-		? `${Math.floor(timeDifferenceInSeconds / 3600)} hours ${Math.floor(
-				(timeDifferenceInSeconds % 3600) / 60
-		  )} minutes ${timeDifferenceInSeconds % 60} seconds ago`
-		: `${Math.floor(timeDifferenceInSeconds / 86400)} days ${Math.floor(
-				(timeDifferenceInSeconds % 86400) / 3600
-		  )} hours ${Math.floor((timeDifferenceInSeconds % 3600) / 60)} minutes ${
-				timeDifferenceInSeconds % 60
-		  } seconds ago`
+
+	const days = Math.floor(timeDifferenceInSeconds / 86400)
+	const hours = Math.floor((timeDifferenceInSeconds % 86400) / 3600)
+	const minutes = Math.floor((timeDifferenceInSeconds % 3600) / 60)
+	const seconds = timeDifferenceInSeconds % 60
+
+	const formatTime = (value: number, unit: string) => {
+		return value > 0 ? `${value} ${unit}${value === 1 ? "" : "s"}` : ""
+	}
+
+	const formattedTime = [
+		formatTime(days, "day"),
+		formatTime(hours, "hour"),
+		formatTime(minutes, "minute"),
+		formatTime(seconds, "second")
+	]
+		.filter((timeStr) => timeStr !== "")
+		.join(" ")
+
+	return `${formattedTime} ago`
 }
 export function isEmpty(str: string | any[]) {
 	return str == undefined || !str || str.length === 0

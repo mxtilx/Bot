@@ -255,21 +255,23 @@ export const _ = {
 		try {
 			const region_list: RegionSimpleInfo[] = []
 			Config.server.forEach((item) => {
-				if (contains(version, item.version)) {
-					var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/${item.name}`
-					if (!isEmpty(chost)) {
-						dispatchUrl = `${chost}/query_cur_region/${item.name}`
+				if (item.game == 1) {
+					if (contains(version, item.version)) {
+						var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/${item.name}`
+						if (!isEmpty(chost)) {
+							dispatchUrl = `${chost}/query_cur_region/${item.name}`
+						}
+						if (!isEmpty(item.dispatchUrl)) {
+							dispatchUrl = item.dispatchUrl
+						}
+						const regionSimpleInfo1 = RegionSimpleInfo.create({
+							dispatchUrl: dispatchUrl,
+							type: "DEV_PUBLIC",
+							name: item.name,
+							title: item.title
+						})
+						region_list.push(regionSimpleInfo1)
 					}
-					if (!isEmpty(item.dispatchUrl)) {
-						dispatchUrl = item.dispatchUrl
-					}
-					const regionSimpleInfo1 = RegionSimpleInfo.create({
-						dispatchUrl: dispatchUrl,
-						type: "DEV_PUBLIC",
-						name: item.name,
-						title: item.title
-					})
-					region_list.push(regionSimpleInfo1)
 				}
 			})
 
@@ -321,7 +323,9 @@ export const _ = {
 
 			//log.debug(`Client Key: ${key}`)
 
-			const dispatchData = Config.server.find((r) => r.name == name && contains(version, r.version) == true)
+			const dispatchData = Config.server.find(
+				(r) => r.name == name && contains(version, r.version) == true && r.game == 1
+			)
 
 			let dataObj: QueryCurrRegionHttpRsp
 

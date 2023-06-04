@@ -83,7 +83,7 @@ export const _ = {
 				timeout: 1000 * 60
 			})
 			const result = response.data
-			log.info(result)
+			log.debug(result)
 			if (result.msg == "succ" && result.retcode == 0) {
 				return {
 					msg: `Message has been sent`,

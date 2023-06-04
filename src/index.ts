@@ -907,9 +907,9 @@ web.all("/:cn/mdk/shield/api/loginByThirdparty", async (req: Request, res: Respo
 			log.debug(c)
 
 			if ((c.retcode as number) == 0) {
-				log.info(`${username} have logged discord using ip ${ip}`)
+				log.info(`${ip} | ${username} have logged discord`)
 			} else {
-				log.info(`${username} login failed discord because "${c.message}" in using ip ${ip} / ${lang}`)
+				log.info(`${ip} | ${username} login failed discord because "${c.message}" ${lang}`)
 			}
 
 			return res.json(ts)
@@ -1318,9 +1318,9 @@ web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
 	//log.debug(c)
 
 	if (c.retcode == 0) {
-		log.info(`${uid} have logged (login registry) in from ${cn} using ip ${ip}`)
+		log.info(`${ip} | ${uid} have logged (login registry) in from ${cn}`)
 	} else {
-		log.info(`${uid} login failed (login registry) because "${c.message}" in from ${cn} using ip ${ip}`)
+		log.info(`${ip} | ${uid} login failed (login registry) because "${c.message}" in from ${cn}`)
 	}
 
 	return res.json(c)
@@ -1373,10 +1373,10 @@ web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Res
 	const ts = translate(c, lang)
 	//log.debug(c)
 	if (c.retcode == 0) {
-		log.info(`${username} have logged (normal login) in from ${cn} using ip ${ip}`)
+		log.info(`${ip} | ${username} have logged (normal login) in from ${cn}`)
 	} else {
 		log.info(
-			`${username} login failed (normal login) because "${c.message}" in from ${cn} using ip ${ip} / ${lang}`
+			`${ip} | ${username} login failed (normal login) because "${c.message}" in from ${cn} / ${lang}`
 		)
 	}
 
@@ -1388,13 +1388,29 @@ web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Res
 // for list server sr
 web.all("/query_dispatch", async (req: Request, res: Response) => {
 	try {
-		//log.debug(req.params)
-		//log.debug(req.query)
-		//log.debug(req.body)
+		log.debug(req.params)
+		log.debug(req.query)
+		log.debug(req.body)
 
 		var d = req.query
 
-		var data = await API_SR.GET_LIST_SERVER()
+		let version = (d.version as string) ?? "?0"
+		let ip = (req.ip as string) ?? "?1"
+
+		// TODO: get real name
+		let lang = d.lang ?? "?2"
+		let platform = d.platform ?? "?3"
+
+		//const protocol = req.protocol; // 'http' or 'https'
+		//const host = req.get('host'); // domain and port
+		//const fullDomain = `${protocol}://${host}`;
+		//log.debug(`Full Domain: ${fullDomain}`);
+
+		log.info(
+			`${ip} | trying to access region list with version ${version} and language codes ${lang} and platform ${platform}`
+		)
+
+		var data = await API_SR.GET_LIST_REGION(version)
 
 		return res.send(data)
 	} catch (e) {
@@ -1406,7 +1422,7 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 	}
 })
 
-web.all("/query_gateway", async (req: Request, res: Response) => {
+web.all("/query_gateway/:name", async (req: Request, res: Response) => {
 	try {
 		//log.debug(req.params)
 		//log.debug(req.query)
@@ -1427,11 +1443,11 @@ web.all("/query_gateway", async (req: Request, res: Response) => {
 		let platform = d.platform_type ?? "?3"
 
 		if (version == undefined || dispatchSeed == undefined) {
-			log.info(`ip ${ip} trying to access region with no config`)
+			log.info(`${ip} | trying to access region with no config`)
 			return res.send(API_GS.NO_VERSION_CONFIG())
 		}
 
-		log.info(`ip ${ip} trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
+		log.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
 
 		var data = await API_SR.GET_DATA_REGION(name, dispatchSeed, key, version)
 
@@ -1506,7 +1522,7 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 			return res.send(API_GS.NO_VERSION_CONFIG())
 		}
 
-		log.info(`ip ${ip} trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
+		log.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
 
 		var data = await API_GS.GET_DATA_REGION(name, dispatchSeed, key, version)
 
@@ -1532,7 +1548,7 @@ web.all("/api/key/:id/*", async (req: Request, res: Response) => {
 
 	let code = req.params[0].split("=")[1]
 
-	log.info(`ip ${ip} trying input code ${code}`)
+	log.info(`${ip} | trying input code ${code}`)
 
 	// TODO: if code work send to all server in this acc?
 

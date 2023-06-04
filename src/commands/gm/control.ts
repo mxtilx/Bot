@@ -14,6 +14,7 @@ import { NodeSSH } from "node-ssh"
 // API Yuuki
 import GC from "../gm/gc"
 import GIO from "../gm/gio"
+import SR from "../gm/sr"
 
 const log = new Logger("GM-Control")
 
@@ -94,7 +95,7 @@ export const _ = {
 			}
 
 			// Emergency, todo: we should have added password to public command only
-			if (contains(cmd, ["account", "stop"])) {
+			if (contains(cmd, ["account", "stop", "kick"])) {
 				return {
 					msg: "This command can only be accessed by admin",
 					code: 403
@@ -136,12 +137,21 @@ export const _ = {
 				// GIO
 				return await GIO.GM(configis.data.api.url, uid, cmd)
 			} else if (configis.data.api.type == 2) {
-				// GC
-				let pass = configis.data.api.password // token public
-				if (pass && pass != "") {
-					code = pass
+				if (configis.data.game == 1) {
+					// GC
+					let pass = configis.data.api.password // token public
+					if (pass && pass != "") {
+						code = pass
+					}
+					return await GC.GM(configis.data.api.url, uid, cmd, code)
+				} else if (configis.data.game == 2) {
+					// SR
+					let pass = configis.data.api.password // password public
+					if (pass && pass != "") {
+						code = pass
+					}
+					return await SR.GM(configis.data.api.url, uid, cmd, code)
 				}
-				return await GC.GM(configis.data.api.url, uid, cmd, code)
 			} else {
 				return {
 					msg: "No Found config server1",
@@ -189,30 +199,52 @@ export const _ = {
 
 				try {
 					if (d.api.type == 1) {
-						var ts = await GIO.Server(d.api.url)
-						if (ts !== undefined && ts.data !== undefined && ts.code == 200) {
-							o["online"] = true
-							o["player"] = ts.data.online
-							o["sub"] = ts.data.server
-							server_live = true
+						if (d.game == 1) {
+							var ts = await GIO.Server(d.api.url)
+							if (ts !== undefined && ts.data !== undefined && ts.code == 200) {
+								o["online"] = true
+								o["player"] = ts.data.online
+								o["sub"] = ts.data.server
+								server_live = true
+							}
 						}
 					} else if (d.api.type == 2) {
-						var ts1 = await GC.Server(d.api.url)
-						if (ts1.code == 0) {
-							o["online"] = true
-							o["player"] = ts1.data.playerCount
-							if (ts1.data.MemoryCurrently) {
-								//console.log(ts.data);
-								// 3.482GiB / 4GiB (87.04%)
-								var gb = (ts1.data.MemoryCurrently / 1024).toFixed(3)
-								var maxgb = (ts1.data.MemoryMax / 1024).toFixed(3)
-								var pgb = ((ts1.data.MemoryCurrently / ts1.data.MemoryMax) * 100).toFixed(2)
-								o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
+						if (d.game == 1) {
+							var ts1 = await GC.Server(d.api.url)
+							if (ts1.code == 0) {
+								o["online"] = true
+								o["player"] = ts1.data.playerCount
+								if (ts1.data.MemoryCurrently) {
+									//console.log(ts.data);
+									// 3.482GiB / 4GiB (87.04%)
+									var gb = (ts1.data.MemoryCurrently / 1024).toFixed(3)
+									var maxgb = (ts1.data.MemoryMax / 1024).toFixed(3)
+									var pgb = ((ts1.data.MemoryCurrently / ts1.data.MemoryMax) * 100).toFixed(2)
+									o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
+								}
+								if (ts1.data.DockerGS) {
+									o["commit"] = ts1.data.DockerGS
+								}
+								server_live = true
 							}
-							if (ts1.data.DockerGS) {
-								o["commit"] = ts1.data.DockerGS
+						} else if (d.game == 2) {
+							var ts1x = await SR.Server(d.api.url)
+							if (ts1x.code == 0) {
+								o["online"] = true
+								o["player"] = ts1x.data.playerCount
+								if (ts1x.data.MemoryCurrently) {
+									//console.log(ts.data);
+									// 3.482GiB / 4GiB (87.04%)
+									var gb = (ts1x.data.MemoryCurrently / 1024).toFixed(3)
+									var maxgb = (ts1x.data.MemoryMax / 1024).toFixed(3)
+									var pgb = ((ts1x.data.MemoryCurrently / ts1x.data.MemoryMax) * 100).toFixed(2)
+									o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
+								}
+								if (ts1x.data.DockerGS) {
+									o["commit"] = ts1x.data.DockerGS
+								}
+								server_live = true
 							}
-							server_live = true
 						}
 					}
 

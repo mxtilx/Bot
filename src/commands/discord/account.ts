@@ -51,7 +51,7 @@ async function run(interaction: CommandInteraction) {
 			let r = await API_ACC.CREATE_ACCOUNT_GC(username, password)
 			tes = `${r.message}`
 		} else {
-			tes = `Metode ${metode} is not yet available...`
+			tes = `Metode ${metode} is not yet available, Tips: if you want to create an account just type "create" why are people so lazy to search and look around it.`
 		}
 		log.warn(`Account ${username} get respon ${tes}`)
 
