@@ -151,6 +151,11 @@ export const _ = {
 						code = pass
 					}
 					return await SR.GM(configis.data.api.url, uid, cmd, code)
+				} else {
+					return {
+						msg: "No Found config server11",
+						code: 404
+					}
 				}
 			} else {
 				return {

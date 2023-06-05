@@ -52,10 +52,13 @@ async function run(interaction: CommandInteraction) {
 
 		log.info(`${id_user} - ${name_user} use '${set_command}' `)
 		let d = await Control.GM(server_id, uid, set_command, set_code)
+		if (d == undefined) {
+			return await interaction.reply({ content: "Unknown error1", ...baseReply })
+		}
 
 		return await interaction.editReply({ content: `${d.msg} | ${d.code}`, ...baseReply })
 	} catch (err) {
-		log.error(err as Error)
+		log.error({ msg: "error gm cmd", error: err })
 		return await interaction.reply({ content: "Unknown error", ...baseReply })
 	}
 }
