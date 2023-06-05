@@ -1,0 +1,64 @@
+[
+	{
+		"id": 1,
+		"platfrom": "PC",
+		"version": [
+			{
+				"name": "0.70.0",
+				"project": {
+					"name": "CrepeSR CBT 2",
+					"short": "CP-SR",
+					"id": 1
+				},
+				"download": [
+					{
+						"name": "Official Global",
+						"launcher": "https://github.com/YuukiPS/Launcher-PC/releases",
+						"region": 1,
+						"game": {
+							"latest": {
+								"path": "https://file2.yuuki.me/GD1/Project/StarRail/Data/PC/0.70.0/Global/StarRail_202205130516_q2hnl9E6ACCDC5wC.zip",
+								"size": "9212939076",
+								"md5": "f4c838b84ffa21a62f8e3ff5c2af7c7b",
+								"entry": "StarRail.exe",
+								"voice_packs": [],
+								"decompressed_path": "",
+								"segments": [],
+								"package_size": "9212939076"
+							},
+							"diffs": []
+						}
+					}
+				]
+			},
+			{
+				"name": "1.0.5",
+				"project": {
+					"name": "CrepePS REL",
+					"short": "CP-SR",
+					"id": 1
+				},
+				"download": [
+					{
+						"name": "Official Global",
+						"launcher": "https://discord.gg/crepe",
+						"region": 1,
+						"game": {
+							"latest": {
+								"path": "https://autopatchos.starrails.com/client/download/20230413214947_toY0cWzqBhhM2EDV/StarRail_1.0.5.zip",
+								"size": "9212939076",
+								"md5": "",
+								"entry": "",
+								"voice_packs": [],
+								"decompressed_path": "",
+								"segments": [],
+								"package_size": "9212939076"
+							},
+							"diffs": []
+						}
+					}
+				]
+			}
+		]
+	}
+]

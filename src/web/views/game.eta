@@ -61,24 +61,26 @@
 
                       <% for (var key in xd.game) { %>
 
+
+
+                      <% if (xd.game.hasOwnProperty(key)) { %>
+
+                      <% if (Array.isArray(xd.game[key]) == true && xd.game[key].length > 1) { %>
+
                       <hr>
                       </hr>
                       <h4><%= key %></h4>
                       <h5>Game Data</h5>
 
-                      <% if (xd.game.hasOwnProperty(key)) { %>
-
-                      <% if (Array.isArray(xd.game[key])) { %>
-
                       <% xd.game[key].forEach(function(xdx) { %>
 
-                      <p><a class="btn btn-primary" href="<%= xdx.path %>">Download <%= xdx.name %> (<%= it.bytesToGigabytes(xdx.size) %> GB)</a></p>
+                      <p><a class="btn btn-primary" href="<%= xdx.path %>">Download <%= xdx.name %> (<%= it.bytesToGigabytes(xdx.package_size) %> GB)</a></p>
 
-                      <% if (Array.isArray(xdx.voice_packs)) { %>
+                      <% if (Array.isArray(xdx.voice_packs) == true && xdx.voice_packs.length > 1) { %>
                       <h6>Voice Data</h6>
                       <% xdx.voice_packs.forEach(function(vc1) { %>
 
-                      <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.size) %> GB)</a>
+                      <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.package_size) %> GB)</a>
 
                       <% }) %>
                       <% } %>
@@ -91,13 +93,20 @@
 
                       <% } else { %>
 
-                      <p> <a class="btn btn-primary" href="<%= xd.game[key].path %>">Download <%= key %> (<%= it.bytesToGigabytes(xd.game[key].size) %> GB)</a></p>
+                      <% if (xd.game[key].path != undefined) { %>
+                      <hr>
+                      </hr>
+                      <h4><%= key %></h4>
+                      <h5>Game Data</h5>
 
-                      <% if (Array.isArray(xd.game[key].voice_packs)) { %>
+                      <p> <a class="btn btn-primary" href="<%= xd.game[key].path %>">Download <%= key %> (<%= it.bytesToGigabytes(xd.game[key].package_size) %> GB)</a></p>
+                      <% } %>
+
+                      <% if (Array.isArray(xd.game[key].voice_packs) == true && xd.game[key].voice_packs.length > 1) { %>
                       <h6>Voice Data</h6>
                       <% xd.game[key].voice_packs.forEach(function(vc1) { %>
 
-                      <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.size) %> GB)</a>
+                      <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.package_size) %> GB)</a>
 
                       <% }) %>
                       <% } %>
@@ -182,7 +191,7 @@
 
     </main>
   </div>
-  
+
   <!-- end -->
 
   <p class="text-center py-3">
