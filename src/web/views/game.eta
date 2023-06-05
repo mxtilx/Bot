@@ -56,8 +56,20 @@
                       <% if (Array.isArray(x.download)) { %>
                       <% x.download.forEach(function(xd) { %>
 
-                      <h5>Link: <%= xd.name %></h5>
-                      <a class="btn btn-primary" href="<%= xd.launcher %>">Download Launcher</a>
+                      <h5>Release: <%= xd.name %></h5>
+
+                      <% if (Array.isArray(xd.link)) { %>
+                      <% xd.link.forEach(function(linkdl) { %>
+
+                      <p>
+                        <a class="btn btn-primary" href="<%= linkdl.url %>" target="_blank"><%= linkdl.name %></a>
+                      <p>
+                      </p>
+                      <%= linkdl.comment %>
+                      </p>
+
+                      <% }) %>
+                      <% } %>
 
                       <% for (var key in xd.game) { %>
 

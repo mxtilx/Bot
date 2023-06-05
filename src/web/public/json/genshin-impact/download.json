@@ -12,9 +12,36 @@
 				},
 				"download": [
 					{
-						"name": "Official Global",
-						"launcher": "https://github.com/YuukiPS/Launcher-PC/releases",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "YuukiPS Launcher",
+								"url": "https://github.com/YuukiPS/Launcher-PC/releases",
+								"comment": "Launcher for game anime patch for support connecting to YuukiPS Official"
+							},
+							{
+								"name": "Cultivation Launcher",
+								"url": "https://github.com/Grasscutters/Cultivation/releases",
+								"comment": "Alternative Launcher for game anime patch for support connecting to Private Servers and including mods"
+							},
+							{
+								"name": "Fiddler",
+								"url": "https://doc.yuuki.me/docs/tutorial-connect/pc/fiddler",
+								"comment": "Manual patch without launcher, in 2.8+ you need a Patch dll file to be able to join private server so don't forget to patch with RSAPatch"
+							},
+							{
+								"name": "RSAPatch",
+								"url": "https://github.com/34736384/RSAPatch/releases",
+								"comment": "Manual patch without launcher, You need RSAPatch for version 1.3.0 to join private server 3.6+"
+							},
+							{
+								"name": "YuukiPS Launcher Tutorial Video",
+								"url": "https://youtu.be//7yyN2qsMR_0",
+								"comment": "This is the official tutorial to connect YuukiPS with YuukiPS Launcher"
+							}
+						],
 						"game": {
 							"latest": {
 								"path": "https://autopatchhk.yuanshen.com/client_app/download/pc_zip/20230513200104_2odHBzbUAP5IOIvE/GenshinImpact_3.7.0.zip",
@@ -181,9 +208,31 @@
 				},
 				"download": [
 					{
-						"name": "Official Global",
-						"launcher": "https://github.com/YuukiPS/Launcher-PC/releases",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "YuukiPS Launcher",
+								"url": "https://github.com/YuukiPS/Launcher-PC/releases",
+								"comment": "Launcher for game anime patch for support connecting to YuukiPS Official"
+							},
+							{
+								"name": "Cultivation Launcher",
+								"url": "https://github.com/Grasscutters/Cultivation/releases",
+								"comment": "Alternative Launcher for game anime patch for support connecting to Private Servers and including mods"
+							},
+							{
+								"name": "Fiddler",
+								"url": "https://doc.yuuki.me/docs/tutorial-connect/pc/fiddler",
+								"comment": "Manual patch without launcher, in 2.8+ you need a Patch dll file to be able to join private server so don't forget to patch with RSAPatch"
+							},
+							{
+								"name": "RSAPatch",
+								"url": "https://github.com/34736384/RSAPatch/releases",
+								"comment": "Manual patch without launcher, You need RSAPatch for version 1.3.0 to join private server 3.6+"
+							}
+						],
 						"game": {
 							"latest": {
 								"name": "",
@@ -352,9 +401,31 @@
 				},
 				"download": [
 					{
-						"name": "Official Global",
-						"launcher": "https://github.com/YuukiPS/Launcher-PC/releases",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "YuukiPS Launcher",
+								"url": "https://github.com/YuukiPS/Launcher-PC/releases",
+								"comment": "Launcher for game anime patch for support connecting to YuukiPS Official"
+							},
+							{
+								"name": "Cultivation Launcher",
+								"url": "https://github.com/Grasscutters/Cultivation/releases",
+								"comment": "Alternative Launcher for game anime patch for support connecting to Private Servers and including mods"
+							},
+							{
+								"name": "Fiddler",
+								"url": "https://doc.yuuki.me/docs/tutorial-connect/pc/fiddler",
+								"comment": "Manual patch without launcher, in 2.8+ you need a Patch dll file to be able to join private server so don't forget to patch with RSAPatch"
+							},
+							{
+								"name": "RSAPatch",
+								"url": "https://github.com/34736384/RSAPatch/releases",
+								"comment": "Manual patch without launcher, You need RSAPatch for version 1.1.0 or any new to join private server 3.2"
+							}
+						],
 						"game": {
 							"latest": {
 								"path": "https://autopatchhk.yuanshen.com/client_app/download/pc_zip/20221024103618_h2e3o3zijYKEqHnQ/GenshinImpact_3.2.0.zip",
@@ -523,9 +594,47 @@
 				},
 				"download": [
 					{
-						"name": "Official Global",
-						"launcher": "https://file2.yuuki.me/p/Public/Local_EU/Project/GenshinImpact/Data/Android/3.6.0/Global/YuukiPS.apk",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "YuukiPS Mod APK Launcher",
+								"url": "https://file2.yuuki.me/p/Public/Local_EU/Project/GenshinImpact/Data/Android/3.6.0/Global/YuukiPS.apk",
+								"comment": "Launcher for game anime patch for support connecting to YuukiPS Official"
+							},
+							{
+								"name": "GC Mod APK Launcher (by mihoyu.cn)",
+								"url": "https://mihoyu.cn/?p=20",
+								"comment": "Alternative Launcher for game anime patch for support connecting to Private Servers another or localhost"
+							},
+							{
+								"name": "Chinese Tutorial",
+								"url": "https://mihoyu.cn/?p=11",
+								"comment": "If you are Chinese, you can follow the official tutorial here."
+							},
+							{
+								"name": "English Tutorial",
+								"url": "https://doc.yuuki.me/docs/tutorial-connect/android/install",
+								"comment": "If you understand English better, read unofficial version documentation"
+							},
+							{
+								"name": "Game Data",
+								"url": "#",
+								"comment": "if you don't want to download in-game you can use this game data.",
+								"link": [
+									{
+										"name": "Part 1",
+										"link": [
+											{
+												"name": "zZZIDE",
+												"url": "#TODO"
+											}
+										]
+									}
+								]
+							}
+						],
 						"game": {}
 					}
 				]
@@ -539,9 +648,32 @@
 				},
 				"download": [
 					{
-						"name": "Official Global",
-						"launcher": "https://file2.yuuki.me/p/Public/Local_EU/Project/GenshinImpact/Data/Android/3.2.0/Global/YuukiPS.apk",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "YuukiPS Mod APK Launcher",
+								"url": "https://file2.yuuki.me/p/Public/Local_EU/Project/GenshinImpact/Data/Android/3.2.0/Global/YuukiPS.apk",
+								"comment": "Launcher for game anime patch for support connecting to YuukiPS Official"
+							},
+							{
+								"name": "Game Data",
+								"url": "#",
+								"comment": "if you don't want to download in-game you can use this game data.",
+								"link": [
+									{
+										"name": "Part 1",
+										"link": [
+											{
+												"name": "zZZIDE",
+												"url": "#TODO"
+											}
+										]
+									}
+								]
+							}
+						],
 						"game": {}
 					}
 				]
@@ -561,9 +693,31 @@
 				},
 				"download": [
 					{
-						"name": "Chinese",
-						"launcher": "https://mihoyu.cn/?p=20",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "GC Mod APK Launcher (by mihoyu.cn)",
+								"url": "https://mihoyu.cn/?p=20",
+								"comment": "Alternative Launcher for game anime patch for support connecting to Private Servers another or localhost"
+							},
+							{
+								"name": "Chinese Tutorial",
+								"url": "https://mihoyu.cn/?p=13",
+								"comment": "If you are Chinese, you can follow the official tutorial here."
+							},
+							{
+								"name": "English Tutorial V1",
+								"url": "https://doc.yuuki.me/docs/tutorial-connect/ios",
+								"comment": "If you understand English better, read unofficial version documentation"
+							},
+							{
+								"name": "English Tutorial V2",
+								"url": "https://docs.google.com/document/d/e/2PACX-1vR01-e39anezJHvCkGe7EAYQIZwPxO8VF2m7iSfsdX7-v6uowGiQLG-pUx5YgSvShQhmShXi_6Qtqvt/pub",
+								"comment": "If you understand English better, read unofficial version documentation"
+							}
+						],
 						"game": {}
 					}
 				]

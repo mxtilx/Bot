@@ -12,19 +12,33 @@
 				},
 				"download": [
 					{
-						"name": "Official Global",
-						"launcher": "https://github.com/YuukiPS/Launcher-PC/releases",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "Fiddler",
+								"url": "https://doc.yuuki.me/docs/tutorial-connect/pc/fiddler",
+								"comment": "Manual proxy without launcher, You don't need any patch, just use a proxy"
+							}
+						],
 						"game": {
 							"latest": {
-								"path": "https://file2.yuuki.me/GD1/Project/StarRail/Data/PC/0.70.0/Global/StarRail_202205130516_q2hnl9E6ACCDC5wC.zip",
-								"size": "9212939076",
-								"md5": "f4c838b84ffa21a62f8e3ff5c2af7c7b",
+								"name": "YuukiPS Server EU",
+								"path": "https://file2.yuuki.me/Local_EU/Project/StarRail/Global/StarRail_202205130516_q2hnl9E6ACCDC5wC.zip",
+								"size": "8215628253",
+								"md5": "1AE45C59F2A287C5E6E073C6AA249E55",
 								"entry": "StarRail.exe",
 								"voice_packs": [],
 								"decompressed_path": "",
 								"segments": [],
-								"package_size": "9212939076"
+								"package_size": "8215628253",
+								"mirror": [
+									{
+										"name": "GD1",
+										"url": "https://file2.yuuki.me/GD1/Project/StarRail/Data/PC/0.70.0/Global/StarRail_202205130516_q2hnl9E6ACCDC5wC.zip"
+									}
+								]
 							},
 							"diffs": []
 						}
@@ -40,19 +54,26 @@
 				},
 				"download": [
 					{
-						"name": "Official Global",
-						"launcher": "https://discord.gg/crepe",
+						"name": "Global",
+						"launcher": "",
 						"region": 1,
+						"link": [
+							{
+								"name": "Discord",
+								"url": "https://discord.gg/crepe",
+								"comment": "This is not a YuukiPS server but a CrepePS server. If you want to play the latest version of this game, you can join their server."
+							}
+						],
 						"game": {
 							"latest": {
 								"path": "https://autopatchos.starrails.com/client/download/20230413214947_toY0cWzqBhhM2EDV/StarRail_1.0.5.zip",
-								"size": "9212939076",
-								"md5": "",
-								"entry": "",
+								"size": "21810485760",
+								"md5": "5ef3a794df8ac656582ab144ddd3aa9f",
+								"entry": "StarRail.exe",
 								"voice_packs": [],
 								"decompressed_path": "",
 								"segments": [],
-								"package_size": "9212939076"
+								"package_size": "10900000000"
 							},
 							"diffs": []
 						}
