@@ -7,7 +7,7 @@ async function setup() {
 	try {
 		// list server
 		const r = await axios.get("/api/server", {
-			timeout: 1000 * 30
+			timeout: 1000 * 15
 		})
 		if (r.data) {
 			var s = r.data
@@ -108,7 +108,7 @@ cmd_raw.addEventListener("submit", async function (e) {
 
 		const rr = await axios.get("/api/server/" + data_login.server.name + "/command", {
 			params: tmp,
-			timeout: 1000 * 120
+			timeout: 1000 * 30
 		})
 		console.log(rr)
 

@@ -16,7 +16,7 @@ import Control from "../commands/gm/control"
 
 import { parentPort } from "worker_threads"
 
-const log = new Logger("PING")
+const log = new Logger("Check Server")
 
 const regex_ram = /\((\d+\.\d+)%\)/
 
@@ -109,8 +109,16 @@ async function restart(mnt_type: string | number, mnt_name: any, id_server: any,
 	}
 }
 
-// check server every 10 seconds
+// check server every time
 setIntervalAsync(async () => {
+
+	let rs = await sync();
+	log.debug(`Server check: ${new Date().getTime()}`)
+
+}, 1000 * 30)
+
+// sync with datebase
+export async function sync() {
 	let d = await Control.Server()
 	var total_online = 0
 	d.data.forEach(async function (i: {
@@ -281,4 +289,4 @@ setIntervalAsync(async () => {
 			data: `${total_online} people`
 		})
 	}
-}, 1000 * 10)
+}

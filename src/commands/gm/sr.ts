@@ -15,7 +15,7 @@ const log = new Logger("GM-SR")
 
 export const _ = {
 	// TODO:
-	GM: async function (url: string, uid: any, cmd: any, code: any, set_timeout = 60) {
+	GM: async function (url: string, uid: any, cmd: any, code: any, set_timeout = 15) {
 		try {
 			const response = await axios.get(url + "api/gm", {
 				params: {
@@ -37,8 +37,8 @@ export const _ = {
 					code: d.retcode
 				}
 			}
-		} catch (error) {
-			log.error(`SR ${uid} | ${url} -> ${(error as Error).message} -> ${cmd}`)
+		} catch (error) {			
+			log.error({ msg: `SERVER_SR_ERROR_GM: ${uid} | ${url} -> ${cmd}`, error: error })
 			return {
 				msg: `Out of time doing this command, maybe this command is not recognized or too heavy.`,
 				code: 302,
@@ -46,7 +46,7 @@ export const _ = {
 			}
 		}
 	},
-	Server: async function (server_url: string, set_timeout = 60) {
+	Server: async function (server_url: string, set_timeout = 15) {
 		try {
 			const response = await axios.get(server_url + "api/status", {
 				timeout: 1000 * set_timeout

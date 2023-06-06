@@ -9,15 +9,15 @@ const log = new Logger("/debug", "blue")
 export default async function handle(command: Command) {
 	var c = command.args[0]
 	if (!c) {
-		log.warn(`VerboseLevel: ${Config.DEBUG_WEB}`)
+		log.warn(`Web debug: ${Config.debug.web}`)
 		return
 	}
 
 	if (c == "true") {
-		Config.DEBUG_WEB = true
+		Config.debug.web = true
 	} else {
-		Config.DEBUG_WEB = false
+		Config.debug.web = false
 	}
 
-	log.log(`DEBUG WEB SET ${Config.DEBUG_WEB}`)
+	log.log(`DEBUG WEB SET ${Config.debug.web}`)
 }

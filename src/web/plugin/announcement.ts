@@ -9,7 +9,7 @@ export const _ = {
 	async getPostData(detail = true, category = "Genshin Impact") {
 		const postDirectory = path.join(__dirname, "../../blog", category)
 
-		console.log(postDirectory)
+		//console.log(postDirectory)
 
 		const fileNames = fs.readdirSync(postDirectory)
 

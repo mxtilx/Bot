@@ -1,21 +1,46 @@
 /** @format */
 
-import { readFileSync, readdirSync, writeFileSync } from "fs"
-import { resolve } from "path"
-import { VerboseLevel } from "./logger"
+import acfg from "acfg"
 
-const DEFAULT_CONFIG = {
-	DEBUG_WEB:false,
-	token_Hcaptcha: "",
-	token_CharacterAI: "",
-	token_OpenAi: "",
-	token: "",
-	clientId: "",
-	clientSecret: "",
-	guildId: "",
-	password: [""],
-	id_admin: "",
-	id_mod: [""],
+export default acfg({
+	debug: {
+		web: false,
+		bot: false,
+		leve1: 1
+	},
+	api: {
+		hcaptcha: {
+			key: ""
+		},
+		characterai: {
+			key: ""
+		},
+		openai: {
+			key: ""
+		},
+		discord: {
+			token: "",
+			client_id: "",
+			client_secret: "",
+			guild_id: "",
+			password: {
+				admin: [""],
+				guest: [""]
+			},
+			permission: {
+				admin: "",
+				mod: [""],
+				guest: [""],
+				member: [""]
+			},
+			webhook: {
+				stats: {
+					id: "",
+					token: ""
+				}
+			}
+		}
+	},
 	autoAccount: true,
 	accountDB: {
 		host: "",
@@ -33,18 +58,12 @@ const DEFAULT_CONFIG = {
 		database: "",
 		type: 1
 	},
-	webhook: {
-		stats: {
-			id: "",
-			token: ""
-		}
-	},
 	server: [
 		{
 			name: "",
 			title: "",
 			ip: "",
-			port: "1",
+			port: 1,
 			type: 1,
 			game: 1,
 			version: ["3.6.0"],
@@ -64,7 +83,7 @@ const DEFAULT_CONFIG = {
 				type: 2
 			},
 			ssh: {
-				port: "",
+				port: 1,
 				username: "",
 				password: ""
 			},
@@ -85,146 +104,4 @@ const DEFAULT_CONFIG = {
 		bot: true,
 		datebase: true
 	}
-}
-
-type DefaultConfig = typeof DEFAULT_CONFIG
-
-function r(...args: string[]) {
-	return readFileSync(resolve(__dirname, ...args)).toString()
-}
-
-function rd(...args: string[]) {
-	return readdirSync(resolve(__dirname, ...args)).toString()
-}
-
-function readConfig(): any {
-	let config: DefaultConfig
-	try {
-		config = JSON.parse(r("../config.json"))
-		//console.log(config)
-		// Check if config object.keys is the same as DEFAULT_CONFIG.keys
-		const missing = Object.keys(DEFAULT_CONFIG).filter((key) => !config.hasOwnProperty(key))
-
-		if (missing.length > 0) {
-			missing.forEach((key) => {
-				// @ts-ignore
-				config[key] = DEFAULT_CONFIG[key]
-			})
-			updateConfig(config)
-			console.log(`Added missing config keys: ${missing.join(", ")}`)
-		}
-	} catch {
-		console.error("Could not read config file. Creating one for you...")
-		config = DEFAULT_CONFIG
-		//updateConfig(config);
-	}
-	return config
-}
-
-function updateConfig(config: any) {
-	writeFileSync("./config.json", JSON.stringify(config, null, 2))
-}
-
-export default class Config {
-	public static config = readConfig()
-
-	public static DEBUG_WEB: boolean = Config.config.DEBUG_WEB
-
-	public static token_Hcaptcha: string = Config.config.token_Hcaptcha
-	public static token_CharacterAI: string = Config.config.token_CharacterAI
-	public static token_OpenAi: string = Config.config.token_OpenAi
-	public static token: string = Config.config.token
-	public static clientId: string = Config.config.clientId
-	public static clientSecret: string = Config.config.clientSecret
-	public static guildId: string = Config.config.guildId
-	public static password: string[] = Config.config.password
-	public static id_admin: string = Config.config.id_admin
-	public static id_mod: string = Config.config.id_mod
-
-	public static autoAccount: boolean = Config.config.autoAccount
-
-	public static accountDB: {
-		host: string
-		port: number
-		user: string
-		password: string
-		database: string
-		type: number
-	} = Config.config.accountDB
-	public static AccountDbold: {
-		host: string
-		port: number
-		user: string
-		password: string
-		database: string
-		type: number
-	} = Config.config.accountDBOld
-
-	public static webhook: {
-		stats: {
-			id: string
-			token: string
-		}
-	} = Config.config.webhook
-
-	public static server: {
-		name: string
-		title: string
-		ip: string
-		port: number
-		type: number
-		game: number
-		version: string[]
-		public: boolean
-		dispatchUrl: string
-		api: {
-			url: string
-			type: number
-			password: string
-		}
-		gameDB: {
-			host: string
-			port: number
-			user: string
-			password: string
-			database: string
-			type: number
-		}
-		ssh: {
-			port: number
-			username: string
-			password: string
-		}
-		monitor: {
-			name: string
-			service: string
-			type: number
-			max: {
-				autorestart: boolean
-				ram: number
-				cpu: number
-			}
-		}
-	}[] = Config.config.server
-
-	public static Startup: {
-		webserver: boolean
-		bot: boolean
-		datebase: boolean
-	} = Config.config.startup
-
-	private constructor() {}
-	/*
-    token: string
-    clientId: string
-    guildId: string
-    password: string[]
-    id_admin: string
-    id_mod: string[]
-    accountDB: AccountDb
-    accountDBOld: AccountDbold
-    webhook: Webhook
-    server: Server[]
-    startup: Startup
-    */
-}
+})

@@ -35,14 +35,14 @@ async function run(interaction: CommandInteraction) {
 
 		log.info(`RUN: ${set_command} in ${server_id} by ${name_user}`)
 
-		if (id_user != Config.id_admin) {
+		if (id_user != Config.api.discord.permission.admin) {
 			return await interaction.reply({ content: `No Admin: ${id_user}`, ...baseReply })
 		}
 
 		await interaction.deferReply(baseReply)
 		await sleep(2)
 
-		let d = await Control.SH(set_command, server_id)
+		let d = await Control.SH(set_command, server_id,120)
 
 		console.log(d)
 

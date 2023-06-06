@@ -73,9 +73,16 @@ export default class Logger {
 	}
 
 	public error(e: any, stack: boolean = true) {
-		if (typeof e === "string") e = new Error(e)
-		console.log(`[${this.getDate().white.bold}] ${`ERROR<${this.name}>`.bgRed.bold}`, e.message)
-		if (e.stack && stack) this.trail(e.stack)
+		if (typeof e === "string") {
+			e = new Error(e)
+		} else {
+			// tmp for testing
+			console.log(typeof e)
+		}
+		console.log(`[${this.getDate().white.bold}] ${`ERROR<${this.name}>`.bgRed.bold}`, e.message || e)
+		if (e.stack && stack) {
+			this.trail(e.stack)
+		}
 	}
 
 	public warn(...args: string[]) {

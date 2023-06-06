@@ -112,10 +112,8 @@ var eta_plugin_random = require("./web/plugin/random")
 
 //TODO: move bot
 
-let bot: Client | null = null
-
 // debug, remove some later
-bot = new Client({
+let bot = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMembers,
@@ -196,23 +194,26 @@ bot.on("messageDeleteBulk", async (messages) => {
 	await registerEvent("messageDeleteBulk", messages)
 })
 
-// Bot Startup
-;(async () => {
-	if (Config.Startup.bot) {
-		if (regcmd) {
-			const rest = new REST({ version: "9" }).setToken(Config.token)
-			await register().then(async (commands: any) => {
-				await rest.put(Routes.applicationGuildCommands(Config.clientId, Config.guildId), {
+if (regcmd) {
+	const rest = new REST({ version: "9" }).setToken(Config.api.discord.client_secret)
+	register()
+		.then((commands) => {
+			return rest.put(
+				Routes.applicationGuildCommands(Config.api.discord.client_id, Config.api.discord.guild_id),
+				{
 					body: commands
-				})
-			})
-		} else {
-			c_bot.warn(`skip register`)
-		}
-	} else {
-		c_bot.info("bot skip run....")
-	}
-})()
+				}
+			)
+		})
+		.then(() => {
+			console.log("Commands registered successfully.")
+		})
+		.catch((error) => {
+			console.error("Failed to register commands:", error)
+		})
+} else {
+	c_bot.warn(`skip register`)
+}
 
 bot.on("error", (error: Error) => {
 	c_bot.error({ msg: "Bot encountered an error", error: error })
@@ -225,7 +226,20 @@ bot.on("ready", () => {
 	c_bot.info(`Ready to serve in ${bot.guilds.cache.size} guilds as ${bot.user?.tag}.`)
 })
 
-bot.login(Config.token)
+let connectionDelay = 1000 * 10 // Initial delay of 10 seconds
+function connectWithRetry() {
+	bot.login(Config.api.discord.token)
+		.then(() => {
+			c_bot.info("Bot connected successfully.")
+		})
+		.catch((error) => {
+			c_bot.error({ msg: "Failed to connect:", error: error })
+			c_bot.warn(`Retrying connection in ${connectionDelay / 1000} seconds...`)
+			setTimeout(connectWithRetry, connectionDelay)
+			connectionDelay += 1000 * 5 // Increase delay by 5 seconds for subsequent attempts
+		})
+}
+connectWithRetry()
 
 // Ratelimit
 const limit_cmd = rateLimit({
@@ -392,7 +406,7 @@ web.use("/*", (req: Request, res: Response, next: NextFunction) => {
 	}
 
 	// Add Log debug information if not done yet
-	if (Config.DEBUG_WEB) {
+	if (Config.debug.web) {
 		c_web.debug({
 			route: `${req.originalUrl}`,
 			params: req.params,
@@ -468,7 +482,7 @@ web.all("/account/login", async (req: Request, res: Response) => {
 			const verificationResponse = await axios.post(
 				"https://hcaptcha.com/siteverify",
 				new URLSearchParams({
-					secret: Config.token_Hcaptcha,
+					secret: Config.api.hcaptcha.key,
 					response: p["h-captcha-response"]
 				})
 			)
@@ -1205,14 +1219,14 @@ web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
 		// or
 		const scope = "identify email guilds"
 		const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${
-			Config.clientId
+			Config.api.discord.client_id
 		}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`
 		return res.redirect(discordAuthUrl)
 	} else if (!isEmpty(code)) {
 		// Get Token
 		const tokenParams = new URLSearchParams({
-			client_id: Config.clientId,
-			client_secret: Config.clientSecret,
+			client_id: Config.api.discord.client_id,
+			client_secret: Config.api.discord.client_secret,
 			grant_type: "authorization_code",
 			code: code,
 			redirect_uri: redirectUri,
@@ -1503,7 +1517,7 @@ web.use((req: Request, res: Response) => {
 	res.redirect("/?action=404")
 })
 
-if (Config.Startup.webserver) {
+if (Config.startup.webserver) {
 	web.listen(set_port_local, function () {
 		c_web.info(`Server started on port ${set_port_local}`)
 		//startBot()
@@ -1513,7 +1527,7 @@ if (Config.Startup.webserver) {
 	//startBot()
 }
 
-const webhookData: WebhookClientData = Config.webhook.stats
+const webhookData: WebhookClientData = Config.api.discord.webhook.stats
 const ping_notif = new WebhookClient(webhookData)
 let ping_job = get_job()
 ping_job.on("message", (d: { type: string; data: any }) => {
@@ -1521,25 +1535,33 @@ ping_job.on("message", (d: { type: string; data: any }) => {
 		c_bot.debug({ msg: `Job`, data: d })
 
 		if (d.type == "msg") {
-			if (Config.Startup.bot) {
+			if (Config.startup.bot) {
 				ping_notif.send(d.data)
 			}
 		} else if (d.type == "bot_stats") {
 			online_string = parseInt(d.data)
-			if (Config.Startup.bot) {
+			if (Config.startup.bot) {
 				if (bot == undefined || bot.user == undefined) {
 					c_bot.warn("Bot error update stats")
-					//restartBot() TODO:
 					return
 				}
-				bot.user.setPresence({
-					activities: [
-						{
-							name: d.data
-						}
-					],
-					status: "online"
-				})
+				try {
+					let isok = bot.isReady();
+					if (isok) {
+						bot.user.setPresence({
+							activities: [
+								{
+									name: d.data
+								}
+							],
+							status: "online"
+						})
+					} else {
+						c_bot.warn(`Bot not run? ${isok}`)
+					}
+				} catch (x) {
+					c_job.error({ msg: "stats error send", error: x })
+				}
 			}
 		}
 	} catch (e) {

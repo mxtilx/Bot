@@ -80,7 +80,7 @@ export const _ = {
 			let params = this.CMD(1005, -0, "", mail_json)
 			const response = await axios.get(url, {
 				params: params,
-				timeout: 1000 * 60
+				timeout: 1000 * 30
 			})
 			const result = response.data
 			log.debug(result)
@@ -102,7 +102,7 @@ export const _ = {
 			}
 		}
 	},
-	GM: async function (url: string, uid: number, set_command: string, set_timeout = 60) {
+	GM: async function (url: string, uid: number, set_command: string, set_timeout = 30) {
 		try {
 			// 1116 = GM
 			let params = this.CMD(1116, uid, set_command, null)
@@ -115,7 +115,7 @@ export const _ = {
 				})
 				result = response.data
 			} catch (error) {
-				log.error(`GIO ${uid} | ${url} -> ${(error as Error).message} -> ${set_command}`)
+				log.error({ msg: `SERVER_GIO_ERROR_GM: ${uid} | ${url} -> ${set_command}`, error: error })
 				return {
 					msg: `Out of time doing this command, maybe this command is not recognized or too heavy.`,
 					code: 302
@@ -145,14 +145,14 @@ export const _ = {
 				}
 			}
 		} catch (x) {
-			log.error(x as Error)
+			log.error({ msg: "SERVER_GC_GIO_ERROR_GM", error: x })
 			return {
 				msg: "Error get server",
 				code: 401
 			}
 		}
 	},
-	Server: async function (server_url: string, set_timeout: number = 60) {
+	Server: async function (server_url: string, set_timeout: number = 15) {
 		var response = null
 		try {
 			// 1101 = Server Status
@@ -163,7 +163,7 @@ export const _ = {
 			})
 			const result = response.data
 			if (result == undefined || result == null) {
-				log.debug(response)
+				log.error({ msg: "SERVER_GIO_ERROR_1", error: response })
 				return {
 					msg: "Error get server2",
 					code: 401
@@ -178,8 +178,7 @@ export const _ = {
 				msg: "OK"
 			}
 		} catch (error) {
-			//log.error(error as Error);
-			//log.error(response);
+			log.error({ msg: "SERVER_GIO_ERROR_0", error: error })
 			return {
 				msg: "Error get server1",
 				code: 401

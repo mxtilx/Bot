@@ -12,7 +12,7 @@ import Logger from "../../util/logger"
 
 import { Configuration, OpenAIApi } from "openai"
 import { OpenAIExt } from "openai-ext"
-const openai = new OpenAIApi(new Configuration({ apiKey: Config.token_OpenAi }))
+const openai = new OpenAIApi(new Configuration({ apiKey: Config.api.openai.key }))
 
 const log = new Logger("OpenAI")
 

@@ -164,7 +164,7 @@ export const _ = {
 				}
 			}
 		} catch (error) {
-			log.error(error as Error)
+			log.error({ msg: "ERROR_GM_ERROR_0", error: error })
 			return {
 				msg: "Error Get",
 				code: 302
@@ -289,11 +289,11 @@ export const _ = {
 							o["cpu"] = objstats["CPUPerc"]
 							o["ram"] = objstats["MemUsage"] + " (" + pre_ram + ")"
 						} else {
-							//log.error(stats)
+							//log.DEBUG({ msg: "CHECK_SERVER_NOOK_1", error: stats })
 						}
 					}
 				} catch (error) {
-					log.error(error as Error)
+					log.error({ msg: "CHECK_SERVER_ERROR_0", error: error })
 				}
 
 				var tmp: ListServer = {
@@ -319,7 +319,7 @@ export const _ = {
 
 		return cache_serverlist
 	},
-	SH: async function (raw: string, server_id: string, timeout: number = 30) {
+	SH: async function (raw: string, server_id: string, timeout: number = 20) {
 		// check server
 		var configis = await this.Config(server_id)
 		if (configis.code != 200) {
@@ -382,7 +382,6 @@ export const _ = {
 				}
 			}
 		} catch (error) {
-			log.error(error as Error)
 			if (error instanceof Error) {
 				if (error.message === "Command execution timeout") {
 					log.warn(`sh "${raw}" timeout in server ${server_id}`)
@@ -390,7 +389,11 @@ export const _ = {
 						msg: "Command execution timeout",
 						code: 408
 					}
+				}else{
+					log.error({ msg: "SH_EROR_1", error: error })
 				}
+			}else{
+				log.error({ msg: "SH_EROR_0", error: error })
 			}
 			return {
 				msg: "Error SH",

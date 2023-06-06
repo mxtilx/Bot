@@ -4,7 +4,7 @@ async function online() {
 	try {
 		// list server
 		const r = await axios.get("/api/server", {
-			timeout: 1000 * 30
+			timeout: 1000 * 15
 		})
 		if (r.data != undefined || r.data.data != undefined) {
 			updateOrCreateRows(r.data.data)

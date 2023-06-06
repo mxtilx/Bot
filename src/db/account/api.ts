@@ -13,7 +13,7 @@ import Logger from "../../util/logger"
 // API Yuuki
 const log = new Logger("ACCOUNT")
 
-const db_url = `mongodb://${Config.AccountDbold.user}:${Config.AccountDbold.password}@${Config.AccountDbold.host}:${Config.AccountDbold.port}`
+const db_url = `mongodb://${Config.accountDBOld.user}:${Config.accountDBOld.password}@${Config.accountDBOld.host}:${Config.accountDBOld.port}`
 
 let db_name_acc = "accounts"
 
@@ -139,7 +139,7 @@ export const Accounts = {
 		try {
 			await client.connect()
 
-			const database = client.db(Config.AccountDbold.database)
+			const database = client.db(Config.accountDBOld.database)
 			const collection = database.collection<AccountDB>(db_name_acc)
 
 			// Check if the username is already taken
@@ -320,7 +320,7 @@ export const Accounts = {
 			try {
 				await client.connect()
 
-				const database = client.db(Config.AccountDbold.database)
+				const database = client.db(Config.accountDBOld.database)
 				const collection = database.collection(db_name_acc)
 
 				let query: any
@@ -372,7 +372,7 @@ export const Accounts = {
 								safe_mobile_required: false
 							}
 						}
-					} else if (game == "hkrpg") {
+					} else if (game == "hkrpg" || game == "nap") {
 						data = {
 							retcode: 0,
 							message: "LoginOK",

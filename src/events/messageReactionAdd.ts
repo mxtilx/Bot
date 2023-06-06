@@ -79,8 +79,8 @@ export default async function run(reaction: MessageReaction, user: User) {
 		const member_give_reaction_have = member_give_reaction.roles.cache
 
 		// Mod Control
-		if (member_give_reaction_have.some((role: { id: any }) => Config.id_mod.includes(role.id))) {
-			if (!member_get_reaction_have.some((role: { id: any }) => Config.id_mod.includes(role.id))) {
+		if (member_give_reaction_have.some((role: { id: any }) => Config.api.discord.permission.mod.includes(role.id))) {
+			if (!member_get_reaction_have.some((role: { id: any }) => Config.api.discord.permission.mod.includes(role.id))) {
 				if (is === "🔒") {
 					log.warn(`lock ${name_user_get_reaction}`)
 					// Check if user already has the mute role
@@ -128,6 +128,6 @@ export default async function run(reaction: MessageReaction, user: User) {
 			}
 		}
 	} catch (e) {
-		log.error(e as Error)
+		log.error(e)
 	}
 }
