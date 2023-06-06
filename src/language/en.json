@@ -1,4 +1,11 @@
 {
+	"title":"Welcome to YuukiPS",
+	"description":"TODO",
+	"web_404":"It's possible you are accessing a page that is not available or maybe because you are currently using a proxy network to download game data (if so, turn it off first then try reloading the download link again)",
+	"web_lead":"YuukiPS is a private server service where you can play other<p>than the official server and are freer to do anything.</p>",
+	"web_title_command":"Command Access",
+	"web_title_play":"Played",
+	"web_title_loginnreg":"Login/Register",
 	"errorcreateaccount": "Account is not registered, please create an account at discord.yuuki.me use /account command in discord bot",
 	"UnableToLogin": "Unable to login, try re-login.",
 	"Databasefailed0": "Database failed to connect, try again (0)",

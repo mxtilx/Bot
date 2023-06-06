@@ -20,19 +20,24 @@
         </div>
       </div>
 
+      <% if (it.action == '404') { %>
+      <div class="alert alert-danger" role="alert">
+        <%= it.t("web_404") %>        
+      </div>
+      <% } %>
+
       <div class="text-light">
-        <p class="lead">YuukiPS is a private server service where you can play other</p>
-        <p class="lead">than the official server and are freer to do anything.</p>
+        <p class="lead"><%~ it.t("web_lead") %></p>
       </div>
 
       <div class="mt-4">
         <div class="btn-group btn-group-lg" role="group" aria-label="Button group with nested dropdown">
 
-          <a class="btn btn-primary" href="/command">Command</a>
+          <a class="btn btn-primary" href="/command"><%= it.t("web_title_command") %></a>
 
           <div class="btn-group" role="group">
             <button type="button" class="btn btn-primary dropdown-toggle btn-lg" data-bs-toggle="dropdown" aria-expanded="false">
-              Playing
+              <%= it.t("web_title_play") %>
             </button>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="/game/genshin-impact">Genshin Impact</a></li>
@@ -40,7 +45,7 @@
             </ul>
           </div>
 
-          <a class="btn btn-primary" href="/account/login">Register/Login</a>
+          <a class="btn btn-primary" href="/account/login"><%= it.t("web_title_loginnreg") %></a>
 
         </div>
       </div>

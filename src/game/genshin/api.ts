@@ -276,6 +276,7 @@ export const _ = {
 			})
 
 			if (region_list.length == 0) {
+				log.warn(`Someone is trying to access version ${version} with no support list`)
 				var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/not_found`
 				const regionSimpleInfo1 = RegionSimpleInfo.create({
 					dispatchUrl: dispatchUrl,
@@ -307,8 +308,7 @@ export const _ = {
 			//const buffer = QueryRegionListHttpRsp.encode(toaddquery).finish()
 			return Buffer.from(QueryRegionListHttpRsp.encode(toaddquery).finish()).toString("base64")
 		} catch (error) {
-			log.error(error as Error)
-			// TODO: check if error
+			log.error({ name: "GET_LIST_REGION", error: error })
 			return {
 				msg: "Error Get",
 				code: 302

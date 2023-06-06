@@ -1,10 +1,7 @@
 /** @format */
 
 import Logger from "../../util/logger"
-
 import { Command } from "./Interface"
-
-import fs from "fs"
 
 const log = new Logger("/ping", "blue")
 

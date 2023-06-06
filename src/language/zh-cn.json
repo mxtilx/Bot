@@ -1,4 +1,11 @@
 {
+	"title": "欢迎来到 YuukiPS",
+	"description": "去做",
+	"web_404": "您可能正在访问一个不可用的页面，或者可能是因为您当前正在使用代理网络下载游戏数据（如果是这样，请先将其关闭，然后再次尝试重新加载下载链接）",
+	"web_lead": "YuukiPS 是一种私人服务器服务，您可以在其中玩其他游戏<p>比官方服务器更自由，可以做任何事情。</p>",
+	"web_title_command": "命令访问",
+	"web_title_play": "玩过",
+	"web_title_loginnreg": "登录/注册",
 	"errorcreateaccount": "帐户未注册，请在 discord.yuuki.me 创建一个帐户，在 discord bot 中使用 /account 命令",
 	"UnableToLogin": "无法登录，请尝试重新登录。",
 	"Databasefailed0": "数据库连接失败，重试 (0)",

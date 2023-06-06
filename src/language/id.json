@@ -1,4 +1,11 @@
 {
+	"title":"Selamat datang di YuukiPS",
+	"description":"TODO",
+	"web_404":"Kemungkinan kamu sedang mengakses halaman yang tidak tersedia atau mungkin karena saat ini kamu menggunakan jaringan proxy untuk mengunduh data game (jika demikian, matikan terlebih dahulu lalu coba muat ulang tautan unduhan lagi)",
+	"web_lead":"YuukiPS adalah layanan server pribadi tempat Anda dapat bermain selain<p>server resmi dan lebih bebas melakukan apa saja.</p>",
+	"web_title_command":"Akses Perintah",
+	"web_title_play":"Bermain",
+	"web_title_loginnreg":"Daftar/Masuk",
 	"errorcreateaccount": "Akun tidak terdaftar, silakan buat akun di discord.yuuki.me gunakan perintah /account di bot discord",
 	"UnableToLogin": "Tidak bisa login, coba login ulang.",
 	"Databasefailed0": "Basis data gagal terhubung, coba lagi (0)",

@@ -1,6 +1,7 @@
 /** @format */
 
 import * as fs from "fs"
+import getEvents, { findEvent } from "../events/eventHandler"
 
 import Constants from "./constants"
 
@@ -88,4 +89,11 @@ export function readFileAsync(filePath: string): Promise<any> {
 			}
 		})
 	})
+}
+
+export async function registerEvent(event: string, ...args: any) {
+	const events = await getEvents()
+	const eventFunc = findEvent(events, event)
+	//log.debug(`${event} was called`)
+	if (eventFunc) await eventFunc(...args)
 }

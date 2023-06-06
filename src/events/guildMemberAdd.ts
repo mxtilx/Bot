@@ -14,5 +14,5 @@ import { GuildMember } from "discord.js"
 const log = new Logger("Discord-Event-guildMemberAdd")
 
 export default async function run(member: GuildMember) {
-	log.trail(`${member.user.username} joined the server.`)
+	log.info(`${member.user.username} joined the server.`)
 }

@@ -30,6 +30,23 @@ interface Region {
 	name: string
 }
 
+// Helper function to compare version numbers
+function compareVersions(a: string, b: string): number {
+	const versionA = a.split(".").map(Number)
+	const versionB = b.split(".").map(Number)
+
+	for (let i = 0; i < Math.max(versionA.length, versionB.length); i++) {
+		const numA = versionA[i] || 0
+		const numB = versionB[i] || 0
+
+		if (numA !== numB) {
+			return numA - numB
+		}
+	}
+
+	return 0
+}
+
 export const _ = {
 	initserver(h: string, p: number, uh: string) {
 		hostname = h
@@ -47,6 +64,7 @@ export const _ = {
 			/*
 	
 			OSPRODWin1.0.5 | 495e8edf66
+			OSPRODWin1.1.0 | 44744310a7
 			
 			*/
 
@@ -76,7 +94,7 @@ export const _ = {
 				timeout: 1000 * 10
 			})
 			const d = response.data
-			//console.log(d)
+			console.log(d)
 
 			let content = Buffer.from(d, "base64")
 			var decoded = ServerDispatchData.decode(content)
@@ -103,7 +121,7 @@ export const _ = {
 				}
 			}
 		} catch (error) {
-			//log.error(error)
+			log.error({ msg: "res error", error: error })
 			return {
 				msg: "Error Get",
 				code: 302
@@ -115,16 +133,20 @@ export const _ = {
 			let region_list: RegionSimpleInfo[] = []
 			let region_listCBT: Region[] = []
 
-			// Extract the version number using regex
 			const versionRegex = /(\d+\.\d+\.\d+)/
 			const match = version.match(versionRegex)
 			const versionNumber = match ? match[1] : ""
 
-			// Check if the version number is less than 0.70.0
-			let encode = versionNumber < "0.70.0"
+			let encode: boolean
 
-			//console.log(versionNumber) // Output: 0.70.0
-			//console.log(isUnder070) // Output: false
+			if (compareVersions(versionNumber, "0.64.0") >= 0 && compareVersions(versionNumber, "1.0.5") < 0) {
+				encode = false
+			} else if (compareVersions(versionNumber, "1.0.5") >= 0) {
+				encode = true
+			} else {
+				encode = false
+				log.debug(`idk wtf ${versionNumber}`)
+			}
 
 			Config.server.forEach((item) => {
 				if (item.game == 2) {
@@ -204,7 +226,6 @@ export const _ = {
 	},
 	GET_DATA_REGION: async function (name: string = "", seed: string = "", key: number = 5, version: string = "") {
 		try {
-
 			const dispatchData = Config.server.find(
 				(r) => r.name == name && contains(version, r.version) == true && r.game == 2
 			)
@@ -232,9 +253,11 @@ export const _ = {
 				})
 			}
 
+			log.debug(dataObjCBT2);
+
 			return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
 		} catch (error) {
-			log.error(error as Error)
+			log.error(error)
 			return this.NO_VERSION_CONFIG()
 		}
 	}

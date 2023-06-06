@@ -5,6 +5,7 @@ import { resolve } from "path"
 import { VerboseLevel } from "./logger"
 
 const DEFAULT_CONFIG = {
+	DEBUG_WEB:false,
 	token_Hcaptcha: "",
 	token_CharacterAI: "",
 	token_OpenAi: "",
@@ -126,6 +127,8 @@ function updateConfig(config: any) {
 
 export default class Config {
 	public static config = readConfig()
+
+	public static DEBUG_WEB: boolean = Config.config.DEBUG_WEB
 
 	public static token_Hcaptcha: string = Config.config.token_Hcaptcha
 	public static token_CharacterAI: string = Config.config.token_CharacterAI

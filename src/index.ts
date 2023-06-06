@@ -6,7 +6,7 @@
  */
 
 // Important
-import { join } from "path"
+import { join, basename } from "path"
 import fs from "fs/promises"
 import {
 	sleep,
@@ -16,7 +16,8 @@ import {
 	generateSEOTitle,
 	bitsToGigabytes,
 	bytesToGigabytes,
-	readFileAsync
+	readFileAsync,
+	registerEvent
 } from "./util/library"
 import Config from "./util/config"
 import Logger from "./util/logger"
@@ -37,6 +38,8 @@ import { Worker } from "worker_threads"
 import backend from "i18next-node-fs-backend"
 import cookieParser from "cookie-parser"
 import i18next from "i18next"
+import i18nextMiddleware from "i18next-http-middleware"
+import chokidar from "chokidar"
 
 // API Discord
 import {
@@ -52,7 +55,7 @@ import {
 	Routes,
 	REST
 } from "discord.js"
-import getEvents, { findEvent } from "./events/eventHandler"
+
 import register from "./util/registercommands"
 
 // API
@@ -67,10 +70,26 @@ import { statusCodes } from "./util/constants"
 import announcement from "./web/plugin/announcement"
 
 const log = new Logger("YuukiPS")
+
+const c_sys = new Logger("System")
+const c_job = new Logger("Job")
+const c_bot = new Logger("Bot")
+const c_web = new Logger("Web")
+const c_dp = new Logger("Dispatch")
+
 log.info("YuukiPS startup....")
-process.on("unhandledRejection", (error) => {
-	log.info(error as Error)
-	//process.exit(1);
+
+// Handler error
+process.on("uncaughtException", (error: Error) => {
+	c_sys.error({ msg: "uncaughtException", error: error })
+})
+process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
+	if (reason == undefined) {
+		c_sys.error({ msg: "unhandledRejection does not work wtf", error: promise })
+		return
+	}
+	c_sys.error({ msg: "unhandledRejection", error: reason })
+	//process.exit(1)
 })
 
 let online_string: number = 9999
@@ -91,8 +110,12 @@ var domain = `${set_protocol}://${set_host}:${set_port_cloud}`
 
 var eta_plugin_random = require("./web/plugin/random")
 
+//TODO: move bot
+
+let bot: Client | null = null
+
 // debug, remove some later
-const bot = new Client({
+bot = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMembers,
@@ -121,18 +144,6 @@ const bot = new Client({
 	]
 })
 
-bot.on(Events.Error, (error: any) => {
-	log.debug({ event: "bot dc", log: error })
-	process.exit(1)
-})
-
-async function registerEvent(event: string, ...args: any) {
-	const events = await getEvents()
-	const eventFunc = findEvent(events, event)
-	//log.debug(`${event} was called`)
-	if (eventFunc) await eventFunc(...args)
-}
-
 // Interaction Bot
 bot.on("interactionCreate", async (interaction) => {
 	let username = interaction.user.username
@@ -147,16 +158,16 @@ bot.on("interactionCreate", async (interaction) => {
 			? interaction.channel.name
 			: "Unknown Channel"
 
-	log.info(`Event Interaction ${username}#${username_id} in Channel${channel_name} with Type ${interaction.type}`)
+	c_bot.info(`Event Interaction ${username}#${username_id} in Channel${channel_name} with Type ${interaction.type}`)
 
 	if (interaction.isCommand()) {
-		log.debug(`/${interaction.commandName} was called by ${username}`)
+		c_bot.debug(`/${interaction.commandName} was called by ${username}`)
 		import(`./commands/discord/${interaction.commandName}`)
 			.then(async (cmd) => {
 				await cmd.default.process(interaction)
 			})
 			.catch(async (error) => {
-				log.error(error as unknown as Error)
+				c_bot.error(error as unknown as Error)
 			})
 	} else if (interaction.isModalSubmit()) {
 		// TODO
@@ -196,16 +207,25 @@ bot.on("messageDeleteBulk", async (messages) => {
 				})
 			})
 		} else {
-			log.warn(`skip register`)
+			c_bot.warn(`skip register`)
 		}
-		bot.on("ready", () => {
-			log.info(`Ready to serve in ${bot.guilds.cache.size} guilds as ${bot.user?.tag}.`)
-		})
-		bot.login(Config.token)
 	} else {
-		log.info("bot skip run....")
+		c_bot.info("bot skip run....")
 	}
 })()
+
+bot.on("error", (error: Error) => {
+	c_bot.error({ msg: "Bot encountered an error", error: error })
+})
+bot.on("ready", () => {
+	if (bot == undefined) {
+		c_bot.warn("idk bot")
+		return
+	}
+	c_bot.info(`Ready to serve in ${bot.guilds.cache.size} guilds as ${bot.user?.tag}.`)
+})
+
+bot.login(Config.token)
 
 // Ratelimit
 const limit_cmd = rateLimit({
@@ -213,7 +233,7 @@ const limit_cmd = rateLimit({
 	max: 5,
 	statusCode: 200,
 	message: async (request: Request, response: Response) => {
-		log.info(`limit ${request.ip}`)
+		c_web.info(`limit ${request.ip}`)
 		return {
 			windowMs: 1 * 1000,
 			max: 1,
@@ -231,7 +251,7 @@ const limit_login = rateLimit({
 	max: 3,
 	statusCode: 200,
 	message: async (request: Request, response: Response) => {
-		log.info(`limit login ${request.ip}`)
+		c_web.info(`limit login ${request.ip}`)
 		return {
 			data: null,
 			retcode: 1,
@@ -245,7 +265,7 @@ const limit_tokenlogin = rateLimit({
 	max: 2,
 	statusCode: 200,
 	message: async (request: Request, response: Response) => {
-		log.info(`limit login token ${request.ip}`)
+		c_web.info(`limit login token ${request.ip}`)
 		return {
 			data: null,
 			retcode: 1,
@@ -255,42 +275,55 @@ const limit_tokenlogin = rateLimit({
 })
 
 // Initialize i18next
-i18next.use(backend).init({
-	fallbackLng: "en", // Default language fallback
-	preload: ["en", "id"], // Preload supported languages
-	ns: ["translation"],
-	backend: {
-		loadPath: join(__dirname, "../src/language/{{lng}}.json") // Path to language files
-	}
+i18next
+	.use(backend)
+	.use(i18nextMiddleware.LanguageDetector)
+	.init({
+		//debug: true,
+		lowerCaseLng: true,
+		fallbackLng: "en", // Default language fallback
+		preload: ["en"], // Preload supported languages
+		ns: ["translation"],
+		backend: {
+			loadPath: join(__dirname, "../src/language/{{lng}}.json") // Path to language files
+		}
+	})
+
+// Watch for changes in the language files
+const languageFilesPath = join(__dirname, "../src/language/*.json")
+chokidar.watch(languageFilesPath).on("change", (file) => {
+	const langCode = basename(file, ".json")
+	console.log(`Language file ${file} has changed. Reloading '${langCode}' language...`)
+	i18next.reloadResources(langCode)
 })
 
 // TODO move route web
 const web = express()
 
-// body-parser middleware
 web.use(bodyParser.json({ limit: "50mb" }))
 web.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }))
 web.use(cookieParser())
+web.use(i18nextMiddleware.handle(i18next))
 
 // Function to translate a string based on the user's language preference
-function translateString(key: string, userLanguage: string = "en"): string {
-	const translation = i18next.t(key, { lng: userLanguage })
+function translateString(key: string, req: Request): string {
+	const translation = req.t(key) // { lng: userLanguage }
 	return translation
 }
 
 // Function to translate a JSON object based on the user's language preference
-function translate(data: Record<string, any>, userLanguage: string = "en"): Record<string, any> {
+function translate(data: Record<string, any>, req: Request): Record<string, any> {
 	const translatedData: Record<string, any> = {}
 
 	for (const key in data) {
 		if (data.hasOwnProperty(key)) {
 			const value = data[key]
 			if (typeof value === "string") {
-				const translatedValue = translateString(value, userLanguage)
+				const translatedValue = translateString(value, req)
 				//console.log("load " + value + " > " + translatedValue);
 				translatedData[key] = translatedValue
 			} else if (typeof value === "object" && value !== null) {
-				const translatedValue = translate(value, userLanguage)
+				const translatedValue = translate(value, req)
 				//console.log(translatedValue);
 				translatedData[key] = translatedValue
 			} else {
@@ -307,6 +340,71 @@ web.use(cors())
 
 // Static
 web.use(express.static(__dirname + "/web/public"))
+
+// LOG STUFF, maybe move to config
+const log_hoyo = [
+	"/*/dataUpload",
+	"/common/h5log/log/batch?*",
+	"/sdk/dataUpload",
+	"/crashdump/dataUpload",
+	"/apm/dataUpload",
+	"/log",
+	"/crash/dataUpload",
+	"/h5/upload",
+	"/h5/dataUpload",
+	"/errlog"
+]
+
+// done cek
+const done_check = [
+	"/ip", // get your ip
+	"/status/server", // cek online
+	"/api/server", // get server
+	"/query_cur_region/*", // GS
+	"/query_region_list" // GS
+	//"/account/*",
+	//"/combo/*",
+	//"/admin/*",
+	//"/api/verify"
+]
+
+web.use("/*", (req: Request, res: Response, next: NextFunction) => {
+	const lowerCaseOriginalUrl = req.originalUrl.toLowerCase()
+
+	// IF HOYO URL
+	if (
+		log_hoyo.some((pattern) => {
+			const regexPattern = pattern.replace(/\*/g, ".*")
+			return new RegExp(`^${regexPattern}$`, "i").test(lowerCaseOriginalUrl)
+		})
+	) {
+		return res.json({ retcode: 200, message: "Success", data: 404 })
+	}
+
+	// IF DONE URL
+	if (
+		done_check.some((pattern) => {
+			const regexPattern = pattern.replace(/\*/g, ".*")
+			return new RegExp(`^${regexPattern}$`, "i").test(lowerCaseOriginalUrl)
+		})
+	) {
+		return next()
+	}
+
+	// Add Log debug information if not done yet
+	if (Config.DEBUG_WEB) {
+		c_web.debug({
+			route: `${req.originalUrl}`,
+			params: req.params,
+			query: req.query,
+			body: req.body
+		})
+	}
+
+	// Call the next middleware or route handler
+	next()
+})
+
 // Web
 eta.configure({
 	plugins: [eta_plugin_random],
@@ -320,26 +418,26 @@ web.set("trust proxy", 2)
 web.all("/", (req: Request, res: Response) => {
 	const userAgent = req.headers["user-agent"]
 	const type = req.query.type
+	const action = req.query.action
 
 	// login browser? (query: 'type=sdk'), sometimes it is cached by browser if login is official, so it breaks it. Maybe the Yuukips launcher has to clear cache every time you log in?
 	if (userAgent !== undefined && userAgent.includes("ZFBrowser")) {
 		return res.redirect("/account/login")
 	} else {
-		log.info(`Home Enter ${userAgent}`)
-		//log.debug({ msg: "query home", tes: req.query })
-		//log.debug({ msg: "body home", tes: req.body })
+		c_web.debug(`Home Enter ${userAgent}`)
 	}
 
 	res.render("home", {
-		title: "Welcome to YuukiPS",
-		description: "Im lazy to write"
+		title: req.t("title"),
+		description: req.t("description"),
+		type: type,
+		action: action,
+		t: req.t
 	})
 })
 
 // Account
 web.all("/account/login", async (req: Request, res: Response) => {
-	//log.debug(req.body)
-
 	var action = "none"
 	var message = ""
 
@@ -347,11 +445,6 @@ web.all("/account/login", async (req: Request, res: Response) => {
 
 	var p = req.body
 	if (!isEmpty(p.login_username) && !isEmpty(p.login_password)) {
-		//log.debug(userAgent)
-		//log.debug({ msg: "params login", tes: req.params })
-		//log.debug({ msg: "query login", tes: req.query })
-		//log.debug({ msg: "body login", tes: req.body })
-
 		if (userAgent !== undefined && userAgent.includes("ZFBrowser")) {
 			// not work
 			/*
@@ -372,7 +465,6 @@ web.all("/account/login", async (req: Request, res: Response) => {
 		}
 	} else if (!isEmpty(p.reg_username) && !isEmpty(p.reg_email) && !isEmpty(p.reg_pass) && !isEmpty(p.reg_pass_tes)) {
 		try {
-			var lang = req.headers["x-rpc-language"]?.toString() || "en"
 			const verificationResponse = await axios.post(
 				"https://hcaptcha.com/siteverify",
 				new URLSearchParams({
@@ -383,29 +475,27 @@ web.all("/account/login", async (req: Request, res: Response) => {
 			var dx = verificationResponse.data
 			if (dx.success) {
 				let r = await Account.CREATE_ACCOUNT_GC(p.reg_username, p.login_password)
-				const ts = translate(r, lang)
 				if (r.retcode == 0) {
 					action = "OK_REG"
 				} else {
 					action = "FAILD_REG"
 				}
-				message = ts.message
-				//log.debug(r)
+				message = req.t(r.message)
 			} else {
-				log.debug(dx)
+				c_web.error({ name: "FAILD_REG", error: dx })
 				action = "FAILD_REG"
-				message = "Captcha verification failed"
+				message = req.t("web_title_error_captcha_failed")
 			}
 		} catch (error) {
-			log.error(error)
+			c_web.error({ name: "FAILD_REG", error: error })
 			action = "FAILD_REG"
-			message = "Unknown error"
+			message = req.t("web_title_error_unknown")
 		}
 	}
-	//log.debug(p['h-captcha-response'])
 	res.render("account/login", {
-		title: "Login",
-		description: "Register or login for a YuukiPS Account",
+		title: req.t("web_title_login"),
+		description: req.t("web_description_login"),
+		t: req.t,
 		action: action,
 		message: message
 	})
@@ -420,9 +510,6 @@ web.all("/command", (req: Request, res: Response) => {
 
 // Web Portal
 web.all("/game/:cn", async (req: Request, res: Response) => {
-	//log.debug({ msg: "params game", tes: req.params })
-	//log.debug({ msg: "query game", tes: req.query })
-	//log.debug({ msg: "body game", tes: req.body })
 	var game_id = 0
 	var p = req.params
 	if (p.cn == "genshin-impact") {
@@ -437,7 +524,7 @@ web.all("/game/:cn", async (req: Request, res: Response) => {
 	try {
 		data = JSON.parse(await fs.readFile(join(__dirname, `./web/public/json/${p.cn}/download.json`), "utf8"))
 	} catch (error) {
-		log.error(error)
+		c_web.error({ name: "portal game", error: error })
 	}
 	res.render("game", {
 		game_title: `${title}`,
@@ -462,15 +549,12 @@ web.get("/api/:namegame/patch/:md5", async (req: Request, res: Response) => {
 		res.setHeader("Content-Type", "application/json")
 		res.send(fileContent)
 	} catch (error) {
-		log.debug({ name: `error ${md5} : ${filePath}`, tes: error })
+		c_web.debug({ name: `error ${md5} : ${filePath}`, error: error })
 		return res.json({ retcode: 404, message: "Error", data: 404 })
 	}
 })
 
 web.all("/api/launcher/server", async (req: Request, res: Response) => {
-	//log.debug({ msg: "params launcher", tes: req.params })
-	//log.debug({ msg: "query launcher", tes: req.query })
-	//log.debug({ msg: "body launcher", tes: req.body })
 	const time_ms = Date.now().toString()
 	return res.json({
 		time: time_ms,
@@ -503,41 +587,35 @@ web.all("/api/launcher/server", async (req: Request, res: Response) => {
 	})
 })
 web.all("/api/:namegame/banner", async (req: Request, res: Response) => {
-	log.debug({ msg: "params banner", tes: req.params })
-	log.debug({ msg: "query banner", tes: req.query })
-	log.debug({ msg: "body banner", tes: req.body })
 	const filePath = join(__dirname, `./web/public/json/genshin-impact/banner.json`)
 	try {
 		const fileContent = await fs.readFile(filePath)
 		res.setHeader("Content-Type", "application/json")
 		res.send(fileContent)
 	} catch (error) {
-		log.debug({ name: `error banner : ${filePath}`, tes: error })
+		c_web.debug({ name: `error banner : ${filePath}`, error: error })
 		return res.json({ retcode: 404, message: "Error", data: 404 })
 	}
 })
 web.all("/api/:namegame/event", async (req: Request, res: Response) => {
-	log.debug({ msg: "params event", tes: req.params })
-	log.debug({ msg: "query event", tes: req.query })
-	log.debug({ msg: "body event", tes: req.body })
 	const filePath = join(__dirname, `./web/public/json/genshin-impact/event.json`)
 	try {
 		const fileContent = await fs.readFile(filePath)
 		res.setHeader("Content-Type", "application/json")
 		res.send(fileContent)
 	} catch (error) {
-		log.debug({ name: `error event : ${filePath}`, tes: error })
+		c_web.debug({ name: `error event : ${filePath}`, error: error })
 		return res.json({ retcode: 404, message: "Error", data: 404 })
 	}
 })
 
 // Testing
-web.all("/api/game/genshin", async (req: Request, res: Response) => {
+web.all("/api/game/:name_game", async (req: Request, res: Response) => {
 	try {
 		let d = await API_GS.INFO()
 		return res.json(d)
 	} catch (e) {
-		log.error(e as Error)
+		c_web.error({ name: "API_GAME", error: e })
 		return res.json({
 			msg: "Error",
 			code: 302
@@ -550,7 +628,7 @@ web.all("/api/server", async (req: Request, res: Response) => {
 		let d = await Control.Server()
 		return res.json(d)
 	} catch (e) {
-		log.error(e as Error)
+		c_web.error({ name: "GET SERVER", error: e })
 		return res.json({
 			msg: "Error",
 			code: 302
@@ -562,7 +640,7 @@ web.all("/api/server/:id", async (req: Request, res: Response) => {
 		let d = await Control.Server(req.params.id)
 		return res.json(d)
 	} catch (e) {
-		log.error(e as Error)
+		c_web.error({ name: "GET LIST SERVER", error: e })
 		return res.json({
 			msg: "Error",
 			code: 302
@@ -595,7 +673,7 @@ web.all("/api/server/:id/ping", async (req: Request, res: Response) => {
 			code: 200
 		})
 	} catch (e) {
-		log.error(e as Error)
+		c_web.error({ name: "PING SERVER", error: e })
 		return res.json({
 			msg: "Error",
 			code: 302
@@ -610,6 +688,15 @@ web.all("/api/server/:id/command", limit_cmd, async (req: Request, res: Response
 
 web.get("/ip", async (req: Request, res: Response) => {
 	res.send(req.ip)
+})
+web.get("/teslang", async (req: Request, res: Response) => {
+	res.send({
+		"req.language": req.language,
+		"req.i18n.language": req.i18n.language,
+		"req.i18n.languages": req.i18n.languages,
+		"req.i18n.languages[0]": req.i18n.languages[0],
+		'req.t("title")': req.t("title")
+	})
 })
 
 // Combo
@@ -634,59 +721,23 @@ web.all("/status/server", (req: Request, res: Response) => {
 	})
 })
 
-// Hoyo Love Log Stuff
-
-web.all("/common/h5log/log/batch", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/sdk/dataUpload", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/crashdump/dataUpload", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/apm/dataUpload", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/log", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/crash/dataUpload", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/h5/upload", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/h5/dataUpload", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-web.all("/errlog", (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-
 // event
 web.all("/sw.html", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
 web.all("/ys/event/:id_event/index.html", async (req: Request, res: Response) => {
-	log.debug({ msg: "params event", tes: req.params })
-	log.debug({ msg: "query event", tes: req.query })
-	log.debug({ msg: "body event", tes: req.body })
 	var p = req.params
 	if (p.id_event == "e20210830cloud") {
 		return res.redirect("/command")
+	} else {
+		//TOOD
 	}
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
 // announcement
 web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
-	//log.debug({ msg: "params announcement", tes: req.params })
-	//log.debug({ msg: "query announcement", tes: req.query })
-	//log.debug({ msg: "body announcement", tes: req.body })
 	res.render("announcement/home", {
 		title: "Announcement",
 		description: "Im lazy to write"
@@ -695,9 +746,7 @@ web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
 web.all("/common/:cn/announcement/api/:id1", async (req: Request, res: Response) => {
 	var p = req.params
 	var target = p.id1
-	//log.debug({ msg: "params " + target, tes: req.params })
-	//log.debug({ msg: "query " + target, tes: req.query })
-	//log.debug({ msg: "body " + target, tes: req.body })
+
 	let jsonData = null
 	let time_ms = Date.now().toString()
 	if (target == "getAnnList") {
@@ -774,16 +823,10 @@ web.all("/common/:cn/announcement/api/:id1", async (req: Request, res: Response)
 // idk
 
 web.all("/game_weather/weather/get_weather", async (req: Request, res: Response) => {
-	log.debug({ msg: "params weather", tes: req.params })
-	log.debug({ msg: "query weather", tes: req.query })
-	log.debug({ msg: "body weather", tes: req.body })
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
 web.all("/map_manage/:id1/id2.png", async (req: Request, res: Response) => {
-	//log.debug({ msg: "params weather", tes: req.params })
-	//log.debug({ msg: "query weather", tes: req.query })
-	//log.debug({ msg: "body weather", tes: req.body })
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 // /map_manage/20221124/0ebe6d2f65fb5cc5ed4046a01a68dda9_7334983767356242405.png
@@ -803,9 +846,8 @@ web.all("/account/device/api/listNewerDevices", (req: Request, res: Response) =>
 	return res.send("")
 })
 
-web.all("/bus/combo/granter/login/beforeVerify", (req: Request, res: Response) => {
-	log.debug({ msg: "query beforeVerify", tes: req.query })
-	log.debug({ msg: "body beforeVerify", tes: req.body })
+// SR, gs use bus bruh
+web.all("/:cn/combo/granter/login/beforeVerify", (req: Request, res: Response) => {
 	return res.json({
 		retcode: statusCodes.success.RETCODE,
 		message: "OK",
@@ -818,9 +860,6 @@ web.all("/bus/combo/granter/login/beforeVerify", (req: Request, res: Response) =
 })
 
 web.all("/:cn/combo/panda/qrcode/fetch", (req: Request, res: Response) => {
-	log.debug({ msg: "query qrcode", tes: req.query })
-	log.debug({ msg: "body qrcode", tes: req.body })
-
 	let url = "https://google.com/Api/login_by_qr"
 	let expires = new Date().setHours(1, 0, 0).toString()
 	let ticket = Buffer.from(crypto.randomUUID().replaceAll("-", "")).toString("hex")
@@ -830,20 +869,11 @@ web.all("/:cn/combo/panda/qrcode/fetch", (req: Request, res: Response) => {
 		message: "OK",
 		data: { url: `${url}?expire=${expires}\u0026ticket=${ticket}\u0026device=${req.body.device}` }
 	}
-
-	log.debug(debug)
-
 	return res.json(debug)
 })
 
 web.all("/:cn/combo/panda/qrcode/query", (req: Request, res: Response) => {
-	log.debug({ msg: "query qrcodeq", tes: req.query })
-	log.debug({ msg: "body qrcodeq", tes: req.body })
-
 	let debug = { retcode: statusCodes.error.FAIL, message: "QRCode login is disabled!" }
-
-	log.debug(debug)
-
 	return res.json(debug)
 })
 
@@ -859,32 +889,23 @@ web.all("/dsign", (req: Request, res: Response) => {
 })
 
 web.all("/:cn/mdk/shield/api/actionTicket", (req: Request, res: Response) => {
-	log.debug(req.body)
 	return res.json({ retcode: statusCodes.success.RETCODE, message: "OK", data: { ticket: `123` } }) // OK=0
 })
 
 web.all("/:cn/mdk/shield/api/emailCaptcha", (req: Request, res: Response) => {
-	log.debug(req.body)
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 
 web.all("/:cn/mdk/shield/api/bindEmail", (req: Request, res: Response) => {
-	log.debug(req.body)
 	return res.json({ retcode: statusCodes.success.RETCODE, message: "Success", data: 404 }) // OK=0
 })
 
 web.all("/:cn/mdk/shield/api/loginByThirdparty", async (req: Request, res: Response) => {
-	//log.debug({ msg: "params loginByThirdparty", tes: req.params })
-	//log.debug({ msg: "query loginByThirdparty", tes: req.query })
-	//log.debug({ msg: "body loginByThirdparty", tes: req.body })
-
 	var b = req.body
 	var token = (b.access_token as string) ?? ""
 
-	var lang = req.headers["x-rpc-language"]?.toString() || "en"
+	var lang = req.language
 	let ip = req.ip ?? "?1"
-
-	//log.info(`token ${token} login...`)
 
 	let c = { retcode: statusCodes.error.LOGIN_FAILED, message: "Error Login" }
 
@@ -896,20 +917,17 @@ web.all("/:cn/mdk/shield/api/loginByThirdparty", async (req: Request, res: Respo
 		})
 
 		const userData = response.data
-		//log.debug("profile yor", userData)
 
 		var username = userData.email
 		if (!isEmpty(username)) {
 			c = await Account.GET_ACCOUNT_GC(username, "", "hk4e", 1, true) // tmp hk4e
 
-			const ts = translate(c, lang)
-
-			log.debug(c)
+			const ts = translate(c, req)
 
 			if ((c.retcode as number) == 0) {
-				log.info(`${ip} | ${username} have logged discord`)
+				c_dp.info(`${ip} | ${username} have logged discord`)
 			} else {
-				log.info(`${ip} | ${username} login failed discord because "${c.message}" ${lang}`)
+				c_dp.info(`${ip} | ${username} login failed discord because "${c.message}" ${lang}`)
 			}
 
 			return res.json(ts)
@@ -917,7 +935,7 @@ web.all("/:cn/mdk/shield/api/loginByThirdparty", async (req: Request, res: Respo
 			c = { retcode: statusCodes.error.LOGIN_FAILED, message: "No found acc discord" }
 		}
 	} catch (error) {
-		log.debug("Error fetching user data:", error)
+		c_dp.debug({ name: "Error fetching user data:", error: error })
 		c = { retcode: statusCodes.error.LOGIN_FAILED, message: "No find acc discord" }
 	}
 
@@ -995,9 +1013,6 @@ web.all("/privacy/policy/ms/version", (req: Request, res: Response) => {
 
 // Config
 web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) => {
-	// Fake Config SR
-	log.debug(req.params)
-	log.debug(req.query)
 	// https://sdk-static.mihoyo.com/hk4e_global/combo/granter/api/getConfig?app_id=4&channel_id=1&client_type=3 cn only
 	return res.json({
 		retcode: statusCodes.success.RETCODE,
@@ -1030,7 +1045,9 @@ web.all("/:cn/mdk/shield/api/loadConfig", async (req: Request, res: Response) =>
 	var d = req.query
 	var key = (d.game_key ?? 0) as number
 	let client = clientTypeFromClientId((d.client ?? 0) as number)
-	log.info(`load config ${key} with ${client}`)
+
+	c_dp.debug(`load config ${key} with ${client}`)
+
 	return res.json({
 		retcode: statusCodes.success.RETCODE,
 		message: "OK",
@@ -1127,7 +1144,7 @@ web.all("/device-fp/api/getExtList", async (req: Request, res: Response) => {
 web.all("/admin/:id3/:id4/:id1/:id2.json", async (req: Request, res: Response) => {
 	var url = `https://webstatic.hoyoverse.com/admin/${req.params.id3}/${req.params.id4}/${req.params.id1}/${req.params.id2}.json`
 	if (req.params.id4 == "plat_os") {
-		//log.info(`${req.originalUrl}`)
+		//c_dp.info(`${req.originalUrl}`)
 		url = `https://webstatic.hoyoverse.com` + req.originalUrl
 	}
 	var file = `./language/game/genshin/webstatic/${req.params.id1}-${req.params.id2}.json`
@@ -1137,7 +1154,7 @@ web.all("/admin/:id3/:id4/:id1/:id2.json", async (req: Request, res: Response) =
 		const jsonData = JSON.parse(data)
 		return res.json(jsonData)
 	} catch (err) {
-		log.warn(`No found ${file} so find ${url}`)
+		c_dp.error(`No found ${file} so find ${url}`)
 		const response = await axios.get(url, {
 			timeout: 1000 * 10
 		})
@@ -1175,10 +1192,6 @@ web.all("/:cn/mdk/agreement/api/getAgreementInfos", async (req: Request, res: Re
 
 // Login Twitter
 web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
-	//log.debug("sdk parms", req.params)
-	//log.debug("sdk qu", req.query)
-	//log.debug("body sdk", req.body)
-
 	var q = req.query
 
 	var key = q.consumer_key as string
@@ -1211,13 +1224,11 @@ web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
 					"Content-Type": "application/x-www-form-urlencoded"
 				}
 			})
-			//var accessToken = btoa(JSON.stringify(tokenResponse.data.access_token))
 			return res.send(
 				`<h1>Wait login Discord...</h1><meta http-equiv="refresh" content="0;url=uniwebview://sdkThirdLogin?accessToken=${tokenResponse.data.access_token}">`
 			)
-			//log.debug("data your dm", data)
 		} catch (error) {
-			log.debug("Error exchanging code for token:", error)
+			c_dp.debug({ name: "Error exchanging code for token:", error: error })
 		}
 	}
 	/*
@@ -1230,8 +1241,6 @@ web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
 })
 // Login Twitter (API?)
 web.all("/Api/twitter_login", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
 	return res.json({
 		code: 200,
 		data: {
@@ -1244,9 +1253,6 @@ web.all("/Api/twitter_login", async (req: Request, res: Response) => {
 })
 // Login Twitter (API?)
 web.all("/Api/twitter_access", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
-	log.debug(req.body)
 	var p = req.query
 	return res.json({
 		code: 200,
@@ -1261,14 +1267,10 @@ web.all("/Api/twitter_access", async (req: Request, res: Response) => {
 
 // Login Facebook
 web.all("/sdkFacebookLogin.html", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 // Login Facebook (API?)
 web.all("/Api/facebook_login", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
 	return res.json({
 		code: 200,
 		data: {
@@ -1282,8 +1284,6 @@ web.all("/Api/facebook_login", async (req: Request, res: Response) => {
 
 // login guest (from client).
 web.all("/:cn/mdk/guest/guest/v2/login", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.body)
 	/*
 	{
     game_key: 'hk4e_global',
@@ -1300,10 +1300,6 @@ web.all("/:cn/mdk/guest/guest/v2/login", async (req: Request, res: Response) => 
 })
 // Cached token login (from registry).
 web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
-	//log.debug(res)
-	//log.debug(req)
-	//log.debug(req.body)
-
 	var uid = req.body.uid // uid acc?
 	var key = req.body.token // token aka key
 	var cn = req.params.cn
@@ -1314,24 +1310,16 @@ web.all("/:cn/mdk/shield/api/verify", async (req: Request, res: Response) => {
 	}
 
 	var c = await Account.GET_ACCOUNT_GC(uid, key, cn, 2)
-
-	//log.debug(c)
-
 	if (c.retcode == 0) {
-		log.info(`${ip} | ${uid} have logged (login registry) in from ${cn}`)
+		c_dp.info(`${ip} | ${uid} have logged (login registry) in from ${cn}`)
 	} else {
-		log.info(`${ip} | ${uid} login failed (login registry) because "${c.message}" in from ${cn}`)
+		c_dp.info(`${ip} | ${uid} login failed (login registry) because "${c.message}" in from ${cn}`)
 	}
 
 	return res.json(c)
 })
 // Cached token login (from registry), unfortunately this cannot be deleted or given a zero response
 web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response) => {
-	// TODO ACC
-	//log.debug(res)
-	//log.debug(req)
-	//log.debug(req.body)
-
 	const d = JSON.parse(req.body.data) // tmp just send back
 
 	return res.json({
@@ -1350,15 +1338,9 @@ web.all("/:cn/combo/granter/login/v2/login", async (req: Request, res: Response)
 })
 // Username & Password login (from client).
 web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Response) => {
-	// TODO ACC
-	//log.debug(res)
-	//log.debug(req)
-	//log.debug(req.body)
-	//log.debug()
-	//console.log(req)
 	// hk4e_global = gs and hkrpg_global = sr
 
-	var lang = req.headers["x-rpc-language"]?.toString() || "en"
+	var lang = req.language
 
 	var username = req.body.account
 	var password = req.body.password // temporarily useless
@@ -1370,14 +1352,11 @@ web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Res
 	}
 
 	var c = await Account.GET_ACCOUNT_GC(username, "", cn, 1, Config.autoAccount)
-	const ts = translate(c, lang)
-	//log.debug(c)
+	const ts = translate(c, req)
 	if (c.retcode == 0) {
-		log.info(`${ip} | ${username} have logged (normal login) in from ${cn}`)
+		c_dp.info(`${ip} | ${username} have logged (normal login) in from ${cn}`)
 	} else {
-		log.info(
-			`${ip} | ${username} login failed (normal login) because "${c.message}" in from ${cn} / ${lang}`
-		)
+		c_dp.info(`${ip} | ${username} login failed (normal login) because "${c.message}" in from ${cn} / ${lang}`)
 	}
 
 	return res.json(ts)
@@ -1388,10 +1367,6 @@ web.post("/:cn/mdk/shield/api/login", limit_login, async (req: Request, res: Res
 // for list server sr
 web.all("/query_dispatch", async (req: Request, res: Response) => {
 	try {
-		log.debug(req.params)
-		log.debug(req.query)
-		log.debug(req.body)
-
 		var d = req.query
 
 		let version = (d.version as string) ?? "?0"
@@ -1401,12 +1376,7 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 		let lang = d.lang ?? "?2"
 		let platform = d.platform ?? "?3"
 
-		//const protocol = req.protocol; // 'http' or 'https'
-		//const host = req.get('host'); // domain and port
-		//const fullDomain = `${protocol}://${host}`;
-		//log.debug(`Full Domain: ${fullDomain}`);
-
-		log.info(
+		c_dp.info(
 			`${ip} | trying to access region list with version ${version} and language codes ${lang} and platform ${platform}`
 		)
 
@@ -1414,21 +1384,13 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 
 		return res.send(data)
 	} catch (e) {
-		log.error(e as Error)
-		return res.json({
-			retcode: 1,
-			message: "Error"
-		})
+		c_dp.error({ name: "query_dispatch (SR)", error: e })
+		return res.send(API_SR.NO_VERSION_CONFIG())
 	}
 })
 
 web.all("/query_gateway/:name", async (req: Request, res: Response) => {
 	try {
-		//log.debug(req.params)
-		//log.debug(req.query)
-		//log.debug(req.body)
-		//log.debug(req.url)
-
 		var d = req.query
 		var p = req.params
 
@@ -1443,18 +1405,18 @@ web.all("/query_gateway/:name", async (req: Request, res: Response) => {
 		let platform = d.platform_type ?? "?3"
 
 		if (version == undefined || dispatchSeed == undefined) {
-			log.info(`${ip} | trying to access region with no config`)
-			return res.send(API_GS.NO_VERSION_CONFIG())
+			c_dp.debug(`${ip} | trying to access region with no config`)
+			return res.send(API_SR.NO_VERSION_CONFIG())
 		}
 
-		log.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
+		c_dp.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
 
 		var data = await API_SR.GET_DATA_REGION(name, dispatchSeed, key, version)
 
 		return res.send(data)
 	} catch (e) {
-		log.error(e as Error)
-		return res.send(API_GS.NO_VERSION_CONFIG())
+		c_dp.error({ name: "query_gateway (SR)", error: e })
+		return res.send(API_SR.NO_VERSION_CONFIG())
 	}
 })
 
@@ -1463,10 +1425,6 @@ web.all("/query_gateway/:name", async (req: Request, res: Response) => {
 // for list server gs
 web.all("/query_region_list", async (req: Request, res: Response) => {
 	try {
-		//log.debug(req.params)
-		//log.debug(req.query)
-		//log.debug(req.body)
-
 		var d = req.query
 
 		let version = (d.version as string) ?? "?0"
@@ -1476,12 +1434,7 @@ web.all("/query_region_list", async (req: Request, res: Response) => {
 		let lang = d.lang ?? "?2"
 		let platform = d.platform ?? "?3"
 
-		//const protocol = req.protocol; // 'http' or 'https'
-		//const host = req.get('host'); // domain and port
-		//const fullDomain = `${protocol}://${host}`;
-		//log.debug(`Full Domain: ${fullDomain}`);
-
-		log.info(
+		c_dp.info(
 			`ip ${ip} trying to access region list with version ${version} and language codes ${lang} and platform ${platform}`
 		)
 
@@ -1489,21 +1442,13 @@ web.all("/query_region_list", async (req: Request, res: Response) => {
 
 		return res.send(data)
 	} catch (e) {
-		log.error(e as Error)
-		return res.json({
-			retcode: 1,
-			message: "Error"
-		})
+		c_dp.error({ name: "query_region_list (GS)", error: e })
+		return res.send(API_GS.NO_VERSION_CONFIG())
 	}
 })
 
 web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 	try {
-		//log.debug(req.params)
-		//log.debug(req.query)
-		//log.debug(req.body)
-		//log.debug(req.url)
-
 		var d = req.query
 		var p = req.params
 
@@ -1518,37 +1463,30 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 		let platform = d.platform ?? "?3"
 
 		if (version == undefined || dispatchSeed == undefined || key == undefined) {
-			//log.info(`ip ${ip} trying to access region with no config`)
+			c_dp.debug(`${ip} | trying to access region with no config`)
 			return res.send(API_GS.NO_VERSION_CONFIG())
 		}
 
-		log.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
+		c_dp.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
 
 		var data = await API_GS.GET_DATA_REGION(name, dispatchSeed, key, version)
 
 		return res.send(data)
 	} catch (e) {
-		log.error(e as Error)
+		c_dp.error({ name: "query_cur_region (GS)", error: e })
 		return res.send(API_GS.NO_VERSION_CONFIG())
 	}
 })
 
 web.all("/query_cur_region", async (req: Request, res: Response) => {
-	//log.debug(req.params)
-	//log.debug(req.query)
 	return res.send(API_GS.NO_VERSION_CONFIG())
 })
 
 web.all("/api/key/:id/*", async (req: Request, res: Response) => {
-	log.debug(req.params)
-	log.debug(req.query)
-	log.debug(req.body)
-
 	let ip = req.ip ?? "?1"
-
 	let code = req.params[0].split("=")[1]
 
-	log.info(`${ip} | trying input code ${code}`)
+	c_web.warn(`${ip} | trying input code ${code}`)
 
 	// TODO: if code work send to all server in this acc?
 
@@ -1559,18 +1497,20 @@ web.all("/api/key/:id/*", async (req: Request, res: Response) => {
 })
 
 // catch all if not found
-
 web.use((req: Request, res: Response) => {
-	log.warn(`${req.url} not found`)
-	res.status(404).send("Sorry, my cat is lost...")
+	c_web.error(`${req.url} not found`, false)
+	// Redirect to the homepage
+	res.redirect("/?action=404")
 })
 
 if (Config.Startup.webserver) {
-	var listener = web.listen(set_port_local, function () {
-		log.info(`Server started on port ${set_port_local}`)
+	web.listen(set_port_local, function () {
+		c_web.info(`Server started on port ${set_port_local}`)
+		//startBot()
 	})
 } else {
-	log.info("skip run webserver...")
+	c_web.info("skip run webserver...")
+	//startBot()
 }
 
 const webhookData: WebhookClientData = Config.webhook.stats
@@ -1578,16 +1518,18 @@ const ping_notif = new WebhookClient(webhookData)
 let ping_job = get_job()
 ping_job.on("message", (d: { type: string; data: any }) => {
 	try {
+		c_bot.debug({ msg: `Job`, data: d })
+
 		if (d.type == "msg") {
-			log.debug(d)
 			if (Config.Startup.bot) {
 				ping_notif.send(d.data)
 			}
-			log.info(`Send Ping:`, d.data.content)
 		} else if (d.type == "bot_stats") {
 			online_string = parseInt(d.data)
 			if (Config.Startup.bot) {
 				if (bot == undefined || bot.user == undefined) {
+					c_bot.warn("Bot error update stats")
+					//restartBot() TODO:
 					return
 				}
 				bot.user.setPresence({
@@ -1600,16 +1542,12 @@ ping_job.on("message", (d: { type: string; data: any }) => {
 				})
 			}
 		}
-		log.debug(d)
 	} catch (e) {
-		log.debug({ event: "ping error send", log: e })
-		// Stop the Worker and restart it
-		//ping_job.terminate();
-		//ping_job = get_job();
+		c_job.error({ msg: "ping error send", error: e })
 	}
 })
 ping_job.on("error", (ex: Error) => {
-	log.debug({ event: "ping error 0", log: ex })
+	c_job.error({ msg: "ping error 0", error: ex })
 
 	// Stop the Worker and restart it
 	try {
@@ -1618,7 +1556,7 @@ ping_job.on("error", (ex: Error) => {
 			ping_job = get_job()
 		}, 3000)
 	} catch (error) {
-		log.debug({ event: "ping error 1", log: error })
+		c_job.error({ msg: "ping error 1", error: error })
 	}
 })
 function get_job() {
@@ -1626,6 +1564,4 @@ function get_job() {
 }
 
 RSAUtils.initKeys()
-
-// Console
 Interface.start()
