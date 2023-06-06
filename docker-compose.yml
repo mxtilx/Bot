@@ -10,9 +10,12 @@ services:
     deploy:
       resources:
         limits:
+          cpus: '1.00'
           memory: 1G
+        reservations:
+          cpus: '0.50'
+          memory: 500MB
     restart: always
-    #entrypoint: ./run.sh cloud
     command: "sh ./run.sh cloud"
     environment:
       - TZ=Asia/Makassar
