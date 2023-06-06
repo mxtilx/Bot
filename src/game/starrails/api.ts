@@ -186,17 +186,15 @@ export const _ = {
 			})
 
 			// new version just stuck here?
-			if (region_list.length == 0) {
-				var mt = {
-					retcode: 4,
-					msg: `All Server does not support ${version} version, Update your game client! - PS.YUUKI.ME`,
-					url: "https://ps.yuuki.me/game/star-rail"
-				}
-				if (encode) {
-					return Buffer.from(MainTenis.encode(MainTenis.create(mt)).finish()).toString("base64")
-				} else {
-					return mt
-				}
+			var mt = {
+				retcode: 4,
+				msg: `All Server does not support ${version} version, Update your game client! - PS.YUUKI.ME`,
+				url: "https://ps.yuuki.me/game/star-rail"
+			}
+			if (region_list.length == 0 && encode == true) {
+				return Buffer.from(MainTenis.encode(MainTenis.create(mt)).finish()).toString("base64")
+			} else if (region_listCBT.length == 0 && encode == false) {
+				return mt
 			}
 
 			if (encode) {
