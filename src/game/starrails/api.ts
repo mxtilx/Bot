@@ -13,7 +13,13 @@ import axios from "axios"
 import fs from "fs"
 
 // Proto
-import { ServerDispatchData, RegionSimpleInfo, QueryRegionListHttpRsp, ServerDispatchDataCBT2 } from "./proto/schema"
+import {
+	ServerDispatchData,
+	RegionSimpleInfo,
+	QueryRegionListHttpRsp,
+	ServerDispatchDataCBT2,
+	MainTenis
+} from "./proto/schema"
 
 import { Ec2bKey, RSAUtils } from "../../game/hoyolab/crypto"
 
@@ -179,25 +185,17 @@ export const _ = {
 				}
 			})
 
-			var dispatchUrl = `${protocol}://${hostname}:${port}/query_gateway/not_found`
-			if (encode) {
-				if (region_list.length == 0) {
-					const regionSimpleInfo1 = RegionSimpleInfo.create({
-						dispatchUrl: dispatchUrl,
-						envType: "DEV_PUBLIC",
-						name: "not_found",
-						title: "YuukiPS - Update Game Client"
-					})
-					region_list.push(regionSimpleInfo1)
+			// new version just stuck here?
+			if (region_list.length == 0) {
+				var mt = {
+					retcode: 4,
+					msg: `All Server does not support ${version} version, Update your game client! - PS.YUUKI.ME`,
+					url: "https://ps.yuuki.me/game/star-rail"
 				}
-			} else {
-				if (region_listCBT.length == 0) {
-					region_listCBT.push({
-						dispatch_url: dispatchUrl,
-						env_type: "2",
-						title: "not_found", // id server
-						name: "YuukiPS - Update Game Client" // REAL TITLE LOL
-					})
+				if (encode) {
+					return Buffer.from(MainTenis.encode(MainTenis.create(mt)).finish()).toString("base64")
+				} else {
+					return mt
 				}
 			}
 
@@ -230,7 +228,23 @@ export const _ = {
 				(r) => r.name == name && contains(version, r.version) == true && r.game == 2
 			)
 
+			const versionRegex = /(\d+\.\d+\.\d+)/
+			const match = version.match(versionRegex)
+			const versionNumber = match ? match[1] : ""
+
+			let isnew: boolean
+
+			if (compareVersions(versionNumber, "0.64.0") >= 0 && compareVersions(versionNumber, "1.0.5") < 0) {
+				isnew = false
+			} else if (compareVersions(versionNumber, "1.0.5") >= 0) {
+				isnew = true
+			} else {
+				isnew = false
+				log.debug(`idk wtf ${versionNumber}`)
+			}
+
 			let dataObjCBT2: ServerDispatchDataCBT2
+			let dataObjNEW: ServerDispatchData
 
 			if (dispatchData !== undefined) {
 				dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
@@ -245,17 +259,67 @@ export const _ = {
 					resUseAssetBoundle: false,
 					assetBundleUrl: "https://ps.yuuki.me/asb"
 				} as ServerDispatchDataCBT2)
+				return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
 			} else {
-				dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
-					retcode: 20,
-					msg: `Server ${name} does not support ${version} version, Use another server or update game client!. if you believe this is an error that shouldn't be happening please send this id or screenshot to discord support (SEED: ${seed})`,
-					customServiceUrl: "https://ps.yuuki.me"
-				})
+				if (!isnew) {
+					dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
+						retcode: 20,
+						msg: `idk if show it`,
+						customServiceUrl: "https://ps.yuuki.me/game/star-rail"
+					})
+					return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
+				} else {
+					dataObjNEW = ServerDispatchData.fromPartial({
+						onlineReplayUploadUrl: "",
+						iINOPFNCDEN: false,
+						AsbReloginDesc: "",
+						eventTrackingOpen: false,
+						privacyInGameUrl: "",
+						enableUploadBattleLog: false,
+						customServiceUrl: "",
+						name: "prod_official_asia",
+						cECLAOALPJD: "",
+						stopEndTime: 0,
+						mValue: 3,
+						iFixPatchRevision: "",
+						port: 0,
+						luaPatchVersion: "",
+						communityActivityUrl: "",
+						kMJAFDLEPOH: "",
+						iOSExam: false,
+						loginWhiteMsg: "遊戲正在維護中，詳情請關注官方公告。",
+						fOIJNCKDHNK: false,
+						LuaBundleVersionUpdateUrl: "",
+						officialCommunityUrl: "",
+						mTPSwitch: false,
+						DesignDataBundleVersionUpdateUrl: "",
+						host: "",
+						onlineReplayDownloadUrl: "",
+						redeemCodeUrl: "",
+						temporaryMaintenanceUrl: "",
+						DesignDataReloginType: 0,
+						stopDesc: "client version not match",
+						useTcp: false,
+						stopBeginTime: 0,
+						PredownloadUpdateUrl: "",
+						forbidRecharge: false,
+						enableAssetBundleVersionUpdate: false,
+						serverDescription: "",
+						enableSaveReplayFile: false,
+						thirdPrivacyInGameUrl: "",
+						teenagerPrivacyInGameUrl: "",
+						AsbReloginType: 0,
+						DesignDataReloginDesc: "",
+						personalInformationInGameUrl: "",
+						AssetBundleVersionUpdateUrl: "",
+						operationFeedbackUrl: "",
+						IFixPatchVersionUpdateUrl: "",
+						enableDesignDataBundleVersionUpdate: false
+					})
+					log.debug(dataObjNEW)
+					return Buffer.from(ServerDispatchData.encode(dataObjNEW).finish()).toString("base64")
+				}
 			}
-
-			log.debug(dataObjCBT2);
-
-			return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
 		} catch (error) {
 			log.error(error)
 			return this.NO_VERSION_CONFIG()

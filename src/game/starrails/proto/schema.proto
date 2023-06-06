@@ -1,5 +1,11 @@
 syntax = "proto3";
 
+message MainTenis {
+  uint32 retcode = 1;
+  string msg = 2;
+  string url = 3;
+}
+
 message ServerDispatchDataCBT2 {
   uint32 retcode = 1;
   string msg = 2;
@@ -84,4 +90,54 @@ message RegionSimpleInfo {
 
 message QueryRegionListHttpRsp {
     repeated RegionSimpleInfo region_list = 4;
+}
+
+// Name: OBNNLPMNKJK
+message ServerDispatchDataNEW {
+  uint32 port = 2;
+  bool KKHJNPJMNIN = 1238;
+  string HLGCFGBPDIH = 724;
+  string AGCOHMIBFPO = 102;
+  bool HFGEFGFEMCN = 193;
+  string CNEIJFENGAG = 232;
+  bool LNNIPPHEPOA = 10;
+  string login_white_msg = 654;
+  uint32 DOAMFCDLJIL = 8;
+  uint32 BOPLAMMNLFK = 9;
+  uint32 retcode = 15;
+  bool AFBOJAGEPFB = 788;
+  string asset_bundle_url = 14;
+  string GPFNNIDOAOK = 222;
+  string MAHIBOGOGOC = 11;
+  string OKGBJBACNKG = 1107;
+  int64 stop_end_time = 5;
+  bool CINCKAOLOBK = 1374;
+  string IJPFDPNMGCL = 1670;
+  string ACNKLOFEOJA = 1592;
+  string lua_version = 349;
+  bool GHOOCKECBNE = 1986;
+  string lua_url = 4;
+  string replay_url = 1376;
+  bool JEGDHPFJFPG = 3;
+  bool HGEDHANHIFN = 622;
+  string ex_resource_url = 6;
+  string DIGDNMMEGFB = 1568;
+  string ip = 1;
+  string client_secret_key = 178;
+  bool OBLCBPBNLCM = 1215;
+  string ifix_url = 2040;
+  bool NGLCAOKANHM = 432;
+  string DOGIAANDIKF = 1011;
+  string upload_replay_url = 529;
+  string OLHLDGOHFBN = 1050;
+  string msg = 7;
+  bool BBNCMGGKJAE = 1454;
+  string MAEBANOEDMP = 1157;
+  string region_name = 13;
+  string HBDMGJEDABD = 1920;
+  string GDOGBBPAPJH = 823;
+  string LFIAADINMBB = 581;
+  int64 stop_begin_time = 12;
+  string DGCIOFAFOFN = 596;
+  bool LCIDMKEDDCL = 1923;
 }
