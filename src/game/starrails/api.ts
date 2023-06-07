@@ -18,7 +18,8 @@ import {
 	RegionSimpleInfo,
 	QueryRegionListHttpRsp,
 	ServerDispatchDataCBT2,
-	MainTenis
+	MainTenis,
+	ServerDispatchDataNEW
 } from "./proto/schema"
 
 import { Ec2bKey, RSAUtils } from "../../game/hoyolab/crypto"
@@ -103,7 +104,7 @@ export const _ = {
 			console.log(d)
 
 			let content = Buffer.from(d, "base64")
-			var decoded = ServerDispatchData.decode(content)
+			var decoded = ServerDispatchDataNEW.decode(content)
 			if (decoded) {
 				//save dump
 				const jsonString = JSON.stringify(decoded, null, 4)

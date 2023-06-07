@@ -103,7 +103,7 @@ async function run(interaction: CommandInteraction) {
 			}
 
 			return await interaction.editReply({
-				content: `Found asset file: ${d_sr.data.AssetBundleVersionUpdateUrl} ,for complete file check dump folder.`,
+				content: `Found asset file: ${d_sr.data.assetBundleUrl} ,for complete file check dump folder.`,
 				...baseReply
 			})
 		} else {
