@@ -8,6 +8,17 @@ export default acfg({
 		bot: false,
 		leve1: 1
 	},
+	web: {
+		title: "YuukiPS",
+		prod: {
+			url: "https://ps.yuuki.me",
+			port: 443
+		},
+		dev: {
+			url: "http://localhost",
+			port: 3000
+		}
+	},
 	api: {
 		hcaptcha: {
 			key: ""

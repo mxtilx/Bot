@@ -1,6 +1,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <title><%= it.c.title %> - <%= it.title %></title>
   <meta name="description" content="<%= it.description %>" />
-  <title>YuukiPS - <%= it.title %></title>
+  <meta name="keywords" content="<%= it.keyword %>">
+  <% if(it.index == true) { %>
+  <meta name="robots" content="index">
+  <% } else { %>
+  <meta name="robots" content="noindex">
+  <% } %>
+
 </head>

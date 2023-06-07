@@ -19,7 +19,7 @@
 							{
 								"name": "Fiddler",
 								"url": "https://doc.yuuki.me/docs/tutorial-connect/pc/fiddler",
-								"comment": "Manual proxy without launcher, You don't need any patch, just use a proxy"
+								"comment": "json_comment_info_fiddler_nopatch"
 							}
 						],
 						"game": {
@@ -46,7 +46,7 @@
 				]
 			},
 			{
-				"name": "1.0.5",
+				"name": "1.1.0",
 				"project": {
 					"name": "CrepePS REL",
 					"short": "CP-SR",
@@ -61,19 +61,24 @@
 							{
 								"name": "Discord",
 								"url": "https://discord.gg/crepe",
-								"comment": "This is not a YuukiPS server but a CrepePS server. If you want to play the latest version of this game, you can join their server."
+								"comment": "This is not a YuukiPS server but a CrepePS server. If you want to play latest version of this game, you can join their server, use sr.crepe.moe with fiddler"
+							},
+							{
+								"name": "Fiddler",
+								"url": "https://doc.yuuki.me/docs/tutorial-connect/pc/fiddler",
+								"comment": "json_comment_info_fiddler_nopatch"
 							}
 						],
 						"game": {
 							"latest": {
-								"path": "https://autopatchos.starrails.com/client/download/20230413214947_toY0cWzqBhhM2EDV/StarRail_1.0.5.zip",
-								"size": "21810485760",
-								"md5": "5ef3a794df8ac656582ab144ddd3aa9f",
+								"path": "https://autopatchos.starrails.com/client/download/20230527111343_8wBHfb9dmez1XooM/StarRail_1.1.0.zip",
+								"size": "22120131800",
+								"md5": "d25f4eaf495c372f6d3eaec8c73382a5",
 								"entry": "StarRail.exe",
 								"voice_packs": [],
 								"decompressed_path": "",
 								"segments": [],
-								"package_size": "10900000000"
+								"package_size": "11054823020"
 							},
 							"diffs": []
 						}

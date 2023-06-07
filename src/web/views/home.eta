@@ -16,28 +16,28 @@
 
       <div class="lc-block mb-4">
         <div editable="rich">
-          <h1 class="display-1 fw-bolder"><%= it.title %></h1>
+          <h1 class="display-1 fw-bolder"><%= it.c.title %></h1>
         </div>
       </div>
 
       <% if (it.action == '404') { %>
       <div class="alert alert-danger" role="alert">
-        <%= it.t("web_404") %>        
+        <%= it.t("home_404") %>
       </div>
       <% } %>
 
       <div class="text-light">
-        <p class="lead"><%~ it.t("web_lead") %></p>
+        <p class="lead"><%~ it.t("home_lead") %></p>
       </div>
 
       <div class="mt-4">
         <div class="btn-group btn-group-lg" role="group" aria-label="Button group with nested dropdown">
 
-          <a class="btn btn-primary" href="/command"><%= it.t("web_title_command") %></a>
+          <a class="btn btn-primary" href="/command"><%= it.t("home_bt_title_command") %></a>
 
           <div class="btn-group" role="group">
             <button type="button" class="btn btn-primary dropdown-toggle btn-lg" data-bs-toggle="dropdown" aria-expanded="false">
-              <%= it.t("web_title_play") %>
+              <%= it.t("home_bt_title_play") %>
             </button>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="/game/genshin-impact">Genshin Impact</a></li>
@@ -45,7 +45,7 @@
             </ul>
           </div>
 
-          <a class="btn btn-primary" href="/account/login"><%= it.t("web_title_loginnreg") %></a>
+          <a class="btn btn-primary" href="/account/login"><%= it.t("home_bt_title_loginnreg") %></a>
 
         </div>
       </div>

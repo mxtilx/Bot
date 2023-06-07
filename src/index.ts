@@ -442,11 +442,14 @@ web.all("/", (req: Request, res: Response) => {
 	}
 
 	res.render("home", {
-		title: req.t("title"),
-		description: req.t("description"),
+		title: req.t("home_title"),
+		description: req.t("home_description"),
+		keyword: req.t("home_keyword"),
+		index: true,
+		t: req.t,
+		c: Config.web,
 		type: type,
-		action: action,
-		t: req.t
+		action: action
 	})
 })
 
@@ -507,9 +510,12 @@ web.all("/account/login", async (req: Request, res: Response) => {
 		}
 	}
 	res.render("account/login", {
-		title: req.t("web_title_login"),
-		description: req.t("web_description_login"),
+		title: req.t("account_title"),
+		description: req.t("account_description"),
+		keyword: req.t("account_keyword"),
+		index: false,
 		t: req.t,
+		c: Config.web,
 		action: action,
 		message: message
 	})
@@ -517,8 +523,12 @@ web.all("/account/login", async (req: Request, res: Response) => {
 
 web.all("/command", (req: Request, res: Response) => {
 	res.render("command", {
-		title: "Command Tool",
-		description: "Im lazy to write"
+		title: req.t("command_title"),
+		description: req.t("command_description"),
+		keyword: req.t("command_keyword"),
+		index: true,
+		t: req.t,
+		c: Config.web
 	})
 })
 
@@ -531,7 +541,8 @@ web.all("/game/:cn", async (req: Request, res: Response) => {
 	} else if (p.cn == "star-rail") {
 		game_id = 2
 	} else {
-		p.cn = "no-found"
+		//p.cn = "no-found"
+		return res.redirect(`/?action=404&game=${p.cn}`)
 	}
 	var title = generateSEOTitle(p.cn)
 	let data
@@ -541,10 +552,14 @@ web.all("/game/:cn", async (req: Request, res: Response) => {
 		c_web.error({ name: "portal game", error: error })
 	}
 	res.render("game", {
+		title: req.t(`game_title_id_${game_id}`),
+		description: req.t(`game_description_id_${game_id}`),
+		keyword: req.t(`game_keyword_id_${game_id}`),
+		index: true,
+		t: req.t,
+		c: Config.web,
 		game_title: `${title}`,
 		game_id: game_id,
-		title: `Playing Private Servers For ${title}`,
-		description: `Embark on an unforgettable adventure in the captivating world of ${title} Game! Join our private server for true adventurers and explore vast landscapes, daunting dungeons, and mystical creatures. Engage in epic quests, battles, and uncover hidden treasures. Customize your character, forge alliances, and conquer challenges in a constantly evolving universe. Join us now and become a legend in ${title} Game!`,
 		data: data,
 		bytesToGigabytes: bytesToGigabytes
 	})
@@ -736,10 +751,6 @@ web.all("/status/server", (req: Request, res: Response) => {
 })
 
 // event
-web.all("/sw.html", async (req: Request, res: Response) => {
-	return res.json({ retcode: 200, message: "Success", data: 404 })
-})
-
 web.all("/ys/event/:id_event/index.html", async (req: Request, res: Response) => {
 	var p = req.params
 	if (p.id_event == "e20210830cloud") {
@@ -753,8 +764,12 @@ web.all("/ys/event/:id_event/index.html", async (req: Request, res: Response) =>
 // announcement
 web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
 	res.render("announcement/home", {
-		title: "Announcement",
-		description: "Im lazy to write"
+		title: req.t("announcement_title"),
+		description: req.t("announcement_description"),
+		keyword: req.t("announcement_keyword"),
+		index: false,
+		t: req.t,
+		c: Config.web
 	})
 })
 web.all("/common/:cn/announcement/api/:id1", async (req: Request, res: Response) => {
@@ -835,7 +850,12 @@ web.all("/common/:cn/announcement/api/:id1", async (req: Request, res: Response)
 })
 
 // idk
-
+web.all("/geetestV2.html", async (req: Request, res: Response) => {
+	return res.json({ retcode: 200, message: "Success", data: 404 })
+})
+web.all("/sw.html", async (req: Request, res: Response) => {
+	return res.json({ retcode: 200, message: "Success", data: 404 })
+})
 web.all("/game_weather/weather/get_weather", async (req: Request, res: Response) => {
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
@@ -843,9 +863,8 @@ web.all("/game_weather/weather/get_weather", async (req: Request, res: Response)
 web.all("/map_manage/:id1/id2.png", async (req: Request, res: Response) => {
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
-// /map_manage/20221124/0ebe6d2f65fb5cc5ed4046a01a68dda9_7334983767356242405.png
-// Hoyo Acc Stuff
 
+// Hoyo Acc Stuff
 web.all("/account/risky/api/check", async (req: Request, res: Response) => {
 	return res.json({
 		retcode: statusCodes.success.RETCODE,
@@ -853,13 +872,11 @@ web.all("/account/risky/api/check", async (req: Request, res: Response) => {
 		data: { id: "none", action: "ACTION_NONE", geetest: null }
 	}) // maybe fix android stuck
 })
-
 web.all("/account/device/api/listNewerDevices", (req: Request, res: Response) => {
 	// Android Stuck ?
 	res.status(404)
 	return res.send("")
 })
-
 // SR, gs use bus bruh
 web.all("/:cn/combo/granter/login/beforeVerify", (req: Request, res: Response) => {
 	return res.json({
@@ -872,7 +889,6 @@ web.all("/:cn/combo/granter/login/beforeVerify", (req: Request, res: Response) =
 		}
 	})
 })
-
 web.all("/:cn/combo/panda/qrcode/fetch", (req: Request, res: Response) => {
 	let url = "https://google.com/Api/login_by_qr"
 	let expires = new Date().setHours(1, 0, 0).toString()
@@ -885,7 +901,6 @@ web.all("/:cn/combo/panda/qrcode/fetch", (req: Request, res: Response) => {
 	}
 	return res.json(debug)
 })
-
 web.all("/:cn/combo/panda/qrcode/query", (req: Request, res: Response) => {
 	let debug = { retcode: statusCodes.error.FAIL, message: "QRCode login is disabled!" }
 	return res.json(debug)
@@ -1245,12 +1260,6 @@ web.all("/sdkTwitterLogin.html", async (req: Request, res: Response) => {
 			c_dp.debug({ name: "Error exchanging code for token:", error: error })
 		}
 	}
-	/*
-	res.render("account/sdk/twitter", {
-		title: "Login Twitter",
-		description: "Register or login for a YuukiPS Account"
-	})
-	*/
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
 // Login Twitter (API?)
@@ -1546,7 +1555,7 @@ ping_job.on("message", (d: { type: string; data: any }) => {
 					return
 				}
 				try {
-					let isok = bot.isReady();
+					let isok = bot.isReady()
 					if (isok) {
 						bot.user.setPresence({
 							activities: [

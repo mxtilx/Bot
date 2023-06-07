@@ -106,8 +106,8 @@ export const Accounts = {
 				msg: "Testing",
 				code: 404
 			}
-		} catch (error: any) {
-			log.error("GET_ACCOUNT_SERVER", error)
+		} catch (error) {
+			log.error({name:"GET_ACCOUNT_SERVER",error:error})
 			return {
 				msg: "Error Get",
 				code: 302
@@ -121,7 +121,7 @@ export const Accounts = {
 		if (!validateUsername(username)) {
 			if (!validateEmail(username)) {
 				return {
-					message: `UsernameInvaild`,
+					message: `api_check_username_invaild`,
 					retcode: -1,
 					data: {
 						account: null,
@@ -198,7 +198,7 @@ export const Accounts = {
 						log.info(`Account ${username} has been created with id ${result.insertedId}`)
 						data = {
 							retcode: 0,
-							message: "AccountCreated",
+							message: "api_db_account_registered_ok",
 							data: {
 								account: {
 									uid: uid,
@@ -232,7 +232,7 @@ export const Accounts = {
 						log.info(`Account ${username} failed to create`)
 						console.log(result)
 						data = {
-							message: `AccountFailed`,
+							message: `api_db_account_registered_failed`,
 							retcode: -1,
 							data: {
 								account: null,
@@ -245,7 +245,7 @@ export const Accounts = {
 					}
 				} else {
 					data = {
-						message: `UsernameAlready`,
+						message: `api_db_account_duplication_uid_by_registered`,
 						retcode: -1,
 						data: {
 							account: null,
@@ -258,7 +258,7 @@ export const Accounts = {
 				}
 			} else {
 				data = {
-					message: `UsernameAlready1.`,
+					message: `api_db_account_duplication_username_by_registered`,
 					retcode: -1,
 					data: {
 						account: null,
@@ -270,9 +270,9 @@ export const Accounts = {
 				}
 			}
 		} catch (error) {
-			log.error(error)
+			log.error({name:"api_db_account_failed1-2",error:error})
 			data = {
-				message: "Databasefailed1",
+				message: "api_db_account_failed1",
 				retcode: -1,
 				data: {
 					account: null,
@@ -301,7 +301,7 @@ export const Accounts = {
 		if (!validateUsername(username)) {
 			if (!validateEmail(username)) {
 				return {
-					message: `UsernameInvaild`,
+					message: `api_check_username_invaild`,
 					retcode: -1,
 					data: {
 						account: null,
@@ -341,7 +341,7 @@ export const Accounts = {
 				if (d) {
 					if (game == "hk4e") {
 						data = {
-							message: "LoginOK",
+							message: "api_db_account_login_ok",
 							retcode: 0,
 							data: {
 								account: {
@@ -375,7 +375,7 @@ export const Accounts = {
 					} else if (game == "hkrpg" || game == "nap") {
 						data = {
 							retcode: 0,
-							message: "LoginOK",
+							message: "api_db_account_login_ok",
 							data: {
 								account: {
 									uid: d._id.toString(), // uid acc
@@ -386,7 +386,7 @@ export const Accounts = {
 						}
 					} else {
 						data = {
-							message: "NoGame",
+							message: "game_title_soon",
 							retcode: -1,
 							data: {
 								account: null,
@@ -404,7 +404,7 @@ export const Accounts = {
 							console.log(data)
 						} else {
 							data = {
-								message: "errorcreateaccount",
+								message: "api_db_account_registered_close",
 								retcode: -1,
 								data: {
 									account: null,
@@ -417,7 +417,7 @@ export const Accounts = {
 						}
 					} else {
 						data = {
-							message: "UnableToLogin",
+							message: "api_db_account_login_failed",
 							retcode: -1,
 							data: {
 								account: null,
@@ -430,9 +430,9 @@ export const Accounts = {
 					}
 				}
 			} catch (error) {
-				log.error(error)
+				log.error({name:"api_db_account_failed1",error:error})
 				data = {
-					message: "Databasefailed1",
+					message: "api_db_account_failed1",
 					retcode: -1,
 					data: {
 						account: null,
@@ -447,9 +447,9 @@ export const Accounts = {
 				return data
 			}
 		} catch (error) {
-			log.error(error)
+			log.error({name:"api_db_account_failed0",error:error})
 			return {
-				message: "Databasefailed0",
+				message: "api_db_account_failed0",
 				retcode: -1,
 				data: {
 					account: null,

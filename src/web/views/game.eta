@@ -13,7 +13,7 @@
 
       <div class="b-4 border-bottom">
         <a href="/" class="text-decoration-none">
-          <h1 class="fs-4">YuukiPS <span class="badge bg-secondary"><%= it.game_title %></span></h1>
+          <h1 class="fs-4"><%= it.c.title %> <span class="badge bg-secondary"><%= it.game_title %></span></h1>
         </a>
       </div>
 
@@ -22,7 +22,7 @@
     <main>
 
       <div class="p-3 pb-md-2 mx-auto">
-        <h3>Download Game</h3>
+        <h3><%= it.t("game_portal_title_download") %></h3>
       </div>
 
       <% if (it.data) { %>
@@ -56,7 +56,7 @@
                       <% if (Array.isArray(x.download)) { %>
                       <% x.download.forEach(function(xd) { %>
 
-                      <h5>Release: <%= xd.name %></h5>
+                      <h5><%= it.t("game_portal_title_release") %>: <%= xd.name %></h5>
 
                       <% if (Array.isArray(xd.link)) { %>
                       <% xd.link.forEach(function(linkdl) { %>
@@ -65,15 +65,13 @@
                         <a class="btn btn-primary" href="<%= linkdl.url %>" target="_blank"><%= linkdl.name %></a>
                       <p>
                       </p>
-                      <%= linkdl.comment %>
+                      <%= it.t(linkdl.comment) %>
                       </p>
 
                       <% }) %>
                       <% } %>
 
                       <% for (var key in xd.game) { %>
-
-
 
                       <% if (xd.game.hasOwnProperty(key)) { %>
 
@@ -82,14 +80,14 @@
                       <hr>
                       </hr>
                       <h4><%= key %></h4>
-                      <h5>Game Data</h5>
+                      <h5><%= it.t("game_portal_title_gamedata") %></h5>
 
                       <% xd.game[key].forEach(function(xdx) { %>
 
-                      <p><a class="btn btn-primary" href="<%= xdx.path %>">Download <%= xdx.name %> (<%= it.bytesToGigabytes(xdx.package_size) %> GB)</a></p>
+                      <p><a class="btn btn-primary" href="<%= xdx.path %>"><%= xdx.name %> (<%= it.bytesToGigabytes(xdx.package_size) %> GB)</a></p>
 
                       <% if (Array.isArray(xdx.voice_packs) == true && xdx.voice_packs.length > 1) { %>
-                      <h6>Voice Data</h6>
+                      <h6><%= it.t("game_portal_title_voicedata") %></h6>
                       <% xdx.voice_packs.forEach(function(vc1) { %>
 
                       <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.package_size) %> GB)</a>
@@ -109,13 +107,13 @@
                       <hr>
                       </hr>
                       <h4><%= key %></h4>
-                      <h5>Game Data</h5>
+                      <h5><%= it.t("game_portal_title_gamedata") %></h5>
 
-                      <p> <a class="btn btn-primary" href="<%= xd.game[key].path %>">Download <%= key %> (<%= it.bytesToGigabytes(xd.game[key].package_size) %> GB)</a></p>
+                      <p> <a class="btn btn-primary" href="<%= xd.game[key].path %>"><%= key %> (<%= it.bytesToGigabytes(xd.game[key].package_size) %> GB)</a></p>
                       <% } %>
 
                       <% if (Array.isArray(xd.game[key].voice_packs) == true && xd.game[key].voice_packs.length > 1) { %>
-                      <h6>Voice Data</h6>
+                      <h6><%= it.t("game_portal_title_voicedata") %></h6>
                       <% xd.game[key].voice_packs.forEach(function(vc1) { %>
 
                       <a class="btn btn-primary" href="<%= vc1.path %>"><%= vc1.language %> (<%= it.bytesToGigabytes(vc1.package_size) %> GB)</a>
@@ -155,23 +153,23 @@
       <% }else { %>
 
       <div class="alert alert-info" role="alert">
-        <h3>Will be available soon...</h3>
+        <h3><%= it.t("game_title_soon") %></h3>
       </div>
 
       <% } %>
 
 
       <div class="p-3 pb-md-2 mx-auto">
-        <h3>Stats</h3>
+        <h3><%= it.t("game_portal_title_stats") %></h3>
       </div>
 
       <table class="table">
         <thead class="table-light">
           <tr>
-            <th scope="col">Nama Server</th>
-            <th scope="col">Online</th>
-            <th scope="col">CPU</th>
-            <th scope="col">RAM</th>
+            <th scope="col"><%= it.t("game_portal_title_stats_tname") %></th>
+            <th scope="col"><%= it.t("game_portal_title_stats_tonline") %></th>
+            <th scope="col"><%= it.t("game_portal_title_stats_tcpu") %></th>
+            <th scope="col"><%= it.t("game_portal_title_stats_tram") %></th>
           </tr>
         </thead>
         <tbody>
