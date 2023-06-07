@@ -1,3 +1,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.15/sweetalert2.min.js"></script>
+<script src="https://js.hcaptcha.com/1/api.js"></script>
+<script src="https://arc.io/widget.min.js#CSTHLtEz"></script>

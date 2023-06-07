@@ -7,7 +7,7 @@
 
 <body>
 
-  <div class="container py-3">
+  <div class="container-sm py-2">
 
     <header>
 
@@ -187,28 +187,16 @@
         </tfoot>
       </table>
 
-      <!-- Modal -->
-      <div class="modal fade" id="detail_info" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">Detailed Info</h1>
-            </div>
-            <div class="modal-body">
-              <!-- Detailed info will be displayed here -->
-            </div>
-          </div>
-        </div>
-      </div>
+      <p class="text-center py-1">
+        <a href="/" class="btn btn-primary">Back to Home</a>
+      </p>
 
     </main>
   </div>
 
   <!-- end -->
 
-  <p class="text-center py-3">
-    <a href="/" class="btn btn-primary">Back to Home</a>
-  </p>
+
 
   <%~ includeFile('./layout/footer', it) %>
 
