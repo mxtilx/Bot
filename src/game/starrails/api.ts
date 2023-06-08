@@ -14,7 +14,6 @@ import fs from "fs"
 
 // Proto
 import {
-	ServerDispatchData,
 	RegionSimpleInfo,
 	QueryRegionListHttpRsp,
 	ServerDispatchDataCBT2,
@@ -46,6 +45,10 @@ function compareVersions(a: string, b: string): number {
 	}
 
 	return 0
+}
+
+function readJSON(file: string): any {
+	return JSON.parse(fs.readFileSync(file, "utf-8"))
 }
 
 export const API = {
@@ -160,7 +163,7 @@ export class SRDispatch {
 
 			Config.server.forEach((item) => {
 				if (item.game == 2) {
-					if (contains(version, item.version)) {
+					if (contains(versionNumber, item.version)) {
 						var dispatchUrl = `${this.domain_public}/query_gateway/${item.name}`
 						if (!isEmpty(chost)) {
 							dispatchUrl = `${chost}/query_gateway/${item.name}`
@@ -246,22 +249,52 @@ export class SRDispatch {
 			}
 
 			let dataObjCBT2: ServerDispatchDataCBT2
-			let dataObjNEW: ServerDispatchData
+			let dataObjNEW: ServerDispatchDataNEW
 
 			if (dispatchData !== undefined) {
-				dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
-					retcode: 0,
-					msg: "OK",
-					regionName: dispatchData.name,
-					ip: dispatchData.ip,
-					port: dispatchData.port,
-					serverDescription: dispatchData.title,
-					exResourceUrl: "https://ps.yuuki.me/asb/design",
-					dataUseAssetBoundle: false,
-					resUseAssetBoundle: false,
-					assetBundleUrl: "https://ps.yuuki.me/asb"
-				} as ServerDispatchDataCBT2)
-				return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
+				if (!isnew) {
+					dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
+						retcode: 0,
+						msg: "OK",
+						regionName: dispatchData.name,
+						ip: dispatchData.ip,
+						port: dispatchData.port,
+						serverDescription: dispatchData.title,
+						exResourceUrl: "https://ps.yuuki.me/asb/design",
+						dataUseAssetBoundle: false,
+						resUseAssetBoundle: false,
+						assetBundleUrl: "https://ps.yuuki.me/asb"
+					} as ServerDispatchDataCBT2)
+					return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
+				} else {
+
+					dataObjNEW = ServerDispatchDataNEW.fromPartial({
+						retcode: 0,
+						msg: "OK",
+						regionName: dispatchData.name,
+						ip: dispatchData.ip,
+						port: dispatchData.port,
+						serverDescription: dispatchData.title,
+						//dataUseAssetBoundle: false,
+						//resUseAssetBoundle: false,
+						JEGDHPFJFPG: true, // 3
+						login_white_msg: "melon", // 654
+						KKHJNPJMNIN: false, // 1238
+						LNNIPPHEPOA: true, // 10
+					} as ServerDispatchDataNEW)
+
+					// res data
+					let j = readJSON(`./src/game/starrails/dump/${seed}.json`) as ServerDispatchDataNEW
+					if (j.assetBundleUrl !== undefined) {
+						dataObjNEW.exResourceUrl = j.exResourceUrl // 6
+						dataObjNEW.assetBundleUrl = j.assetBundleUrl // 14
+						dataObjNEW.luaUrl = j.luaUrl // 4
+					} else {
+						this.log.error(`skip sr seed ${seed}`)
+					}
+
+					return Buffer.from(ServerDispatchDataNEW.encode(dataObjNEW).finish()).toString("base64")
+				}
 			} else {
 				if (!isnew) {
 					dataObjCBT2 = ServerDispatchDataCBT2.fromPartial({
@@ -271,55 +304,12 @@ export class SRDispatch {
 					})
 					return Buffer.from(ServerDispatchDataCBT2.encode(dataObjCBT2).finish()).toString("base64")
 				} else {
-					dataObjNEW = ServerDispatchData.fromPartial({
-						onlineReplayUploadUrl: "",
-						iINOPFNCDEN: false,
-						AsbReloginDesc: "",
-						eventTrackingOpen: false,
-						privacyInGameUrl: "",
-						enableUploadBattleLog: false,
-						customServiceUrl: "",
-						name: "prod_official_asia",
-						cECLAOALPJD: "",
-						stopEndTime: 0,
-						mValue: 3,
-						iFixPatchRevision: "",
-						port: 0,
-						luaPatchVersion: "",
-						communityActivityUrl: "",
-						kMJAFDLEPOH: "",
-						iOSExam: false,
-						loginWhiteMsg: "遊戲正在維護中，詳情請關注官方公告。",
-						fOIJNCKDHNK: false,
-						LuaBundleVersionUpdateUrl: "",
-						officialCommunityUrl: "",
-						mTPSwitch: false,
-						DesignDataBundleVersionUpdateUrl: "",
-						host: "",
-						onlineReplayDownloadUrl: "",
-						redeemCodeUrl: "",
-						temporaryMaintenanceUrl: "",
-						DesignDataReloginType: 0,
-						stopDesc: "client version not match",
-						useTcp: false,
-						stopBeginTime: 0,
-						PredownloadUpdateUrl: "",
-						forbidRecharge: false,
-						enableAssetBundleVersionUpdate: false,
-						serverDescription: "",
-						enableSaveReplayFile: false,
-						thirdPrivacyInGameUrl: "",
-						teenagerPrivacyInGameUrl: "",
-						AsbReloginType: 0,
-						DesignDataReloginDesc: "",
-						personalInformationInGameUrl: "",
-						AssetBundleVersionUpdateUrl: "",
-						operationFeedbackUrl: "",
-						IFixPatchVersionUpdateUrl: "",
-						enableDesignDataBundleVersionUpdate: false
+					dataObjNEW = ServerDispatchDataNEW.fromPartial({
+						retcode: 20,
+						msg: "idk if show it"
 					})
 					this.log.debug(dataObjNEW)
-					return Buffer.from(ServerDispatchData.encode(dataObjNEW).finish()).toString("base64")
+					return Buffer.from(ServerDispatchDataNEW.encode(dataObjNEW).finish()).toString("base64")
 				}
 			}
 		} catch (error) {
