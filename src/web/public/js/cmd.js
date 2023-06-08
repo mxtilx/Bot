@@ -207,7 +207,7 @@ cmd_login.addEventListener("submit", async function (e) {
 const textarea_cmd = document.getElementById("add_cmd_raw")
 
 // TODO: add multi func not just mosnter?
-
+/*
 const toadd_monster = document.getElementById("add_monster")
 toadd_monster.addEventListener("click", function handleClick() {
 	if (!CheckLogin()) return // check login
@@ -278,6 +278,7 @@ toadd_item.addEventListener("click", function handleClick() {
 	//console.log(id);
 	//console.log('element clicked');
 })
+*/
 
 // clear
 const btn_clear = document.getElementById("clear_cmd")
@@ -311,9 +312,9 @@ function Toggle(name = "go_cmd_raw", foce = null) {
 	}
 }
 
-Count("item_num")
-Count("monster_level")
-Count("monster_num")
+//Count("item_num")
+//Count("monster_level")
+//Count("monster_num")
 
 function Count(tes) {
 	var i = document.querySelector("#set_" + tes)

@@ -8,16 +8,27 @@ const log = new Logger("/debug", "blue")
 
 export default async function handle(command: Command) {
 	var c = command.args[0]
+	var s = command.args[1]
 	if (!c) {
-		log.warn(`Web debug: ${Config.debug.web}`)
+		log.warn(`Need Profile`)
 		return
 	}
 
-	if (c == "true") {
-		Config.debug.web = true
-	} else {
-		Config.debug.web = false
+	if (!s) {
+		log.warn(`Need Set`)
+		return
 	}
 
-	log.log(`DEBUG WEB SET ${Config.debug.web}`)
+	const prodProfile = Config.profile.find((profile) => profile.name === c)
+	if (prodProfile != null) {
+		const debugObject = prodProfile.debug as unknown as {
+			[key: string]: boolean | number
+		}
+		if (debugObject.hasOwnProperty(s)) {
+			debugObject[s] = !debugObject[s]
+			console.log(`Toggled ${s} debug value to ${debugObject[s]}`)
+		} else {
+			console.log(`Debug key ${s} not found`)
+		}
+	}
 }

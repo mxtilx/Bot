@@ -89,7 +89,7 @@ function generateToken(length: number): string {
 }
 
 function validateUsername(username: string): boolean {
-	const pattern = /^[\w.!-]{3,50}$/
+	const pattern = /^[\p{L}\p{M}\p{N}\p{Pc}\p{Sc}\-_.!]{3,50}$/u
 	return pattern.test(username)
 }
 
@@ -107,7 +107,7 @@ export const Accounts = {
 				code: 404
 			}
 		} catch (error) {
-			log.error({name:"GET_ACCOUNT_SERVER",error:error})
+			log.error({ name: "GET_ACCOUNT_SERVER", error: error })
 			return {
 				msg: "Error Get",
 				code: 302
@@ -270,7 +270,7 @@ export const Accounts = {
 				}
 			}
 		} catch (error) {
-			log.error({name:"api_db_account_failed1-2",error:error})
+			log.error({ name: "api_db_account_failed1-2", error: error })
 			data = {
 				message: "api_db_account_failed1",
 				retcode: -1,
@@ -430,7 +430,7 @@ export const Accounts = {
 					}
 				}
 			} catch (error) {
-				log.error({name:"api_db_account_failed1",error:error})
+				log.error({ name: "api_db_account_failed1", error: error })
 				data = {
 					message: "api_db_account_failed1",
 					retcode: -1,
@@ -447,7 +447,7 @@ export const Accounts = {
 				return data
 			}
 		} catch (error) {
-			log.error({name:"api_db_account_failed0",error:error})
+			log.error({ name: "api_db_account_failed0", error: error })
 			return {
 				message: "api_db_account_failed0",
 				retcode: -1,

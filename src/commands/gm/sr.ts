@@ -9,7 +9,7 @@
 import { contains, isEmpty } from "../../util/library"
 import ConfigR from "../../util/config"
 import Logger from "../../util/logger"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 const log = new Logger("GM-SR")
 
@@ -58,10 +58,19 @@ export const _ = {
 				data: d.status
 			}
 		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (contains(error.message, ["socket", "ECONNRESET", "Connection lost","timeout"])) {
+					log.warn(`server sr timeout with ${error.message} in server ${server_url}`)
+					return {
+						msg: error.message,
+						code: 408
+					}
+				}
+			}
+			log.error({ msg: "SERVER_SR_ERROR_0", error: error })
 			return {
 				msg: "Error Get Status",
-				code: 302,
-				error: error
+				code: 302
 			}
 		}
 	}

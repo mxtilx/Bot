@@ -13,21 +13,18 @@ fi
 
 if [ "$metode" = "cloud" ];then
  echo "Run Cloud"
- # TODO: move to ps.yuuki.me
- npm install
  npm update
- npm run start -- --port_cloud 443 --port 10010 --host login.yuuki.me --protocol https
+ npm run start -- --env prod
 fi
 
 if [ "$metode" = "teslocal" ];then
  echo "Run Tes Local"
- npm run start -- --port_cloud 10010 --port 10010 --host 2.0.0.100 --protocol http
+ npm run start -- --env dev
 fi
 
 if [ "$metode" = "reg" ];then
- npm run start -- --port 10010 --reg true
+ npm run start -- --env dev --reg true
 fi
-
 
 if [ "$metode" = "gen_ts" ];then
  echo "Gen TS proto for GS"

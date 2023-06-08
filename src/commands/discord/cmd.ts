@@ -11,7 +11,7 @@ import Config from "../../util/config"
 import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions, DiscordAPIError } from "discord.js"
 
 // API Yuuki
 import Control from "../gm/control"
@@ -58,8 +58,14 @@ async function run(interaction: CommandInteraction) {
 
 		return await interaction.editReply({ content: `${d.msg} | ${d.code}`, ...baseReply })
 	} catch (err) {
-		log.error({ msg: "error gm cmd", error: err })
-		return await interaction.reply({ content: "Unknown error", ...baseReply })
+		log.error({ name: "cmd", error: err })
+		if (err instanceof DiscordAPIError) {
+			if (err.message != `Unknown interaction`) {
+				await interaction.editReply({ content: "Unknown problem", ...baseReply })
+			} else {
+				// skip
+			}
+		}
 	}
 }
 

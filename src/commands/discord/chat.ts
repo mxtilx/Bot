@@ -11,7 +11,7 @@ import Config from "../../util/config"
 import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, InteractionReplyOptions, SlashCommandBuilder } from "discord.js"
+import { CommandInteraction, DiscordAPIError, InteractionReplyOptions, SlashCommandBuilder } from "discord.js"
 
 import { ChatRealtime } from "../../game/openai/api"
 
@@ -36,12 +36,15 @@ async function run(interaction: CommandInteraction) {
 			interaction.editReply(data)
 		})
 		c.input(msg)
-	} catch (e) {
-		if (e instanceof Error) {
-			log.error(e as Error)
-			return await interaction.editReply({ content: `Unknown error: ${e.message}`, ...baseReply })
+	} catch (err) {
+		log.error({ name: "chat", error: err })
+		if (err instanceof DiscordAPIError) {
+			if (err.message != `Unknown interaction`) {
+				await interaction.editReply({ content: "Unknown problem", ...baseReply })
+			} else {
+				// skip
+			}
 		}
-		return await interaction.editReply({ content: "Unknown error0", ...baseReply })
 	}
 }
 

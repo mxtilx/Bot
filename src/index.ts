@@ -61,23 +61,19 @@ import register from "./util/registercommands"
 // API
 import Account from "./db/account/api"
 import Control from "./commands/gm/control"
-import API_GS from "./game/genshin/api"
-import API_SR from "./game/starrails/api"
+import API_GS, { GSDispatch } from "./game/genshin/api"
+import API_SR, { SRDispatch } from "./game/starrails/api"
 
 import { RSAUtils } from "./game/hoyolab/crypto"
 import axios from "axios"
 import { statusCodes } from "./util/constants"
 import announcement from "./web/plugin/announcement"
 
-const log = new Logger("YuukiPS")
-
 const c_sys = new Logger("System")
 const c_job = new Logger("Job")
 const c_bot = new Logger("Bot")
 const c_web = new Logger("Web")
 const c_dp = new Logger("Dispatch")
-
-log.info("YuukiPS startup....")
 
 // Handler error
 process.on("uncaughtException", (error: Error) => {
@@ -92,21 +88,30 @@ process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
 	//process.exit(1)
 })
 
-let online_string: number = 9999
-
 // Temporary Config
 const argv = require("minimist")(process.argv.slice(2))
-log.debug(argv)
-const set_host = argv.host || "localhost"
-const set_protocol = argv.protocol || "http"
-const set_port_local = argv.port || 3000
-const set_port_cloud = argv.port_cloud || 443
-const regcmd = argv.reg || false
+c_sys.debug(argv)
 
-API_GS.initserver(set_host, set_port_cloud, set_protocol)
-API_SR.initserver(set_host, set_port_cloud, set_protocol)
+let regcmd = argv.reg || false
+let online_string: number = 9999
 
-var domain = `${set_protocol}://${set_host}:${set_port_cloud}`
+const set_env = argv.env || "prod"
+let config_tmp = Config.profile.find((profile) => profile.name === set_env)
+
+if (config_tmp == undefined) {
+	c_sys.error("No Config Found....")
+	process.exit(1)
+}
+
+let public_url = config_tmp.url.public
+
+c_sys.info(`Hi ${config_tmp.title} | URL: ${public_url} | ${set_env}`)
+
+// TODO: make index go green
+
+// Setup Dispatch
+let GS_Dispatch = new GSDispatch(public_url, c_dp)
+let SR_DIspatch = new SRDispatch(public_url, c_dp)
 
 var eta_plugin_random = require("./web/plugin/random")
 
@@ -406,7 +411,7 @@ web.use("/*", (req: Request, res: Response, next: NextFunction) => {
 	}
 
 	// Add Log debug information if not done yet
-	if (Config.debug.web) {
+	if (config_tmp?.debug.web) {
 		c_web.debug({
 			route: `${req.originalUrl}`,
 			params: req.params,
@@ -447,7 +452,7 @@ web.all("/", (req: Request, res: Response) => {
 		keyword: req.t("home_keyword"),
 		index: true,
 		t: req.t,
-		c: Config.web,
+		c: config_tmp,
 		type: type,
 		action: action
 	})
@@ -515,7 +520,7 @@ web.all("/account/login", async (req: Request, res: Response) => {
 		keyword: req.t("account_keyword"),
 		index: false,
 		t: req.t,
-		c: Config.web,
+		c: config_tmp,
 		action: action,
 		message: message
 	})
@@ -528,7 +533,7 @@ web.all("/command", (req: Request, res: Response) => {
 		keyword: req.t("command_keyword"),
 		index: true,
 		t: req.t,
-		c: Config.web
+		c: config_tmp
 	})
 })
 
@@ -557,7 +562,7 @@ web.all("/game/:cn", async (req: Request, res: Response) => {
 		keyword: req.t(`game_keyword_id_${game_id}`),
 		index: true,
 		t: req.t,
-		c: Config.web,
+		c: config_tmp,
 		game_title: `${title}`,
 		game_id: game_id,
 		data: data,
@@ -566,7 +571,7 @@ web.all("/game/:cn", async (req: Request, res: Response) => {
 })
 
 web.all("/api", (req: Request, res: Response) => {
-	res.send("API YuukiPS v2")
+	res.send(`API ${config_tmp?.title} v2`)
 })
 
 // Launcher Api
@@ -769,7 +774,7 @@ web.all("/:cn/announcement/index.html", async (req: Request, res: Response) => {
 		keyword: req.t("announcement_keyword"),
 		index: false,
 		t: req.t,
-		c: Config.web
+		c: config_tmp
 	})
 })
 web.all("/common/:cn/announcement/api/:id1", async (req: Request, res: Response) => {
@@ -859,7 +864,12 @@ web.all("/sw.html", async (req: Request, res: Response) => {
 web.all("/game_weather/weather/get_weather", async (req: Request, res: Response) => {
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
-
+web.all("/bus/combo/postman/device/setAlias", async (req: Request, res: Response) => {
+	return res.json({ retcode: 200, message: "Success", data: 404 })
+})
+web.all("/Api/create_mmt?", async (req: Request, res: Response) => {
+	return res.json({ retcode: 200, message: "Success", data: 404 })
+})
 web.all("/map_manage/:id1/id2.png", async (req: Request, res: Response) => {
 	return res.json({ retcode: 200, message: "Success", data: 404 })
 })
@@ -1051,7 +1061,7 @@ web.all("/:cn/combo/granter/api/getConfig", async (req: Request, res: Response) 
 			qr_enabled: true,
 			log_level: "INFO",
 			announce_url:
-				domain +
+				config_tmp?.url.public +
 				"/hk4e_yuuki/announcement/index.html?sdk_presentation_style=fullscreen&sdk_screen_transparent=true&auth_appid=announcement&authkey_ver=1&game_biz=hk4e_yuuki&sign_type=2&version=1.37&game=hk4e#/",
 			push_alias_type: 2,
 			disable_ysdk_guard: false,
@@ -1403,7 +1413,7 @@ web.all("/query_dispatch", async (req: Request, res: Response) => {
 			`${ip} | trying to access region list with version ${version} and language codes ${lang} and platform ${platform}`
 		)
 
-		var data = await API_SR.GET_LIST_REGION(version)
+		var data = await SR_DIspatch.GET_LIST_REGION(version)
 
 		return res.send(data)
 	} catch (e) {
@@ -1434,7 +1444,7 @@ web.all("/query_gateway/:name", async (req: Request, res: Response) => {
 
 		c_dp.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
 
-		var data = await API_SR.GET_DATA_REGION(name, dispatchSeed, key, version)
+		var data = await SR_DIspatch.GET_DATA_REGION(name, dispatchSeed, key, version)
 
 		return res.send(data)
 	} catch (e) {
@@ -1461,7 +1471,7 @@ web.all("/query_region_list", async (req: Request, res: Response) => {
 			`ip ${ip} trying to access region list with version ${version} and language codes ${lang} and platform ${platform}`
 		)
 
-		var data = await API_GS.GET_LIST_REGION(version)
+		var data = await GS_Dispatch.GET_LIST_REGION(version)
 
 		return res.send(data)
 	} catch (e) {
@@ -1492,7 +1502,7 @@ web.all("/query_cur_region/:name", async (req: Request, res: Response) => {
 
 		c_dp.info(`${ip} | trying to access region ${name} with ${version}|${lang}|${platform}|${dispatchSeed}|${key}`)
 
-		var data = await API_GS.GET_DATA_REGION(name, dispatchSeed, key, version)
+		var data = await GS_Dispatch.GET_DATA_REGION(name, dispatchSeed, key, version)
 
 		return res.send(data)
 	} catch (e) {
@@ -1526,9 +1536,9 @@ web.use((req: Request, res: Response) => {
 	res.redirect("/?action=404")
 })
 
-if (Config.startup.webserver) {
-	web.listen(set_port_local, function () {
-		c_web.info(`Server started on port ${set_port_local}`)
+if (config_tmp.startup.web) {
+	web.listen(config_tmp.port.private, function () {
+		c_web.info(`Server started on port ${config_tmp?.port.private}`)
 		//startBot()
 	})
 } else {
@@ -1544,12 +1554,12 @@ ping_job.on("message", (d: { type: string; data: any }) => {
 		c_bot.debug({ msg: `Job`, data: d })
 
 		if (d.type == "msg") {
-			if (Config.startup.bot) {
+			if (config_tmp?.startup.bot) {
 				ping_notif.send(d.data)
 			}
 		} else if (d.type == "bot_stats") {
 			online_string = parseInt(d.data)
-			if (Config.startup.bot) {
+			if (config_tmp?.startup.bot) {
 				if (bot == undefined || bot.user == undefined) {
 					c_bot.warn("Bot error update stats")
 					return

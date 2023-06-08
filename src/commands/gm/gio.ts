@@ -9,7 +9,7 @@
 import { contains, isEmpty } from "../../util/library"
 import ConfigR from "../../util/config"
 import Logger from "../../util/logger"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import crypto from "crypto"
 
 const log = new Logger("GM-GIO")
@@ -82,8 +82,10 @@ export const _ = {
 				params: params,
 				timeout: 1000 * 30
 			})
+
 			const result = response.data
-			log.debug(result)
+			log.debug({ name: "Mail", CMD:mail_json, data: result })
+
 			if (result.msg == "succ" && result.retcode == 0) {
 				return {
 					msg: `Message has been sent`,
@@ -104,26 +106,19 @@ export const _ = {
 	},
 	GM: async function (url: string, uid: number, set_command: string, set_timeout = 30) {
 		try {
+			var msg = `${uid} | ${url} -> ${set_command}`
+
 			// 1116 = GM
 			let params = this.CMD(1116, uid, set_command, null)
 
-			let result = null
-			try {
-				var response = await axios.get(url, {
-					params: params,
-					timeout: 1000 * set_timeout
-				})
-				result = response.data
-			} catch (error) {
-				log.error({ msg: `SERVER_GIO_ERROR_GM: ${uid} | ${url} -> ${set_command}`, error: error })
-				return {
-					msg: `Out of time doing this command, maybe this command is not recognized or too heavy.`,
-					code: 302
-				}
-			}
+			var response = await axios.get(url, {
+				params: params,
+				timeout: 1000 * set_timeout
+			})
+			var result = response.data
 
 			// LOG RESPON
-			//log.debug(result)
+			//log.debug({ name: "GM", CMD: msg, data: result })
 
 			if (result.msg == "succ" && result.retcode == 0) {
 				return {
@@ -144,20 +139,29 @@ export const _ = {
 					}
 				}
 			}
-		} catch (x) {
-			log.error({ msg: "SERVER_GC_GIO_ERROR_GM", error: x })
+		} catch (error) {
+			var msg = `${uid} | ${url} -> ${set_command}`
+			if (error instanceof AxiosError) {
+				if (contains(error.message, ["socket"])) {
+					log.warn(`server gio timeout with ${error.message} with ${msg}`)
+					return {
+						msg: 'Out of time?',
+						code: 408
+					}
+				}
+			}
+			log.error({ msg: "SERVER_GIO_ERROR_GM: "+msg, error: error })
 			return {
-				msg: "Error get server",
-				code: 401
+				msg: `Do not know`,
+				code: 302
 			}
 		}
 	},
 	Server: async function (server_url: string, set_timeout: number = 15) {
-		var response = null
 		try {
 			// 1101 = Server Status
 			let params = this.CMD(1101)
-			response = await axios.get(server_url, {
+			let response = await axios.get(server_url, {
 				params: params,
 				timeout: 1000 * set_timeout
 			})
@@ -178,6 +182,15 @@ export const _ = {
 				msg: "OK"
 			}
 		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (contains(error.message, ["socket", "ECONNRESET", "Connection lost","timeout"])) {
+					log.warn(`server gio timeout with ${error.message} in server ${server_url}`)
+					return {
+						msg: error.message,
+						code: 408
+					}
+				}
+			}
 			log.error({ msg: "SERVER_GIO_ERROR_0", error: error })
 			return {
 				msg: "Error get server1",

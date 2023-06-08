@@ -22,13 +22,7 @@ import {
 	ServerDispatchDataNEW
 } from "./proto/schema"
 
-import { Ec2bKey, RSAUtils } from "../../game/hoyolab/crypto"
-
-const log = new Logger("GAME-API-SR")
-
-let hostname = ""
-let port = 0
-let protocol = ""
+const plog = new Logger("API-SR")
 
 interface Region {
 	dispatch_url: string
@@ -54,14 +48,7 @@ function compareVersions(a: string, b: string): number {
 	return 0
 }
 
-export const _ = {
-	initserver(h: string, p: number, uh: string) {
-		hostname = h
-		port = p
-		protocol = uh
-		log.info(`set dispatch url sr: ${uh}://${h}:${p} `)
-	},
-
+export const API = {
 	NO_VERSION_CONFIG() {
 		return `CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZxoA`
 	},
@@ -128,14 +115,30 @@ export const _ = {
 				}
 			}
 		} catch (error) {
-			log.error({ msg: "res error", error: error })
+			plog.error({ msg: "res error", error: error })
 			return {
 				msg: "Error Get",
 				code: 302
 			}
 		}
-	},
-	GET_LIST_REGION: async function (version = "", raw = false, chost: string = "") {
+	}
+}
+
+export class SRDispatch {
+	private domain_public: string
+	private log: Logger
+
+	constructor(d: string, l: Logger) {
+		this.domain_public = d
+		this.log = l
+		this.start()
+	}
+
+	public start(): void {
+		this.log.info(`Dispatch URL: ${this.domain_public}`)
+	}
+
+	public async GET_LIST_REGION(version = "", raw = false, chost: string = "") {
 		try {
 			let region_list: RegionSimpleInfo[] = []
 			let region_listCBT: Region[] = []
@@ -152,13 +155,13 @@ export const _ = {
 				encode = true
 			} else {
 				encode = false
-				log.debug(`idk wtf ${versionNumber}`)
+				this.log.debug(`idk wtf ${versionNumber}`)
 			}
 
 			Config.server.forEach((item) => {
 				if (item.game == 2) {
 					if (contains(version, item.version)) {
-						var dispatchUrl = `${protocol}://${hostname}:${port}/query_gateway/${item.name}`
+						var dispatchUrl = `${this.domain_public}/query_gateway/${item.name}`
 						if (!isEmpty(chost)) {
 							dispatchUrl = `${chost}/query_gateway/${item.name}`
 						}
@@ -220,8 +223,8 @@ export const _ = {
 				code: 302
 			}
 		}
-	},
-	GET_DATA_REGION: async function (name: string = "", seed: string = "", key: number = 5, version: string = "") {
+	}
+	public async GET_DATA_REGION(name: string = "", seed: string = "", key: number = 5, version: string = "") {
 		try {
 			const dispatchData = Config.server.find(
 				(r) => r.name == name && contains(version, r.version) == true && r.game == 2
@@ -239,7 +242,7 @@ export const _ = {
 				isnew = true
 			} else {
 				isnew = false
-				log.debug(`idk wtf ${versionNumber}`)
+				this.log.debug(`idk wtf ${versionNumber}`)
 			}
 
 			let dataObjCBT2: ServerDispatchDataCBT2
@@ -315,15 +318,15 @@ export const _ = {
 						IFixPatchVersionUpdateUrl: "",
 						enableDesignDataBundleVersionUpdate: false
 					})
-					log.debug(dataObjNEW)
+					this.log.debug(dataObjNEW)
 					return Buffer.from(ServerDispatchData.encode(dataObjNEW).finish()).toString("base64")
 				}
 			}
 		} catch (error) {
-			log.error(error)
-			return this.NO_VERSION_CONFIG()
+			this.log.error(error)
+			return API.NO_VERSION_CONFIG()
 		}
 	}
 }
 
-export default _
+export default API

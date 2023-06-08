@@ -383,18 +383,15 @@ export const _ = {
 			}
 		} catch (error) {
 			if (error instanceof Error) {
-				if (error.message === "Command execution timeout") {
-					log.warn(`sh "${raw}" timeout in server ${server_id}`)
+				if (contains(error.message, ["timeout",'Timed out', "ECONNRESET","Connection lost"])) {
+					log.warn(`sh "${raw}" ${error.message} in server ${server_id}`)
 					return {
-						msg: "Command execution timeout",
+						msg: error.message,
 						code: 408
 					}
-				}else{
-					log.error({ msg: "SH_EROR_1", error: error })
 				}
-			}else{
-				log.error({ msg: "SH_EROR_0", error: error })
 			}
+			log.error({ msg: `SH_ERORR in server ${server_id}`, error: error })
 			return {
 				msg: "Error SH",
 				code: 301

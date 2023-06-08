@@ -11,7 +11,7 @@ import Config from "../../util/config"
 import Logger from "../../util/logger"
 
 // API Discord
-import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions } from "discord.js"
+import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions, DiscordAPIError } from "discord.js"
 
 // API Yuuki
 import Control from "../gm/control"
@@ -89,8 +89,7 @@ async function run(interaction: CommandInteraction) {
 			})
 		}
 	} catch (err) {
-		log.error(err as Error)
-		return await interaction.reply({ content: "error2", ephemeral: true })
+		log.error({ name: "mail", error: err })
 	}
 }
 

@@ -24,23 +24,19 @@ import { Ec2bKey, RSAUtils } from "../../game/hoyolab/crypto"
 
 const ec2b = new Ec2bKey()
 
+var plog = new Logger("API-GS")
+
 // MORE
 import axios from "axios"
 import fs from "fs"
 import path from "path"
 import crypto from "crypto"
 
-const log = new Logger("GAME-API-GS")
-
 const KEY_SIZE = 256
 
 function readJSON(file: string): any {
 	return JSON.parse(fs.readFileSync(file, "utf-8"))
 }
-
-let hostname = ""
-let port = 0
-let protocol = ""
 
 let COVER_SWITCH_DATA = {
 	gacha: 1,
@@ -87,14 +83,7 @@ let COVER_SWITCH_DATA = {
 	share_bbs: 42
 }
 
-export const _ = {
-	initserver(h: string, p: number, uh: string) {
-		hostname = h
-		port = p
-		protocol = uh
-		log.info(`set dispatch url gs: ${uh}://${h}:${p}`)
-	},
-
+export const API = {
 	NO_VERSION_CONFIG() {
 		// CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZxoA
 		// CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw== for android no stcuk
@@ -207,7 +196,7 @@ export const _ = {
 				}
 			}
 		} catch (error) {
-			log.error(error as Error)
+			plog.error(error)
 			return {
 				msg: "Error Get",
 				code: 302
@@ -244,20 +233,36 @@ export const _ = {
 				data: data
 			}
 		} catch (error) {
-			log.error(error as Error)
+			plog.error(error)
 			return {
 				msg: "Error Get",
 				code: 302
 			}
 		}
-	},
-	GET_LIST_REGION: async function (version: string = "", raw: boolean = false, chost: string = "") {
+	}
+}
+
+export class GSDispatch {
+	private domain_public: string
+	private log: Logger
+
+	constructor(d: string, l: Logger) {
+		this.domain_public = d
+		this.log = l
+		this.start()
+	}
+
+	public start(): void {
+		this.log.info(`Dispatch URL: ${this.domain_public}`)
+	}
+
+	public async GET_LIST_REGION(version: string = "", raw: boolean = false, chost: string = "") {
 		try {
 			const region_list: RegionSimpleInfo[] = []
 			Config.server.forEach((item) => {
 				if (item.game == 1) {
 					if (contains(version, item.version)) {
-						var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/${item.name}`
+						var dispatchUrl = `${this.domain_public}/query_cur_region/${item.name}`
 						if (!isEmpty(chost)) {
 							dispatchUrl = `${chost}/query_cur_region/${item.name}`
 						}
@@ -276,8 +281,8 @@ export const _ = {
 			})
 
 			if (region_list.length == 0) {
-				log.warn(`Someone is trying to access version ${version} with no support list`)
-				var dispatchUrl = `${protocol}://${hostname}:${port}/query_cur_region/not_found`
+				this.log.warn(`Someone is trying to access version ${version} with no support list`)
+				var dispatchUrl = `${this.domain_public}/query_cur_region/not_found`
 				const regionSimpleInfo1 = RegionSimpleInfo.create({
 					dispatchUrl: dispatchUrl,
 					type: "DEV_PUBLIC",
@@ -308,17 +313,17 @@ export const _ = {
 			//const buffer = QueryRegionListHttpRsp.encode(toaddquery).finish()
 			return Buffer.from(QueryRegionListHttpRsp.encode(toaddquery).finish()).toString("base64")
 		} catch (error) {
-			log.error({ name: "GET_LIST_REGION", error: error })
+			this.log.error({ name: "GET_LIST_REGION", error: error })
 			return {
 				msg: "Error Get",
 				code: 302
 			}
 		}
-	},
-	GET_DATA_REGION: async function (name: string = "", seed: string = "", key: number = 5, version: string = "") {
+	}
+	public async GET_DATA_REGION(name: string = "", seed: string = "", key: number = 5, version: string = "") {
 		try {
 			if (!key) {
-				return this.NO_VERSION_CONFIG()
+				return API.NO_VERSION_CONFIG()
 			}
 
 			//log.debug(`Client Key: ${key}`)
@@ -332,7 +337,7 @@ export const _ = {
 			if (dispatchData !== undefined) {
 				// found config
 
-				var dispatchUrl = `${protocol}://${hostname}:${port}`
+				var dispatchUrl = `${this.domain_public}`
 				let reg = RegionInfo.fromPartial({
 					gateserverIp: dispatchData.ip,
 					gateserverPort: dispatchData.port,
@@ -369,7 +374,7 @@ export const _ = {
 
 					reg.nextResourceUrl = j.regionInfo.nextResourceUrl
 				} else {
-					log.error(`skip ${seed}`)
+					this.log.error(`skip ${seed}`)
 				}
 				//log.info(j);
 
@@ -401,10 +406,10 @@ export const _ = {
 
 			return RSAUtils.encryptAndSign(QueryCurrRegionHttpRsp.encode(dataObj).finish(), key.toString())
 		} catch (error) {
-			log.error(error as Error)
-			return this.NO_VERSION_CONFIG()
+			this.log.error(error)
+			return API.NO_VERSION_CONFIG()
 		}
 	}
 }
 
-export default _
+export default API

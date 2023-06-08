@@ -9,13 +9,14 @@
 import { contains, isEmpty } from "../../util/library"
 import ConfigR from "../../util/config"
 import Logger from "../../util/logger"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 const log = new Logger("GM-GC")
 
 export const _ = {
 	GM: async function (url: string, uid: any, cmd: any, code: any, set_timeout = 15) {
-		try {
+		var msg = `${uid} | ${url} -> ${cmd}`
+		try {			
 			const response = await axios.get(url + "api/command", {
 				params: {
 					token: code,
@@ -31,6 +32,15 @@ export const _ = {
 				data: d.data
 			}
 		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (contains(error.message, ["socket", "ECONNRESET", "Connection lost","timeout"])) {
+					log.warn(`server gc timeout with ${error.message} use ${msg}`)
+					return {
+						msg: error.message,
+						code: 408
+					}
+				}
+			}
 			log.error({ msg: `SERVER_GC_ERROR_GM: ${uid} | ${url} -> ${(error as Error).message} -> ${cmd}`, error: error })
 			return {
 				msg: `Out of time doing this command, maybe this command is not recognized or too heavy.`,
@@ -50,6 +60,15 @@ export const _ = {
 				data: d.status
 			}
 		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (contains(error.message, ["socket", "ECONNRESET", "Connection lost","timeout"])) {
+					log.warn(`server gc timeout with ${error.message} in server ${server_url}`)
+					return {
+						msg: error.message,
+						code: 408
+					}
+				}
+			}
 			log.error({ msg: "SERVER_GC_ERROR_0", error: error })
 			return {
 				msg: "Error Get",

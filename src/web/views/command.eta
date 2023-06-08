@@ -13,7 +13,7 @@
     <div class="container">
 
       <!-- Monster -->
-
+<!-- 
       <div class="modal-dialog mb-3" id="bt_monster">
         <div class="modal-content rounded-4 shadow">
 
@@ -38,11 +38,11 @@
 
           </div>
         </div>
-      </div>
+      </div>-->
 
       <!-- item -->
 
-      <div class="modal-dialog mb-3" id="bt_item">
+       <!-- <div class="modal-dialog mb-3" id="bt_item">
         <div class="modal-content rounded-4 shadow">
 
           <div class="modal-header p-5 pb-4 border-bottom-0">
@@ -63,7 +63,7 @@
 
           </div>
         </div>
-      </div>
+      </div>-->
 
       <!-- login -->
 
@@ -85,15 +85,15 @@
                   UID is your in-game player id
                 </small>
               </div>
-
+ <!--
               <div class="form-floating mb-3">
-                <input type="password" class="form-control rounded-3" id="getcode" name="code" placeholder="0003">
+                <input type="password" class="form-control rounded-3" id="getcode" name="code" placeholder="0003" value=1>
                 <label for="getcode">Code</label>
                 <small class="text-muted">
                   (GC=Get access code with /remote on in-game) (GIO=set no code then a code will be sent to mail then use that to input code here)
                 </small>
               </div>
-
+ -->
               <div class="mb-3">
                 <label for="getserver">Choose Server:</label>
                 <select class="form-select" id="getserver" name="server">
