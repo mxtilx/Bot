@@ -17,7 +17,7 @@ export function timestr(time: number) {
 	const days = Math.floor(timeDifferenceInSeconds / 86400)
 	const hours = Math.floor((timeDifferenceInSeconds % 86400) / 3600)
 	const minutes = Math.floor((timeDifferenceInSeconds % 3600) / 60)
-	const seconds = timeDifferenceInSeconds % 60
+	const seconds = (timeDifferenceInSeconds % 60).toFixed(2) // Round to 2 decimal places
 
 	const formatTime = (value: number, unit: string) => {
 		return value > 0 ? `${value} ${unit}${value === 1 ? "" : "s"}` : ""
@@ -27,7 +27,7 @@ export function timestr(time: number) {
 		formatTime(days, "day"),
 		formatTime(hours, "hour"),
 		formatTime(minutes, "minute"),
-		formatTime(seconds, "second")
+		formatTime(parseFloat(seconds), "second") // Parse seconds as float
 	]
 		.filter((timeStr) => timeStr !== "")
 		.join(" ")
