@@ -22,6 +22,7 @@ async function setup() {
 			})
 		}
 
+		/*
 		// list monster
 		const r_monster = await axios.get(API_JSON_DATA + "monsterList.json", {
 			timeout: 1000 * 15
@@ -53,6 +54,7 @@ async function setup() {
 				list_ms.appendChild(option)
 			})
 		}
+		*/
 	} catch (error) {
 		Swal.fire({
 			icon: "error",

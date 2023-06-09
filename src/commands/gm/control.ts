@@ -10,7 +10,7 @@ import { contains, isEmpty } from "../../util/library"
 import ConfigR from "../../util/config"
 import Logger from "../../util/logger"
 import { NodeSSH } from "node-ssh"
-
+import fs from "fs"
 // API Yuuki
 import GC from "../gm/gc"
 import GIO from "../gm/gio"
@@ -18,35 +18,41 @@ import SR from "../gm/sr"
 
 const log = new Logger("GM-Control")
 
-interface ListServer {
+// tmp save
+interface Monitor {
+	name: string
+	service: string
+	type: number
+	max: {
+		autorestart: boolean
+		ram: number
+		cpu: number
+	}
+}
+
+export interface ServerData {
 	name: string
 	id: string
-	server: DataServer
+	server: {
+		online: boolean
+		player: number
+		game: number
+		version: string[]
+		public: boolean
+		monitor: Monitor
+		cpu: string
+		ram: string
+		startup: string
+		commit: string
+		sub: any
+	}
 }
 
-interface DataServer {
-	online: boolean
-	player: number
-	game: any
-	version: any
-	public: any
-	monitor: any
-	cpu: string
-	ram: string
-	startup: string
-	commit: string
-	sub: string
-}
-
-// TODO: better use datebase
-let key = []
-// Thank you ChatGPT
-let cache_serverlist: {
-	[x: string]: string | ListServer[] | number | undefined
-	cache: any
-	data: any
-	msg?: any
-	code?: any
+export interface ListServer {
+	cache: number
+	data: ServerData[] | ServerData | undefined | null
+	msg: string
+	code: number
 }
 
 export const _ = {
@@ -171,153 +177,186 @@ export const _ = {
 			}
 		}
 	},
-	Server: async function (server_id: string = "") {
+	Server: async function (
+		need_reload: boolean = false,
+		server_id: string = ""
+	): Promise<ListServer | ServerData | undefined> {
 		var obj = ConfigR.server
 
-		if (cache_serverlist && Date.now() < cache_serverlist.cache) {
-			cache_serverlist["msg"] = "OK but cache"
-			if (server_id) {
-				return cache_serverlist.data.find((j: { id: any }) => j.id == server_id)
-			}
-			return cache_serverlist
+		var tmp = {
+			data: [] as ServerData[],
+			msg: "Wait data...",
+			code: 404,
+			cache: Date.now()
 		}
+		var file = `./src/web/public/cache/server.json`
 
-		const r = await Promise.all(
-			Object.keys(obj).map(async (key, index) => {
-				var d = obj[index]
+		if (need_reload) {
+			// || this.cache_serverlist.cache < Date.now()
+			//log.info(`Server get data raw...`)
 
-				var o = {
-					online: false,
-					player: 0,
-					game: d.game,
-					version: d.version,
-					public: d.public,
-					monitor: d.monitor, // This should be private data?
-					cpu: "???",
-					ram: "???",
-					startup: "???",
-					commit: "???",
-					sub: "???"
-				}
+			const r = await Promise.all(
+				// Map Key
+				Object.keys(obj).map(async (key, index) => {
+					var d = obj[index]
 
-				var server_live = false
-
-				try {
-					if (d.api.type == 1) {
-						if (d.game == 1) {
-							var ts = await GIO.Server(d.api.url)
-							if (ts !== undefined && ts.data !== undefined && ts.code == 200) {
-								o["online"] = true
-								o["player"] = ts.data.online
-								o["sub"] = ts.data.server
-								server_live = true
-							}
-						}
-					} else if (d.api.type == 2) {
-						if (d.game == 1) {
-							var ts1 = await GC.Server(d.api.url)
-							if (ts1.code == 0) {
-								o["online"] = true
-								o["player"] = ts1.data.playerCount
-								if (ts1.data.MemoryCurrently) {
-									//console.log(ts.data);
-									// 3.482GiB / 4GiB (87.04%)
-									var gb = (ts1.data.MemoryCurrently / 1024).toFixed(3)
-									var maxgb = (ts1.data.MemoryMax / 1024).toFixed(3)
-									var pgb = ((ts1.data.MemoryCurrently / ts1.data.MemoryMax) * 100).toFixed(2)
-									o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
-								}
-								if (ts1.data.DockerGS) {
-									o["commit"] = ts1.data.DockerGS
-								}
-								server_live = true
-							}
-						} else if (d.game == 2) {
-							var ts1x = await SR.Server(d.api.url)
-							if (ts1x.code == 0) {
-								o["online"] = true
-								o["player"] = ts1x.data.playerCount
-								if (ts1x.data.MemoryCurrently) {
-									//console.log(ts.data);
-									// 3.482GiB / 4GiB (87.04%)
-									var gb = (ts1x.data.MemoryCurrently / 1024).toFixed(3)
-									var maxgb = (ts1x.data.MemoryMax / 1024).toFixed(3)
-									var pgb = ((ts1x.data.MemoryCurrently / ts1x.data.MemoryMax) * 100).toFixed(2)
-									o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
-								}
-								if (ts1x.data.DockerGS) {
-									o["commit"] = ts1x.data.DockerGS
-								}
-								server_live = true
-							}
-						}
+					var o = {
+						online: false,
+						player: 0,
+						game: d.game,
+						version: d.version,
+						public: d.public,
+						monitor: d.monitor, // This should be private data?
+						cpu: "???",
+						ram: "???",
+						startup: "???",
+						commit: "???",
+						sub: "???"
 					}
 
-					if (server_live && d.monitor && d.monitor.name != "") {
-						// TODO: add monitor in app
-						let stats = await this.SH(
-							`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`,
-							d.name
-						)
-						if (stats.code == 200) {
-							const objstats = JSON.parse(stats.msg)
+					var server_live = false
 
-							// 1 = monitor container, 2 = monitor app
-							if (d.monitor.type == 1) {
-								// get startup container (cache data time if not restart yet)
-								let startup = await this.SH(
-									`date -u -d "$(docker inspect -f '{{.State.StartedAt}}' ${d.monitor.name})" +'%s'`,
-									d.name
-								)
-								if (startup.code == 200) {
-									o["startup"] = startup.msg // raw only
+					try {
+						if (d.api.type == 1) {
+							if (d.game == 1) {
+								var ts = await GIO.Server(d.api.url)
+								if (ts !== undefined && ts.data !== undefined && ts.code == 200) {
+									o["online"] = true
+									o["player"] = ts.data.online
+									o["sub"] = ts.data.server
+									server_live = true
 								}
-							} else if (d.monitor.type == 2) {
-								// get startup app in container
-								let startup = await this.SH(
-									`date -u -d "$(docker container exec ${d.monitor.name} ps -A -o comm,lstart | grep ${d.monitor.service} | awk '{print $(NF-3)" "$(NF-2)" "$(NF-1)" "$NF}')" +%s`,
-									d.name
-								)
-								if (startup.code == 200) {
-									o["startup"] = startup.msg // raw only
+							}
+						} else if (d.api.type == 2) {
+							if (d.game == 1) {
+								var ts1 = await GC.Server(d.api.url)
+								if (ts1.code == 0) {
+									o["online"] = true
+									o["player"] = ts1.data.playerCount
+									if (ts1.data.MemoryCurrently) {
+										//console.log(ts.data);
+										// 3.482GiB / 4GiB (87.04%)
+										var gb = (ts1.data.MemoryCurrently / 1024).toFixed(3)
+										var maxgb = (ts1.data.MemoryMax / 1024).toFixed(3)
+										var pgb = ((ts1.data.MemoryCurrently / ts1.data.MemoryMax) * 100).toFixed(2)
+										o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
+									}
+									if (ts1.data.DockerGS) {
+										o["commit"] = ts1.data.DockerGS
+									}
+									server_live = true
 								}
+							} else if (d.game == 2) {
+								var ts1x = await SR.Server(d.api.url)
+								if (ts1x.code == 0) {
+									o["online"] = true
+									o["player"] = ts1x.data.playerCount
+									if (ts1x.data.MemoryCurrently) {
+										//console.log(ts.data);
+										// 3.482GiB / 4GiB (87.04%)
+										var gb = (ts1x.data.MemoryCurrently / 1024).toFixed(3)
+										var maxgb = (ts1x.data.MemoryMax / 1024).toFixed(3)
+										var pgb = ((ts1x.data.MemoryCurrently / ts1x.data.MemoryMax) * 100).toFixed(2)
+										o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
+									}
+									if (ts1x.data.DockerGS) {
+										o["commit"] = ts1x.data.DockerGS
+									}
+									server_live = true
+								}
+							}
+						}
+
+						if (server_live && d.monitor && d.monitor.name != "") {
+							// TODO: add monitor in app
+							let stats = await this.SH(
+								`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`,
+								d.name
+							)
+							if (stats.code == 200) {
+								const objstats = JSON.parse(stats.msg)
+
+								// 1 = monitor container, 2 = monitor app
+								if (d.monitor.type == 1) {
+									// get startup container (cache data time if not restart yet)
+									let startup = await this.SH(
+										`date -u -d "$(docker inspect -f '{{.State.StartedAt}}' ${d.monitor.name})" +'%s'`,
+										d.name
+									)
+									if (startup.code == 200) {
+										o["startup"] = startup.msg // raw only
+									}
+								} else if (d.monitor.type == 2) {
+									// get startup app in container
+									let startup = await this.SH(
+										`date -u -d "$(docker container exec ${d.monitor.name} ps -A -o comm,lstart | grep ${d.monitor.service} | awk '{print $(NF-3)" "$(NF-2)" "$(NF-1)" "$NF}')" +%s`,
+										d.name
+									)
+									if (startup.code == 200) {
+										o["startup"] = startup.msg // raw only
+									}
+								} else {
+									console.log("idk")
+								}
+
+								var pre_ram = objstats["MemPerc"]
+								o["cpu"] = objstats["CPUPerc"]
+								o["ram"] = objstats["MemUsage"] + " (" + pre_ram + ")"
 							} else {
-								console.log("idk")
+								//log.DEBUG({ msg: "CHECK_SERVER_NOOK_1", error: stats })
 							}
-
-							var pre_ram = objstats["MemPerc"]
-							o["cpu"] = objstats["CPUPerc"]
-							o["ram"] = objstats["MemUsage"] + " (" + pre_ram + ")"
-						} else {
-							//log.DEBUG({ msg: "CHECK_SERVER_NOOK_1", error: stats })
 						}
+					} catch (error) {
+						log.error({ msg: "CHECK_SERVER_ERROR_0", error: error })
 					}
-				} catch (error) {
-					log.error({ msg: "CHECK_SERVER_ERROR_0", error: error })
-				}
 
-				var tmp: ListServer = {
-					name: d.title,
-					id: d.name,
-					server: o
-				}
+					var tmp: ServerData = {
+						name: d.title,
+						id: d.name,
+						server: o
+					}
+					return tmp
+				})
+			)
 
-				return tmp
-			})
-		)
+			// save cache
+			tmp.data = r
+			tmp.msg = "Recently updated"
+			tmp.code = 200
+			tmp.cache = Date.now() + 60 * 1000
 
-		// fetch data from external source
-		cache_serverlist = {
-			data: r,
-			msg: "OK but update",
-			code: 200,
-			cache: Date.now() + 10 * 1000 // 10 sec
+			//log.debug({ name: `updated`, data: this.cache_serverlist })
+			try {
+				fs.writeFileSync(file, JSON.stringify(tmp))
+			} catch (error) {
+				log.error({name:"Error save cache from file:",error:error})
+			}
+		} else {
+			try {
+				const data = fs.readFileSync(file, "utf8")
+				tmp = JSON.parse(data)
+			} catch (error) {
+				log.error({name:"Error load cache from file:",error:error})
+			}
 		}
-		if (server_id) {
-			return cache_serverlist.data.find((j: { id: any }) => j.id == server_id)
+
+		if (tmp != undefined && tmp.cache > Date.now()) {
+			const rx = Math.ceil((tmp.cache - Date.now()) / 1000);
+
+			tmp.msg = `Cache it, remain in ${rx} seconds`
+		} else {
+			tmp.msg = "Cache has expired"
 		}
 
-		return cache_serverlist
+		// find server id
+		if (!isEmpty(server_id)) {
+			var dx = tmp.data as ServerData[]
+			if (dx) {
+				return dx.find((j: { id: string }) => j.id == server_id)
+			}
+		}
+
+		return tmp
 	},
 	SH: async function (raw: string, server_id: string, timeout: number = 20) {
 		// check server
@@ -383,7 +422,7 @@ export const _ = {
 			}
 		} catch (error) {
 			if (error instanceof Error) {
-				if (contains(error.message, ["timeout",'Timed out', "ECONNRESET","Connection lost"])) {
+				if (contains(error.message, ["timeout", "Timed out", "ECONNRESET", "Connection lost"])) {
 					log.warn(`sh "${raw}" ${error.message} in server ${server_id}`)
 					return {
 						msg: error.message,

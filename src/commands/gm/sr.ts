@@ -59,7 +59,7 @@ export const _ = {
 			}
 		} catch (error) {
 			if (error instanceof AxiosError) {
-				if (contains(error.message, ["socket", "ECONNRESET", "Connection lost","timeout"])) {
+				if (contains(error.message, ["socket", "ECONNRESET","ECONNREFUSED", "Connection lost","timeout"])) {
 					log.warn(`server sr timeout with ${error.message} in server ${server_url}`)
 					return {
 						msg: error.message,
@@ -67,7 +67,7 @@ export const _ = {
 					}
 				}
 			}
-			log.error({ msg: "SERVER_SR_ERROR_0", error: error })
+			log.debug({ msg: "SERVER_SR_ERROR_0", error: error })
 			return {
 				msg: "Error Get Status",
 				code: 302

@@ -14,7 +14,7 @@ import Logger from "../../util/logger"
 import { CommandInteraction, SlashCommandBuilder, InteractionReplyOptions, DiscordAPIError } from "discord.js"
 
 // API Yuuki
-import Control from "../gm/control"
+import Control, { ListServer, ServerData } from "../gm/control"
 import API_HOYO from "../../game/hoyolab/api"
 import API_GS from "../../game/genshin/api"
 import API_SR from "../../game/starrails/api"
@@ -32,13 +32,16 @@ async function run(interaction: CommandInteraction) {
 
 		var tes = ""
 		var total = 0
-		let d = await Control.Server()
-		d.data.forEach(function (i: { name: any; id: any; server: { player: number; cpu: any; ram: any } }) {
-			tes += `${i.name} (${i.id}) > Player ${i.server.player} | CPU: ${i.server.cpu} / RAM ${i.server.ram} \n`
-			total = total + i.server.player
-		})
+		let d = (await Control.Server()) as ListServer
+		if (d != undefined && d.data != undefined) {
+			var dxx = d.data as ServerData[]
+			dxx.forEach(function (i: { name: any; id: any; server: { player: number; cpu: any; ram: any } }) {
+				tes += `${i.name} (${i.id}) > Player ${i.server.player} | CPU: ${i.server.cpu} / RAM ${i.server.ram} \n`
+				total = total + i.server.player
+			})
 
-		tes += `\nTotal Player ${total}`
+			tes += `\nTotal Player ${total}`
+		}
 		return await interaction.editReply({ content: `${tes}`, ...baseReply })
 	} catch (err) {
 		log.error({ name: "online", error: err })

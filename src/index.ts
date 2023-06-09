@@ -60,7 +60,7 @@ import register from "./util/registercommands"
 
 // API
 import Account from "./db/account/api"
-import Control from "./commands/gm/control"
+import Control, { ListServer, ServerData } from "./commands/gm/control"
 import API_GS, { GSDispatch } from "./game/genshin/api"
 import API_SR, { SRDispatch } from "./game/starrails/api"
 
@@ -659,7 +659,8 @@ web.all("/api/game/:name_game", async (req: Request, res: Response) => {
 
 web.all("/api/server", async (req: Request, res: Response) => {
 	try {
-		let d = await Control.Server()
+		let need_reload = req.query.reload as unknown as boolean;
+		let d = await Control.Server(need_reload)
 		return res.json(d)
 	} catch (e) {
 		c_web.error({ name: "GET SERVER", error: e })
@@ -671,7 +672,8 @@ web.all("/api/server", async (req: Request, res: Response) => {
 })
 web.all("/api/server/:id", async (req: Request, res: Response) => {
 	try {
-		let d = await Control.Server(req.params.id)
+		let id = req.params.id;
+		let d = await Control.Server(false, id)
 		return res.json(d)
 	} catch (e) {
 		c_web.error({ name: "GET LIST SERVER", error: e })

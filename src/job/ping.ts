@@ -12,7 +12,7 @@ import Logger from "../util/logger"
 import { NodeSSH } from "node-ssh"
 import { setIntervalAsync, clearIntervalAsync } from "set-interval-async"
 
-import Control from "../commands/gm/control"
+import Control, { ListServer, ServerData } from "../commands/gm/control"
 
 import { parentPort } from "worker_threads"
 
@@ -111,19 +111,25 @@ async function restart(mnt_type: string | number, mnt_name: any, id_server: any,
 
 // check server every time
 setIntervalAsync(async () => {
+	log.info(`Server check: ${new Date().getTime()}`)
+	let rs = await sync()
+}, 1000 * 10)
 
-	let rs = await sync();
-	log.debug(`Server check: ${new Date().getTime()}`)
-
-}, 1000 * 30)
-
-// sync with datebase
+// sync time
 export async function sync() {
-	let d = await Control.Server()
 	var total_online = 0
-	d.data.forEach(async function (i: {
-		id: any
-		name: any
+
+	let data_server = (await Control.Server(true)) as ListServer
+	if (data_server == null || data_server.data == null) {
+		log.warn(`No Found Server for check...`)
+		return
+	}
+
+	// Server list
+	var dxx = data_server.data as ServerData[]
+	dxx.forEach(async function (i: {
+		id: string
+		name: string
 		server: { player: any; ram: any; cpu: any; online: any; startup: any; monitor: any }
 	}) {
 		//log.info(i);
